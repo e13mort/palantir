@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS DBProject (
+    id INTEGER NOT NULL,
+    name TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM DBProject;
+
+clear:
+DELETE FROM DBProject;
+
+insert:
+INSERT INTO DBProject (id, name)
+VALUES ?;
