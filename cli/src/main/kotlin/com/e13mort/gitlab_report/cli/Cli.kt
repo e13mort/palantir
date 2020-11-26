@@ -1,5 +1,6 @@
 package com.e13mort.gitlab_report.cli
 
+import com.e13mort.gitlab_report.cli.render.ASCIITableProjectRender
 import com.e13mort.gitlab_report.cli.render.ASCIITableProjectsListRender
 import com.e13mort.gitlab_report.interactors.*
 import com.e13mort.gitlab_report.model.GitlabProjectsRepository
@@ -16,12 +17,17 @@ fun main(args: Array<String>) {
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
     val console = Console { message -> println(message) }
 
-    val renderOutput = ConsoleRenderOutput(console)
+    val consoleOutput = ConsoleRenderOutput(console)
 
     RootCommand().subcommands(
-        PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), renderOutput)
-            .asCLICommand("print"),
-        ScanProjectInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("scan")
+        PrintCommand().subcommands(
+            PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)
+                .asCLICommand("projects"),
+            IdInteractorCommand("project") {
+                PrintProjectSummaryInteractor(localProjectsRepository, it).withRender(ASCIITableProjectRender(), consoleOutput)
+            }
+        ),
+        ScanProjectInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("scan"),
     ).main(args)
 }
 
@@ -33,5 +39,9 @@ class ConsoleRenderOutput(private val console: Console) : RenderOutput<String> {
     override fun write(renderedResult: String) {
         console.write(renderedResult)
     }
+}
+
+class PrintCommand : CliktCommand("print") {
+    override fun run(): Unit = Unit
 }
 
