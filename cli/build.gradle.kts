@@ -1,13 +1,9 @@
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.4.10"
+    id("org.jetbrains.kotlin.jvm")
     application
 }
 
 version = "unspecified"
-
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     implementation("com.github.ajalt.clikt:clikt:3.0.1")

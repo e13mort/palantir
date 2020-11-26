@@ -10,14 +10,9 @@ buildscript {
 
 plugins {
     id("com.squareup.sqldelight") version "1.4.3"
-    kotlin("multiplatform") version "1.4.10"
+    kotlin("multiplatform")
 }
 version = "unspecified"
-
-repositories {
-    mavenCentral()
-    jcenter()
-}
 
 kotlin {
     /* Targets configuration omitted. 

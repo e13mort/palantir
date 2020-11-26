@@ -1,16 +1,8 @@
 plugins {
-    kotlin("multiplatform") version "1.4.10"
+    kotlin("multiplatform")
 }
 
 version = "unspecified"
-
-repositories {
-    mavenCentral()
-}
-
-repositories {
-    jcenter()
-}
 
 kotlin {
     /* Targets configuration omitted. 
