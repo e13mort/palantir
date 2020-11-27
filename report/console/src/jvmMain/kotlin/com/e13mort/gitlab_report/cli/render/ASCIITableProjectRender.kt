@@ -12,9 +12,7 @@ class ASCIITableProjectRender : ReportRender<ProjectSummary, String> {
             }
             header {
                 row("Id", "Project Name", "Branches", "MRs")
-                value.project().let {
-                    row(it.id(), it.name(), value.branchCount(), value.mergeRequestCount())
-                }
+                row(value.projectId(), value.projectName(), value.branchCount(), value.mergeRequestCount())
             }
         }.toString()
     }

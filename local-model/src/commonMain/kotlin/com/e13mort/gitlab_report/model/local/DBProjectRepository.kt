@@ -15,6 +15,12 @@ class DBProjectRepository(private val projectQueries: ProjectQueries) : ProjectR
         }.executeAsList().asFlow()
     }
 
+    override suspend fun findProject(id: Long): Project? {
+        return projectQueries.findProject(id) { _id, _name ->
+            DataObjectImpl(_id.toString(), _name)
+        }.executeAsOneOrNull()
+    }
+
     override suspend fun addProject(project: Project) {
         projectQueries.insert(DBProject(project.id().toLong(), project.name()))
     }

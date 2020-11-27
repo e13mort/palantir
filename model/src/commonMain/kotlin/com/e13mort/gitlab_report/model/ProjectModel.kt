@@ -10,6 +10,8 @@ interface Project {
 interface ProjectRepository {
     suspend fun projects(): Flow<Project>
 
+    suspend fun findProject(id: Long): Project?
+
     suspend fun addProject(project: Project)
 
     suspend fun clear()

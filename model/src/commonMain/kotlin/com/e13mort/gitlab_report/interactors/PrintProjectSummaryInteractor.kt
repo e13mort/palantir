@@ -1,21 +1,21 @@
 package com.e13mort.gitlab_report.interactors
 
-import com.e13mort.gitlab_report.model.Project
 import com.e13mort.gitlab_report.model.ProjectRepository
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.first
 
 class PrintProjectSummaryInteractor(
     private val projectRepository: ProjectRepository,
-    private val id: String
+    private val id: Long
 ) : Interactor<ProjectSummary> {
     override suspend fun run(): ProjectSummary {
-        val project = projectRepository.projects().filter {
-            it.id() == id
-        }.first()
+        val project = projectRepository.findProject(id) ?: throw Exception("Project $id not found")
         return object : ProjectSummary {
-            override fun project(): Project {
-                return project
+
+            override fun projectName(): String {
+                return project.name()
+            }
+
+            override fun projectId(): String {
+                return project.id()
             }
 
             override fun branchCount(): Int {
@@ -33,7 +33,9 @@ class PrintProjectSummaryInteractor(
 }
 
 interface ProjectSummary {
-    fun project(): Project
+    fun projectName(): String
+
+    fun projectId(): String
 
     fun branchCount(): Int
 

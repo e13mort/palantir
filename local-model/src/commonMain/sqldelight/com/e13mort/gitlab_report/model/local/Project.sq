@@ -6,6 +6,9 @@ CREATE TABLE IF NOT EXISTS DBProject (
 selectAll:
 SELECT * FROM DBProject;
 
+findProject:
+SELECT * FROM DBProject WHERE id = ?;
+
 clear:
 DELETE FROM DBProject;
 

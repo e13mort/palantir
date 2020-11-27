@@ -23,7 +23,7 @@ fun main(args: Array<String>) {
         PrintCommand().subcommands(
             PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)
                 .asCLICommand("projects"),
-            IdInteractorCommand("project") {
+            LongIdInteractorCommand("project") {
                 PrintProjectSummaryInteractor(localProjectsRepository, it).withRender(ASCIITableProjectRender(), consoleOutput)
             }
         ),

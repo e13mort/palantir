@@ -30,11 +30,11 @@ class GitlabProjectsRepository(
         }
     }
 
-    override suspend fun addProject(project: Project) {
-        throw IllegalStateException()
-    }
+    override suspend fun findProject(id: Long): Project =
+        throw UnsupportedRepositoryOperationException("findProject")
 
-    override suspend fun clear() {
-        throw IllegalStateException()
-    }
+    override suspend fun addProject(project: Project): Unit =
+        throw UnsupportedRepositoryOperationException("addProject")
+
+    override suspend fun clear(): Unit = throw UnsupportedRepositoryOperationException("clear")
 }
