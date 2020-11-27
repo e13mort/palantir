@@ -14,7 +14,6 @@ class GitlabProjectsRepository(
         return flow {
             val gitLabApi = GitLabApi(url, key)
             gitLabApi.projectApi.memberProjects.map {
-                println("Collect project: ${it.name}")
                 object : Project {
                     override fun id(): String {
                         return it.id.toString()
@@ -32,6 +31,10 @@ class GitlabProjectsRepository(
 
     override suspend fun findProject(id: Long): Project =
         throw UnsupportedRepositoryOperationException("findProject")
+
+    override suspend fun projectsCount(): Long {
+        throw UnsupportedRepositoryOperationException("projectsCount")
+    }
 
     override suspend fun addProject(project: Project): Unit =
         throw UnsupportedRepositoryOperationException("addProject")

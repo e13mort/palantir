@@ -21,6 +21,10 @@ class DBProjectRepository(private val projectQueries: ProjectQueries) : ProjectR
         }.executeAsOneOrNull()
     }
 
+    override suspend fun projectsCount(): Long {
+        return projectQueries.projectsCount().executeAsOne()
+    }
+
     override suspend fun addProject(project: Project) {
         projectQueries.insert(DBProject(project.id().toLong(), project.name()))
     }

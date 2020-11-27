@@ -9,6 +9,9 @@ SELECT * FROM DBProject;
 findProject:
 SELECT * FROM DBProject WHERE id = ?;
 
+projectsCount:
+SELECT COUNT(*) FROM DBProject;
+
 clear:
 DELETE FROM DBProject;
 

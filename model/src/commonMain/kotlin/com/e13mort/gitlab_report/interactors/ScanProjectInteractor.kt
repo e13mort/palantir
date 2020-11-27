@@ -13,8 +13,8 @@ class ScanProjectInteractor(
     override suspend fun run() {
         localRepository.clear()
         remoteRepository.projects().collect {
-            "Add project to index: ${it.name()}".writeTo(console)
             localRepository.addProject(it)
         }
+        "${localRepository.projectsCount()} projects added to index".writeTo(console)
     }
 }

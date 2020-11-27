@@ -14,5 +14,7 @@ interface ProjectRepository {
 
     suspend fun addProject(project: Project)
 
+    suspend fun projectsCount(): Long
+
     suspend fun clear()
 }
