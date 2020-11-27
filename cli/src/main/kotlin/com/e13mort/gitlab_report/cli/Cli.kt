@@ -13,7 +13,7 @@ import com.github.ajalt.clikt.core.subcommands
 
 fun main(args: Array<String>) {
     val model = LocalModel(DriverFactory().createDriver())
-    val localProjectsRepository = DBProjectRepository(model.projectQueries)
+    val localProjectsRepository = DBProjectRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
     val console = Console { message -> println(message) }
 

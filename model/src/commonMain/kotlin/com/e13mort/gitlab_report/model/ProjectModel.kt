@@ -18,3 +18,11 @@ interface ProjectRepository {
 
     suspend fun clear()
 }
+
+interface SyncableProjectRepository : ProjectRepository {
+    override suspend fun projects(): Flow<SyncableProject>
+
+    interface SyncableProject : Project {
+        fun synced(): Boolean
+    }
+}

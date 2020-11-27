@@ -11,9 +11,9 @@ class ASCIITableProjectsListRender : ReportRender<AllProjectsReport, String> {
                 border = true
             }
             header {
-                row("Id", "Project Name")
-                value.walk {
-                    row(it.id(), it.name())
+                row("Id", "Project Name", "Synced")
+                value.walk { project, synced ->
+                    row(project.id(), project.name(), synced)
                 }
             }
         }.toString()

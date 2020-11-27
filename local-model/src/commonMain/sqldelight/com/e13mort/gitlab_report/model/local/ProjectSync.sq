@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS PROJECT_SYNC_INFO
+(
+	id INTEGER NOT NULL
+		CONSTRAINT table_name_pk
+			PRIMARY KEY AUTOINCREMENT,
+	project_id INTEGER
+		CONSTRAINT table_name_DBProject_id_fk
+		REFERENCES DBProject (id) ON DELETE CASCADE
+);
+
+CREATE VIEW IF NOT EXISTS SYNCED_PROJECTS AS
+    SELECT projects.id,
+       projects.name,
+       CASE
+           WHEN syncedProjects.project_id = projects.id THEN 1
+           ELSE 0
+           END
+           AS synced
+FROM DBProject projects
+         LEFT OUTER JOIN
+     PROJECT_SYNC_INFO syncedProjects ON projects.id = syncedProjects.project_id;
+
+selectAll:
+SELECT * FROM SYNCED_PROJECTS;

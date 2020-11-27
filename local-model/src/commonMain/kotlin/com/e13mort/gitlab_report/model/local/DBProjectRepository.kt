@@ -1,18 +1,23 @@
 package com.e13mort.gitlab_report.model.local
 
 import com.e13mort.gitlab_report.model.Project
-import com.e13mort.gitlab_report.model.ProjectRepository
+import com.e13mort.gitlab_report.model.SyncableProjectRepository
 import com.e13mort.gitlabreport.model.local.DBProject
-import com.e13mort.gitlabreport.model.local.ProjectQueries
+import com.e13mort.gitlabreport.model.local.SYNCED_PROJECTS
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
 
-class DBProjectRepository(private val projectQueries: ProjectQueries) : ProjectRepository {
+class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
-    override suspend fun projects(): Flow<Project> {
-        return projectQueries.selectAll { id, name ->
-            DataObjectImpl(id.toString(), name)
-        }.executeAsList().asFlow()
+    private val projectQueries = localModel.projectQueries
+    private val projectSyncQueries = localModel.projectSyncQueries
+
+    override suspend fun projects(): Flow<SyncableProjectRepository.SyncableProject> {
+        return projectSyncQueries.selectAll()
+            .executeAsList().asFlow().map {
+                SyncableProjectImpl(it)
+            }
     }
 
     override suspend fun findProject(id: Long): Project? {
@@ -41,7 +46,20 @@ internal class DataObjectImpl(
     override fun id(): String = id
 
     override fun name(): String = name
+}
 
+internal class SyncableProjectImpl(private val dbItem: SYNCED_PROJECTS) : SyncableProjectRepository.SyncableProject {
+    override fun synced(): Boolean {
+        return dbItem.synced != 0L
+    }
+
+    override fun id(): String {
+        return dbItem.name
+    }
+
+    override fun name(): String {
+        return dbItem.name
+    }
 
 }
 
