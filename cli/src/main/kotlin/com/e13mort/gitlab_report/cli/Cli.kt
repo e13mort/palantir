@@ -1,5 +1,6 @@
 package com.e13mort.gitlab_report.cli
 
+import com.e13mort.gitlab_report.cli.render.ASCIISyncProjectResultRender
 import com.e13mort.gitlab_report.cli.render.ASCIITableProjectRender
 import com.e13mort.gitlab_report.cli.render.ASCIITableProjectsListRender
 import com.e13mort.gitlab_report.interactors.*
@@ -27,7 +28,12 @@ fun main(args: Array<String>) {
                 PrintProjectSummaryInteractor(localProjectsRepository, it).withRender(ASCIITableProjectRender(), consoleOutput)
             }
         ),
-        ScanProjectInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("scan"),
+        ScanCommand().subcommands(
+            ScanProjectsInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("projects"),
+            LongIdInteractorCommand("project") {
+                ScanProjectInteractor(it, localProjectsRepository).withRender(ASCIISyncProjectResultRender(), consoleOutput)
+            }
+        )
     ).main(args)
 }
 
@@ -45,3 +51,6 @@ class PrintCommand : CliktCommand("print") {
     override fun run(): Unit = Unit
 }
 
+class ScanCommand : CliktCommand("scan") {
+    override fun run() = Unit
+}

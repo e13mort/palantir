@@ -1,20 +1,23 @@
 package com.e13mort.gitlab_report.interactors
 
-import com.e13mort.gitlab_report.model.ProjectRepository
-import com.e13mort.gitlab_report.utils.Console
-import com.e13mort.gitlab_report.utils.writeTo
-import kotlinx.coroutines.flow.collect
+import com.e13mort.gitlab_report.model.SyncableProjectRepository
 
 class ScanProjectInteractor(
-    private val localRepository: ProjectRepository,
-    private val remoteRepository: ProjectRepository,
-    private val console: Console
-) : Interactor<Unit> {
-    override suspend fun run() {
-        localRepository.clear()
-        remoteRepository.projects().collect {
-            localRepository.addProject(it)
+    private val projectId: Long,
+    private val projectRepository: SyncableProjectRepository
+) : Interactor<ScanProjectInteractor.ScanProjectResult> {
+    override suspend fun run(): ScanProjectResult {
+        val localProject = projectRepository.findProject(projectId) ?: throw Exception("Project $projectId isn't found")
+        localProject.updateSynced(true)
+        return object : ScanProjectResult {
+            override fun projectName(): String {
+                return localProject.name()
+            }
+
         }
-        "${localRepository.projectsCount()} projects added to index".writeTo(console)
+    }
+
+    interface ScanProjectResult {
+        fun projectName(): String
     }
 }

@@ -22,3 +22,9 @@ FROM DBProject projects
 
 selectAll:
 SELECT * FROM SYNCED_PROJECTS;
+
+setProjectIsSynced:
+INSERT INTO PROJECT_SYNC_INFO (project_id) VALUES (?);
+
+removeSyncedProject:
+DELETE FROM PROJECT_SYNC_INFO WHERE project_id = ?;

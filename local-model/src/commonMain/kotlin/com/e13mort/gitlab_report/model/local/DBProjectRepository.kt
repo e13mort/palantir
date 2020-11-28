@@ -3,6 +3,7 @@ package com.e13mort.gitlab_report.model.local
 import com.e13mort.gitlab_report.model.Project
 import com.e13mort.gitlab_report.model.SyncableProjectRepository
 import com.e13mort.gitlabreport.model.local.DBProject
+import com.e13mort.gitlabreport.model.local.ProjectSyncQueries
 import com.e13mort.gitlabreport.model.local.SYNCED_PROJECTS
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -16,14 +17,12 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     override suspend fun projects(): Flow<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectAll()
             .executeAsList().asFlow().map {
-                SyncableProjectImpl(it)
+                SyncableProjectImpl(it, projectSyncQueries)
             }
     }
 
-    override suspend fun findProject(id: Long): Project? {
-        return projectQueries.findProject(id) { _id, _name ->
-            DataObjectImpl(_id.toString(), _name)
-        }.executeAsOneOrNull()
+    override suspend fun findProject(id: Long): SyncableProjectRepository.SyncableProject? {
+        return projectQueries.findProject(id).executeAsOneOrNull()?.toSyncable(projectSyncQueries)
     }
 
     override suspend fun projectsCount(): Long {
@@ -39,27 +38,35 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     }
 
 }
-internal class DataObjectImpl(
-    private val id: String,
-    private val name: String
-) : Project {
-    override fun id(): String = id
 
-    override fun name(): String = name
-}
-
-internal class SyncableProjectImpl(private val dbItem: SYNCED_PROJECTS) : SyncableProjectRepository.SyncableProject {
+internal class SyncableProjectImpl(
+    private val dbItem: SYNCED_PROJECTS,
+    private val syncQueries: ProjectSyncQueries
+    ) : SyncableProjectRepository.SyncableProject {
     override fun synced(): Boolean {
         return dbItem.synced != 0L
     }
 
+    override fun updateSynced(synced: Boolean) {
+        if (synced)
+            syncQueries.setProjectIsSynced(dbItem.id)
+        else
+            syncQueries.removeSyncedProject(dbItem.id)
+    }
+
     override fun id(): String {
-        return dbItem.name
+        return dbItem.id.toString()
     }
 
     override fun name(): String {
         return dbItem.name
     }
 
+}
+
+fun DBProject.toSyncable(syncQueries: ProjectSyncQueries): SyncableProjectRepository.SyncableProject {
+    return SyncableProjectImpl(SYNCED_PROJECTS(
+        this.id, this.name, 0
+    ), syncQueries)
 }
 
