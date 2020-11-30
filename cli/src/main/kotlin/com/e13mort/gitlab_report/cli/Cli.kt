@@ -13,7 +13,9 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 
 fun main(args: Array<String>) {
-    val model = LocalModel(DriverFactory().createDriver())
+    val driver = DriverFactory().createDriver()
+    val model = LocalModel(driver)
+
     val localProjectsRepository = DBProjectRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
     val console = Console { message -> println(message) }
@@ -31,7 +33,7 @@ fun main(args: Array<String>) {
         ScanCommand().subcommands(
             ScanProjectsInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("projects"),
             LongIdInteractorCommand("project") {
-                ScanProjectInteractor(it, localProjectsRepository).withRender(ASCIISyncProjectResultRender(), consoleOutput)
+                ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository).withRender(ASCIISyncProjectResultRender(), consoleOutput)
             }
         )
     ).main(args)

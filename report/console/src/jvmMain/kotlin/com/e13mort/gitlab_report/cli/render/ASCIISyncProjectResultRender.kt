@@ -16,6 +16,7 @@ class ASCIISyncProjectResultRender : ReportRender<ScanProjectInteractor.ScanProj
                 }
             }
             row ("Name", value.projectName())
+            row ("Branches", value.syncedBranchesCount())
         }.toString()
     }
 }

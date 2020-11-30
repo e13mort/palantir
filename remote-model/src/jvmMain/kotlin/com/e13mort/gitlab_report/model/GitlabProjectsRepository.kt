@@ -4,33 +4,29 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.gitlab4j.api.GitLabApi
+import org.gitlab4j.api.RepositoryApi
 
 class GitlabProjectsRepository(
-    private val url: String,
-    private val key: String
-    ): ProjectRepository {
+    url: String,
+    key: String
+) : ProjectRepository {
+
+    private val gitLabApi = GitLabApi(url, key)
+
     @ExperimentalCoroutinesApi
     override suspend fun projects(): Flow<Project> {
         return flow {
-            val gitLabApi = GitLabApi(url, key)
             gitLabApi.projectApi.memberProjects.map {
-                object : Project {
-                    override fun id(): String {
-                        return it.id.toString()
-                    }
-
-                    override fun name(): String {
-                        return it.name
-                    }
-                }
+                GitlabProject(it, gitLabApi.repositoryApi)
             }.forEach {
                 emit(it)
             }
         }
     }
 
-    override suspend fun findProject(id: Long): Project =
-        throw UnsupportedRepositoryOperationException("findProject")
+    override suspend fun findProject(id: Long): Project {
+        return GitlabProject(gitLabApi.projectApi.getProject(id.toInt()), gitLabApi.repositoryApi)
+    }
 
     override suspend fun projectsCount(): Long {
         throw UnsupportedRepositoryOperationException("projectsCount")
@@ -40,4 +36,41 @@ class GitlabProjectsRepository(
         throw UnsupportedRepositoryOperationException("addProject")
 
     override suspend fun clear(): Unit = throw UnsupportedRepositoryOperationException("clear")
+}
+
+internal class GitlabProject(private val project: org.gitlab4j.api.models.Project,
+                             private val repositoryApi: RepositoryApi) : Project {
+    override fun id(): String {
+        return project.id.toString()
+    }
+
+    override fun name(): String {
+        return project.name
+    }
+
+    override fun branches(): Branches {
+        return GitlabBranches(repositoryApi, project.id)
+    }
+}
+
+internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Int) : Branches {
+    override suspend fun count(): Long {
+        return repositoryApi.getBranches(id).size.toLong()
+    }
+
+    override suspend fun values(): Flow<Branch> {
+        return flow {
+            repositoryApi.getBranches(id).forEach {
+                emit(GitlabBranch(it))
+            }
+        }
+    }
+
+    internal class GitlabBranch(private val branch: org.gitlab4j.api.models.Branch) : Branch {
+        override fun name(): String {
+            return branch.name
+        }
+
+    }
+
 }

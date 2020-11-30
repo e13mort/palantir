@@ -1,28 +1,30 @@
 package com.e13mort.gitlab_report.model.local
 
+import com.e13mort.gitlab_report.model.Branch
+import com.e13mort.gitlab_report.model.Branches
 import com.e13mort.gitlab_report.model.Project
 import com.e13mort.gitlab_report.model.SyncableProjectRepository
+import com.e13mort.gitlabreport.model.local.BranchesQueries
 import com.e13mort.gitlabreport.model.local.DBProject
 import com.e13mort.gitlabreport.model.local.ProjectSyncQueries
 import com.e13mort.gitlabreport.model.local.SYNCED_PROJECTS
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.*
 
 class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
     private val projectQueries = localModel.projectQueries
     private val projectSyncQueries = localModel.projectSyncQueries
+    private val branchesQueries = localModel.branchesQueries
 
     override suspend fun projects(): Flow<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectAll()
             .executeAsList().asFlow().map {
-                SyncableProjectImpl(it, projectSyncQueries)
+                SyncableProjectImpl(it, projectSyncQueries, branchesQueries)
             }
     }
 
     override suspend fun findProject(id: Long): SyncableProjectRepository.SyncableProject? {
-        return projectQueries.findProject(id).executeAsOneOrNull()?.toSyncable(projectSyncQueries)
+        return projectQueries.findProject(id).executeAsOneOrNull()?.toSyncable(projectSyncQueries, branchesQueries)
     }
 
     override suspend fun projectsCount(): Long {
@@ -41,7 +43,8 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
 internal class SyncableProjectImpl(
     private val dbItem: SYNCED_PROJECTS,
-    private val syncQueries: ProjectSyncQueries
+    private val syncQueries: ProjectSyncQueries,
+    private val branchesQueries: BranchesQueries
     ) : SyncableProjectRepository.SyncableProject {
     override fun synced(): Boolean {
         return dbItem.synced != 0L
@@ -54,6 +57,12 @@ internal class SyncableProjectImpl(
             syncQueries.removeSyncedProject(dbItem.id)
     }
 
+    override suspend fun updateBranches(branches: Branches) {
+        branches.values().collect {
+            branchesQueries.insert(dbItem.id, it.name())
+        }
+    }
+
     override fun id(): String {
         return dbItem.id.toString()
     }
@@ -62,11 +71,33 @@ internal class SyncableProjectImpl(
         return dbItem.name
     }
 
+    override fun branches(): Branches {
+        return object : Branches {
+            override suspend fun count(): Long {
+                return branchesQueries.branchesCount().executeAsOne()
+            }
+
+            override suspend fun values(): Flow<Branch> {
+                return flow {
+                    branchesQueries.selectAll().executeAsList().asFlow().map {
+                        emit(object : Branch {
+                            override fun name(): String {
+                                return it.name
+                            }
+
+                        })
+                    }
+                }
+            }
+
+        }
+    }
+
 }
 
-fun DBProject.toSyncable(syncQueries: ProjectSyncQueries): SyncableProjectRepository.SyncableProject {
+fun DBProject.toSyncable(syncQueries: ProjectSyncQueries, branchesQueries: BranchesQueries): SyncableProjectRepository.SyncableProject {
     return SyncableProjectImpl(SYNCED_PROJECTS(
         this.id, this.name, 0
-    ), syncQueries)
+    ), syncQueries, branchesQueries)
 }
 

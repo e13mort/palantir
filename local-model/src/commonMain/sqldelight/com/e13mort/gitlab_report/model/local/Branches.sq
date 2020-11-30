@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS DBBranches
+(
+	id INTEGER NOT NULL
+		CONSTRAINT DBBranches_pk
+			PRIMARY KEY AUTOINCREMENT,
+	project_id INTEGER NOT NULL
+	    CONSTRAINT DBBranches_PROJECT_SYNC_INFO_project_id_fk
+            REFERENCES PROJECT_SYNC_INFO (project_id)
+                ON DELETE CASCADE,
+	name TEXT NOT NULL
+);
+
+insert:
+INSERT INTO DBBranches (project_id, name) VALUES (?, ?);
+
+selectAll:
+SELECT * FROM DBBranches;
+
+branchesCount:
+SELECT COUNT(*) FROM DBBranches;

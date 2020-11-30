@@ -8,6 +8,7 @@ class PrintProjectSummaryInteractor(
 ) : Interactor<ProjectSummary> {
     override suspend fun run(): ProjectSummary {
         val project = projectRepository.findProject(id) ?: throw Exception("Project $id not found")
+        val branchesCount = project.branches().count().toInt()
         return object : ProjectSummary {
 
             override fun projectName(): String {
@@ -19,8 +20,7 @@ class PrintProjectSummaryInteractor(
             }
 
             override fun branchCount(): Int {
-                // TODO: 27/11/2020 read from repository
-                return -1
+                return branchesCount
             }
 
             override fun mergeRequestCount(): Int {

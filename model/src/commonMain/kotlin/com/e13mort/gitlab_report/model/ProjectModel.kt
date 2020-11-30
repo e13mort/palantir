@@ -4,6 +4,19 @@ import kotlinx.coroutines.flow.Flow
 
 interface Project {
     fun id(): String
+
+    fun name(): String
+
+    fun branches(): Branches
+}
+
+interface Branches {
+    suspend fun count(): Long
+
+    suspend fun values(): Flow<Branch>
+}
+
+interface Branch {
     fun name(): String
 }
 
@@ -28,5 +41,7 @@ interface SyncableProjectRepository : ProjectRepository {
         fun synced(): Boolean
 
         fun updateSynced(synced: Boolean)
+
+        suspend fun updateBranches(branches: Branches)
     }
 }
