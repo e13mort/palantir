@@ -1,5 +1,6 @@
 package com.e13mort.gitlab_report.cli
 
+import com.e13mort.gitlab_report.cli.render.ASCIIBranchesRender
 import com.e13mort.gitlab_report.cli.render.ASCIISyncProjectResultRender
 import com.e13mort.gitlab_report.cli.render.ASCIITableProjectRender
 import com.e13mort.gitlab_report.cli.render.ASCIITableProjectsListRender
@@ -28,6 +29,9 @@ fun main(args: Array<String>) {
                 .asCLICommand("projects"),
             LongIdInteractorCommand("project") {
                 PrintProjectSummaryInteractor(localProjectsRepository, it).withRender(ASCIITableProjectRender(), consoleOutput)
+            },
+            LongIdInteractorCommand("branches") {
+                PrintProjectBranchesInteractor(localProjectsRepository, it).withRender(ASCIIBranchesRender(), consoleOutput)
             }
         ),
         ScanCommand().subcommands(

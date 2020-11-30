@@ -78,16 +78,13 @@ internal class SyncableProjectImpl(
             }
 
             override suspend fun values(): Flow<Branch> {
-                return flow {
-                    branchesQueries.selectAll().executeAsList().asFlow().map {
-                        emit(object : Branch {
-                            override fun name(): String {
-                                return it.name
-                            }
-
-                        })
+                return branchesQueries.selectAll { _, _, name ->
+                    object : Branch {
+                        override fun name(): String {
+                            return name
+                        }
                     }
-                }
+                }.executeAsList().asFlow()
             }
 
         }
