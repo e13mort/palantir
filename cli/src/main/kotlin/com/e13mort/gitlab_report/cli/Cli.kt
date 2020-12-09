@@ -1,9 +1,6 @@
 package com.e13mort.gitlab_report.cli
 
-import com.e13mort.gitlab_report.cli.render.ASCIIBranchesRender
-import com.e13mort.gitlab_report.cli.render.ASCIISyncProjectResultRender
-import com.e13mort.gitlab_report.cli.render.ASCIITableProjectRender
-import com.e13mort.gitlab_report.cli.render.ASCIITableProjectsListRender
+import com.e13mort.gitlab_report.cli.render.*
 import com.e13mort.gitlab_report.interactors.*
 import com.e13mort.gitlab_report.model.GitlabProjectsRepository
 import com.e13mort.gitlab_report.model.local.DBProjectRepository
@@ -32,6 +29,9 @@ fun main(args: Array<String>) {
             },
             LongIdInteractorCommand("branches") {
                 PrintProjectBranchesInteractor(localProjectsRepository, it).withRender(ASCIIBranchesRender(), consoleOutput)
+            },
+            LongIdInteractorCommand("mr") {
+                PrintProjectMergeRequestsInteractor(localProjectsRepository, it).withRender(ASCIIMergeRequestsRender(), consoleOutput)
             }
         ),
         ScanCommand().subcommands(

@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS merge_requests
+(
+	id INTEGER NOT NULL,
+	state INTEGER NOT NULL,
+	source_branch_name TEXT,
+	target_branch_name TEXT,
+	created_time INTEGER,
+	project_id INTEGER
+        CONSTRAINT external
+            REFERENCES DBProject(id)
+                ON DELETE CASCADE
+);
+
+selectAll:
+SELECT * FROM merge_requests;
+
+mergeRequestCount:
+SELECT COUNT(*) FROM merge_requests WHERE project_id = ?;
+
+insert:
+INSERT INTO merge_requests (project_id, id, state, source_branch_name, target_branch_name, created_time) VALUES (?, ?, ?, ?, ?, ?);

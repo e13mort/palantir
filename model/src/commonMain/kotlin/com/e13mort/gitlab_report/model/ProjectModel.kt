@@ -8,12 +8,38 @@ interface Project {
     fun name(): String
 
     fun branches(): Branches
+
+    fun mergeRequests(): MergeRequests
 }
 
 interface Branches {
     suspend fun count(): Long
 
     suspend fun values(): Flow<Branch>
+}
+
+interface MergeRequests {
+    suspend fun project(): Project
+
+    suspend fun count(): Long
+
+    suspend fun values(): Flow<MergeRequest>
+}
+
+interface MergeRequest {
+    fun id(): String
+
+    fun state(): State
+
+    fun sourceBranch(): Branch
+
+    fun targetBranch(): Branch
+
+    fun createdTime(): Long
+
+    enum class State {
+        OPEN, MERGED, CLOSED
+    }
 }
 
 interface Branch {
@@ -43,5 +69,7 @@ interface SyncableProjectRepository : ProjectRepository {
         fun updateSynced(synced: Boolean)
 
         suspend fun updateBranches(branches: Branches)
+
+        suspend fun updateMergeRequests(mergeRequests: MergeRequests)
     }
 }
