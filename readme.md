@@ -14,3 +14,5 @@ todo: rename the app from ``cli``
 ``./cli print branches <project-id>`` - print project branches
 
 ``./cli print mr <project-id>`` - print project merge requests
+
+``./cli sync`` - update synced projects

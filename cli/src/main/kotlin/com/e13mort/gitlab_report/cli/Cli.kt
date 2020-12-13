@@ -39,7 +39,10 @@ fun main(args: Array<String>) {
             LongIdInteractorCommand("project") {
                 ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository).withRender(ASCIISyncProjectResultRender(), consoleOutput)
             }
-        )
+        ),
+        SyncInteractor(localProjectsRepository, gitlabProjectsRepository)
+            .withRender(ASCIISyncProjectsRender(), consoleOutput)
+            .asCLICommand("sync")
     ).main(args)
 }
 

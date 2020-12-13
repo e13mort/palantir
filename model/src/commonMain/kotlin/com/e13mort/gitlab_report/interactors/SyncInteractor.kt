@@ -1,0 +1,25 @@
+package com.e13mort.gitlab_report.interactors
+
+import com.e13mort.gitlab_report.model.ProjectRepository
+import com.e13mort.gitlab_report.model.SyncableProjectRepository
+import kotlinx.coroutines.flow.collect
+
+class SyncInteractor(
+    private val projectRepository: SyncableProjectRepository,
+    private val remoteRepository: ProjectRepository
+) : Interactor<SyncInteractor.SyncResult> {
+
+    data class SyncResult(val projectsUpdated: Long)
+
+    override suspend fun run(): SyncResult {
+        var syncedCounter = 0L
+        projectRepository.syncedProjects().collect {
+            remoteRepository.findProject(it.id().toLong())?.let { remoteProject ->
+                it.updateBranches(remoteProject.branches())
+                it.updateMergeRequests(remoteProject.mergeRequests())
+                syncedCounter++
+            }
+        }
+        return SyncResult(syncedCounter)
+    }
+}

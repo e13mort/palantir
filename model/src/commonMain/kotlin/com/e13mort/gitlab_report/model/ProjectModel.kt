@@ -63,6 +63,8 @@ interface SyncableProjectRepository : ProjectRepository {
 
     override suspend fun findProject(id: Long): SyncableProject?
 
+    suspend fun syncedProjects(): Flow<SyncableProject>
+
     interface SyncableProject : Project {
         fun synced(): Boolean
 

@@ -22,6 +22,13 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
         return projectQueries.findProject(id).executeAsOneOrNull()?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries)
     }
 
+    override suspend fun syncedProjects(): Flow<SyncableProjectRepository.SyncableProject> {
+        return projectSyncQueries.selectSynced()
+            .executeAsList().asFlow().map {
+                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries)
+            }
+    }
+
     override suspend fun projectsCount(): Long {
         return projectQueries.projectsCount().executeAsOne()
     }
@@ -48,18 +55,20 @@ internal class SyncableProjectImpl(
 
     override fun updateSynced(synced: Boolean) {
         if (synced)
-            syncQueries.setProjectIsSynced(dbItem.id)
+            syncQueries.setProjectIsSynced(projectId())
         else
-            syncQueries.removeSyncedProject(dbItem.id)
+            syncQueries.removeSyncedProject(projectId())
     }
 
     override suspend fun updateBranches(branches: Branches) {
+        branchesQueries.removeProjectsBranches(projectId())
         branches.values().collect {
-            branchesQueries.insert(dbItem.id, it.name())
+            branchesQueries.insert(projectId(), it.name())
         }
     }
 
     override suspend fun updateMergeRequests(mergeRequests: MergeRequests) {
+        mergeRequestsQueries.removeProjectsMergeRequests(projectId())
         mergeRequests.values().collect {
             mergeRequestsQueries.insert(
                 mergeRequests.project().id().toLong(),
@@ -73,7 +82,7 @@ internal class SyncableProjectImpl(
     }
 
     override fun id(): String {
-        return dbItem.id.toString()
+        return projectId().toString()
     }
 
     override fun name(): String {
@@ -83,11 +92,11 @@ internal class SyncableProjectImpl(
     override fun branches(): Branches {
         return object : Branches {
             override suspend fun count(): Long {
-                return branchesQueries.branchesCount().executeAsOne()
+                return branchesQueries.branchesCount(projectId()).executeAsOne()
             }
 
             override suspend fun values(): Flow<Branch> {
-                return branchesQueries.selectAll { _, _, name ->
+                return branchesQueries.selectAll(projectId()) { _, _, name ->
                     DBBranch(name)
                 }.executeAsList().asFlow()
             }
@@ -106,13 +115,15 @@ internal class SyncableProjectImpl(
             }
 
             override suspend fun values(): Flow<MergeRequest> {
-                return mergeRequestsQueries.selectAll { id: Long, state: Long, source_branch_name: String?, target_branch_name: String?, created_time: Long?, project_id ->
+                return mergeRequestsQueries.selectAll(projectId()) { id: Long, state: Long, source_branch_name: String?, target_branch_name: String?, created_time: Long?, project_id ->
                     return@selectAll DBMergeRequest(id, state, source_branch_name, target_branch_name, created_time)
                 }.executeAsList().asFlow()
             }
 
         }
     }
+
+    private fun projectId() = dbItem.id
 
 }
 

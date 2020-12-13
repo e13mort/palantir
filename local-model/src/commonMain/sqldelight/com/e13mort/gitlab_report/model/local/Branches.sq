@@ -14,7 +14,13 @@ insert:
 INSERT INTO DBBranches (project_id, name) VALUES (?, ?);
 
 selectAll:
-SELECT * FROM DBBranches;
+SELECT * FROM DBBranches WHERE project_id = ?;
 
 branchesCount:
-SELECT COUNT(*) FROM DBBranches;
+SELECT COUNT(*) FROM DBBranches WHERE project_id = ?;
+
+clear:
+DELETE FROM DBBranches;
+
+removeProjectsBranches:
+DELETE FROM DBBranches WHERE project_id = ?;

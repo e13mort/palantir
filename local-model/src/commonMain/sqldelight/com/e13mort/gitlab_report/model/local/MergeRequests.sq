@@ -12,10 +12,16 @@ CREATE TABLE IF NOT EXISTS merge_requests
 );
 
 selectAll:
-SELECT * FROM merge_requests;
+SELECT * FROM merge_requests WHERE project_id = ?;
 
 mergeRequestCount:
 SELECT COUNT(*) FROM merge_requests WHERE project_id = ?;
 
 insert:
 INSERT INTO merge_requests (project_id, id, state, source_branch_name, target_branch_name, created_time) VALUES (?, ?, ?, ?, ?, ?);
+
+clear:
+DELETE FROM merge_requests;
+
+removeProjectsMergeRequests:
+DELETE FROM merge_requests WHERE project_id = ?;

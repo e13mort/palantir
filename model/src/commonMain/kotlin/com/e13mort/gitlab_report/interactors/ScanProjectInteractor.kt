@@ -14,29 +14,26 @@ class ScanProjectInteractor(
         localProject.updateSynced(true)
         localProject.updateBranches(remoteProject.branches())
         localProject.updateMergeRequests(remoteProject.mergeRequests())
-        remoteProject.branches()
         val syncedBranches = localProject.branches().count()
         val syncedMergeRequests = localProject.mergeRequests().count()
-        return object : ScanProjectResult {
-            override fun projectName(): String {
-                return localProject.name()
-            }
-
-            override fun syncedBranchesCount(): Long {
-                return syncedBranches
-            }
-
-            override fun syncedMergeRequests(): Long {
-                return syncedMergeRequests
-            }
-        }
+        return ScanProjectResult(syncedBranches, syncedMergeRequests, localProject)
     }
 
-    interface ScanProjectResult {
-        fun projectName(): String
+    class ScanProjectResult(
+        private val syncedBranches: Long,
+        private val syncedMergeRequests: Long,
+        private val localProject: SyncableProjectRepository.SyncableProject
+    ) {
+        fun projectName(): String {
+            return localProject.name()
+        }
 
-        fun syncedBranchesCount(): Long
+        fun syncedBranchesCount(): Long {
+            return syncedBranches
+        }
 
-        fun syncedMergeRequests(): Long
+        fun syncedMergeRequests(): Long {
+            return syncedMergeRequests
+        }
     }
 }

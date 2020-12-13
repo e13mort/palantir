@@ -32,3 +32,6 @@ INSERT INTO PROJECT_SYNC_INFO (project_id) VALUES (?);
 
 removeSyncedProject:
 DELETE FROM PROJECT_SYNC_INFO WHERE project_id = ?;
+
+selectSynced:
+SELECT * FROM SYNCED_PROJECTS WHERE synced = 1;
