@@ -123,6 +123,14 @@ internal class GitlabMergeRequests(
         override fun createdTime(): Long {
             return mergeRequest.createdAt.time
         }
+
+        override fun closedTime(): Long? {
+            return when (Constants.MergeRequestState.forValue(mergeRequest.state)) {
+                Constants.MergeRequestState.CLOSED -> mergeRequest.closedAt?.time
+                Constants.MergeRequestState.MERGED -> mergeRequest.mergedAt?.time
+                else -> null
+            }
+        }
     }
 
 }

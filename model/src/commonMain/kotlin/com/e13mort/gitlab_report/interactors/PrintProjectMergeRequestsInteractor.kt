@@ -11,7 +11,7 @@ class PrintProjectMergeRequestsInteractor(
 
     class MergeRequestsReport(private val mrs: MergeRequests) {
 
-        suspend fun walk(callBack: (id: String, sourceBranch: String, targetBranch: String, created: Long, state: String) -> Unit) {
+        suspend fun walk(callBack: (id: String, sourceBranch: String, targetBranch: String, created: Long, closed: Long?, state: String) -> Unit) {
             val toList = mrs.values().toList()
             toList.forEach {
                 callBack(
@@ -19,6 +19,7 @@ class PrintProjectMergeRequestsInteractor(
                     it.sourceBranch().name(),
                     it.targetBranch().name(),
                     it.createdTime(),
+                    it.closedTime(),
                     it.state().toString()
                 )
             }

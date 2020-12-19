@@ -37,6 +37,8 @@ interface MergeRequest {
 
     fun createdTime(): Long
 
+    fun closedTime(): Long?
+
     enum class State {
         OPEN, MERGED, CLOSED
     }

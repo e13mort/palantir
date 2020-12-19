@@ -10,8 +10,8 @@ import java.util.*
 class ASCIIMergeRequestsRender : ReportRender<PrintProjectMergeRequestsInteractor.MergeRequestsReport, String> {
 
     internal object RenderingSettings {
-        const val branchMaxLength = 50
-        val headers = arrayOf("ID", "From", "To", "Created", "State")
+        const val branchMaxLength = 40
+        val headers = arrayOf("ID", "From", "To", "Created", "Closed", "State")
     }
 
     override fun render(value: PrintProjectMergeRequestsInteractor.MergeRequestsReport): String {
@@ -23,13 +23,15 @@ class ASCIIMergeRequestsRender : ReportRender<PrintProjectMergeRequestsInteracto
                 row(*RenderingSettings.headers)
             }
             runBlocking {
-                value.walk { id: String, sourceBranch: String, targetBranch: String, created: Long, state: String ->
-                    val formattedDate = DateFormat.getInstance().format(Date(created))
+                value.walk { id: String, sourceBranch: String, targetBranch: String, created: Long, closed: Long?, state: String ->
+                    val createdString = DateFormat.getInstance().format(Date(created))
+                    val closedString = closed?.formatAsDate() ?: "-"
                     row(
                         id,
                         stripBranchName(sourceBranch),
                         stripBranchName(targetBranch),
-                        formattedDate,
+                        createdString,
+                        closedString,
                         state
                     )
                 }
@@ -41,4 +43,8 @@ class ASCIIMergeRequestsRender : ReportRender<PrintProjectMergeRequestsInteracto
         if (name.length <= RenderingSettings.branchMaxLength) return name
         return name.substring(0, RenderingSettings.branchMaxLength) + Typography.ellipsis
     }
+}
+
+private fun Long.formatAsDate(): String {
+    return DateFormat.getInstance().format(Date(this))
 }

@@ -76,7 +76,8 @@ internal class SyncableProjectImpl(
                 it.state().ordinal.toLong(),
                 it.sourceBranch().name(),
                 it.targetBranch().name(),
-                it.createdTime()
+                it.createdTime(),
+                it.closedTime()
             )
         }
     }
@@ -115,8 +116,8 @@ internal class SyncableProjectImpl(
             }
 
             override suspend fun values(): Flow<MergeRequest> {
-                return mergeRequestsQueries.selectAll(projectId()) { id: Long, state: Long, source_branch_name: String?, target_branch_name: String?, created_time: Long?, project_id ->
-                    return@selectAll DBMergeRequest(id, state, source_branch_name, target_branch_name, created_time)
+                return mergeRequestsQueries.selectAll(projectId()) { id: Long, state: Long, source_branch_name: String?, target_branch_name: String?, created_time: Long, closed_time: Long?, project_id ->
+                    return@selectAll DBMergeRequest(id, state, source_branch_name, target_branch_name, created_time, closed_time)
                 }.executeAsList().asFlow()
             }
 
@@ -133,7 +134,14 @@ internal data class DBBranch(private val name: String) : Branch {
 
 internal const val UNSPECIFIED_BRANCH_NAME = "unspecified"
 
-internal data class DBMergeRequest(val id: Long, val state: Long, val source_branch_name: String?, val target_branch_name: String?, val created_time: Long?) : MergeRequest {
+internal data class DBMergeRequest(
+    val id: Long,
+    val state: Long,
+    val source_branch_name: String?,
+    val target_branch_name: String?,
+    val created_time: Long,
+    val closed_time: Long?
+) : MergeRequest {
     override fun id(): String = id.toString()
 
     override fun state(): MergeRequest.State = MergeRequest.State.values()[state.toInt()]
@@ -142,7 +150,9 @@ internal data class DBMergeRequest(val id: Long, val state: Long, val source_bra
 
     override fun targetBranch(): Branch = DBBranch(target_branch_name ?: UNSPECIFIED_BRANCH_NAME)
 
-    override fun createdTime(): Long = created_time ?: 0
+    override fun createdTime(): Long = created_time
+
+    override fun closedTime(): Long? = closed_time
 }
 
 fun DBProject.toSyncable(syncQueries: ProjectSyncQueries, branchesQueries: BranchesQueries, mergeRequestsQueries: MergeRequestsQueries): SyncableProjectRepository.SyncableProject {
