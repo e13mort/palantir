@@ -8,6 +8,7 @@ import org.gitlab4j.api.GitLabApi
 import org.gitlab4j.api.MergeRequestApi
 import org.gitlab4j.api.RepositoryApi
 import org.gitlab4j.api.models.MergeRequestFilter
+import java.util.*
 import org.gitlab4j.api.models.Branch as GLBranch
 import org.gitlab4j.api.models.MergeRequest as GLMergeRequest
 
@@ -91,7 +92,11 @@ internal class GitlabMergeRequests(
 
     private fun createFilter() = MergeRequestFilter()
         .withProjectId(gitlabProject.id().toInt())
-        .withState(Constants.MergeRequestState.OPENED)
+        .withCreatedAfter(calculateMRStartDate())
+
+    private fun calculateMRStartDate() = Calendar.getInstance().apply {
+        add(Calendar.MONTH, -1)
+    }.time
 
     internal class GitlabMergeRequest(private val mergeRequest: GLMergeRequest) : MergeRequest {
         override fun id(): String {
