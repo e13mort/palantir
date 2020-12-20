@@ -60,6 +60,10 @@ interface ProjectRepository {
     suspend fun clear()
 }
 
+interface MergeRequestRepository {
+    suspend fun mergeRequest(id: Long): MergeRequest?
+}
+
 interface SyncableProjectRepository : ProjectRepository {
     override suspend fun projects(): Flow<SyncableProject>
 

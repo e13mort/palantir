@@ -3,6 +3,7 @@ package com.e13mort.gitlab_report.cli
 import com.e13mort.gitlab_report.cli.render.*
 import com.e13mort.gitlab_report.interactors.*
 import com.e13mort.gitlab_report.model.GitlabProjectsRepository
+import com.e13mort.gitlab_report.model.local.DBMergeRequestRepository
 import com.e13mort.gitlab_report.model.local.DBProjectRepository
 import com.e13mort.gitlab_report.model.local.DriverFactory
 import com.e13mort.gitlab_report.model.local.LocalModel
@@ -15,6 +16,7 @@ fun main(args: Array<String>) {
     val model = LocalModel(driver)
 
     val localProjectsRepository = DBProjectRepository(model)
+    val mrRepository = DBMergeRequestRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
     val console = Console { message -> println(message) }
 
@@ -30,8 +32,11 @@ fun main(args: Array<String>) {
             LongIdInteractorCommand("branches") {
                 PrintProjectBranchesInteractor(localProjectsRepository, it).withRender(ASCIIBranchesRender(), consoleOutput)
             },
-            LongIdInteractorCommand("mr") {
+            LongIdInteractorCommand("mrs") {
                 PrintProjectMergeRequestsInteractor(localProjectsRepository, it).withRender(ASCIIMergeRequestsRender(), consoleOutput)
+            },
+            LongIdInteractorCommand("mr") {
+                PrintMergeRequestInteractor(mrRepository, it).withRender(ASCIIMergeRequestRender(), consoleOutput)
             }
         ),
         ScanCommand().subcommands(

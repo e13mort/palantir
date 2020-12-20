@@ -24,7 +24,7 @@ class ASCIIMergeRequestsRender : ReportRender<PrintProjectMergeRequestsInteracto
             }
             runBlocking {
                 value.walk { id: String, sourceBranch: String, targetBranch: String, created: Long, closed: Long?, state: String ->
-                    val createdString = DateFormat.getInstance().format(Date(created))
+                    val createdString = created.formatAsDate()
                     val closedString = closed?.formatAsDate() ?: "-"
                     row(
                         id,
@@ -45,6 +45,6 @@ class ASCIIMergeRequestsRender : ReportRender<PrintProjectMergeRequestsInteracto
     }
 }
 
-private fun Long.formatAsDate(): String {
+internal fun Long.formatAsDate(): String {
     return DateFormat.getInstance().format(Date(this))
 }
