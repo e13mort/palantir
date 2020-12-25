@@ -1,0 +1,25 @@
+CREATE TABLE IF NOT EXISTS mr_assignees
+(
+	mr_id INTEGER NOT NULL
+		CONSTRAINT mr_assignees_merge_requests_id_fk
+			REFERENCES merge_requests (id)
+				ON DELETE CASCADE,
+	user_id INTEGER NOT NULL
+		CONSTRAINT mr_assignees_users_id_fk
+			REFERENCES users (id)
+				ON DELETE CASCADE
+);
+
+add:
+INSERT INTO mr_assignees VALUES (?,?);
+
+removeByMR:
+DELETE FROM mr_assignees WHERE mr_id = ?;
+
+
+CREATE VIEW IF NOT EXISTS mr_assignees_view AS
+SELECT mr_assignees.mr_id, users.id user_id, users.name, users.username FROM mr_assignees
+LEFT OUTER JOIN users ON mr_assignees.user_id = users.id;
+
+assignees:
+SELECT user_id, name, username FROM mr_assignees_view WHERE mr_id = ?;

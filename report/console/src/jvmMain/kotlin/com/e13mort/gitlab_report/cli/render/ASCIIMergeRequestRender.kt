@@ -2,6 +2,7 @@ package com.e13mort.gitlab_report.cli.render
 
 import com.e13mort.gitlab_report.interactors.PrintMergeRequestInteractor
 import com.e13mort.gitlab_report.interactors.ReportRender
+import com.e13mort.gitlab_report.model.User
 import com.jakewharton.picnic.table
 
 class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String> {
@@ -18,6 +19,30 @@ class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRe
             value.closedMillis?.let {
                 row("Closed", it.formatAsDate())
             }
+            value.assignees.let {
+                if (it.isEmpty()) {
+                    row {
+                        cell("Empty assignees") {
+                            columnSpan = 2
+                        }
+                    }
+                } else {
+                    row {
+                        cell("Assignees") {
+                            rowSpan = it.size
+                        }
+                        cell(format(it[0]))
+                    }
+                    it.forEachIndexed { index, user ->
+                        if (index > 0) {
+                            row(format(user))
+                        }
+                    }
+                }
+
+            }
         }.toString()
     }
+
+    private fun format(user: User) = "${user.name()}<${user.userName()}>"
 }

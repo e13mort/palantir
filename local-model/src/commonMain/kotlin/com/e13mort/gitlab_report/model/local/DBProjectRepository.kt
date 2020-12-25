@@ -10,22 +10,32 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     private val projectSyncQueries = localModel.projectSyncQueries
     private val branchesQueries = localModel.branchesQueries
     private val mergeRequestsQueries = localModel.mergeRequestsQueries
+    private val userQueries = localModel.userQueries
+    private val mrAssigneesQueries = localModel.mr_assigneesQueries
 
     override suspend fun projects(): Flow<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectAll()
             .executeAsList().asFlow().map {
-                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries)
+                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries)
             }
     }
 
     override suspend fun findProject(id: Long): SyncableProjectRepository.SyncableProject? {
-        return projectQueries.findProject(id).executeAsOneOrNull()?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries)
+        return projectQueries.findProject(id).executeAsOneOrNull()
+            ?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries)
     }
 
     override suspend fun syncedProjects(): Flow<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectSynced()
             .executeAsList().asFlow().map {
-                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries)
+                SyncableProjectImpl(
+                    it,
+                    projectSyncQueries,
+                    branchesQueries,
+                    mergeRequestsQueries,
+                    userQueries,
+                    mrAssigneesQueries
+                )
             }
     }
 
@@ -47,8 +57,10 @@ internal class SyncableProjectImpl(
     private val dbItem: SYNCED_PROJECTS,
     private val syncQueries: ProjectSyncQueries,
     private val branchesQueries: BranchesQueries,
-    private val mergeRequestsQueries: MergeRequestsQueries
-    ) : SyncableProjectRepository.SyncableProject {
+    private val mergeRequestsQueries: MergeRequestsQueries,
+    private val userQueries: UserQueries,
+    private val mrAssigneesQueries: Mr_assigneesQueries
+) : SyncableProjectRepository.SyncableProject {
     override fun synced(): Boolean {
         return dbItem.synced != 0L
     }
@@ -70,15 +82,21 @@ internal class SyncableProjectImpl(
     override suspend fun updateMergeRequests(mergeRequests: MergeRequests) {
         mergeRequestsQueries.removeProjectsMergeRequests(projectId())
         mergeRequests.values().collect {
+            val mrId = it.id().toLong()
             mergeRequestsQueries.insert(
                 mergeRequests.project().id().toLong(),
-                it.id().toLong(),
+                mrId,
                 it.state().ordinal.toLong(),
                 it.sourceBranch().name(),
                 it.targetBranch().name(),
                 it.createdTime(),
                 it.closedTime()
             )
+            mrAssigneesQueries.removeByMR(mrId)
+            it.assignees().forEach { user ->
+                userQueries.put(user.id(), user.name(), user.userName())
+                mrAssigneesQueries.add(mrId, user.id())
+            }
         }
     }
 
@@ -117,7 +135,7 @@ internal class SyncableProjectImpl(
 
             override suspend fun values(): Flow<MergeRequest> {
                 return mergeRequestsQueries.selectAll(projectId()).executeAsList().asFlow().map {
-                    DBMergeRequest(it)
+                    DBMergeRequest(it, mrAssigneesQueries)
                 }
             }
 
@@ -132,10 +150,20 @@ internal data class DBBranch(private val name: String) : Branch {
     override fun name(): String = name
 }
 
+internal class DBUser(private val assignees: Assignees) : User {
+    override fun id(): Long = assignees.user_id!!
+
+    override fun name(): String = assignees.name!!
+
+    override fun userName(): String = assignees.username!!
+
+}
+
 internal const val UNSPECIFIED_BRANCH_NAME = "unspecified"
 
 internal class DBMergeRequest(
-    private val storedMR: Merge_requests
+    private val storedMR: Merge_requests,
+    private val mrAssigneesQueries: Mr_assigneesQueries
 ) : MergeRequest {
 
     override fun id(): String = storedMR.id.toString()
@@ -149,11 +177,25 @@ internal class DBMergeRequest(
     override fun createdTime(): Long = storedMR.created_time
 
     override fun closedTime(): Long? = storedMR.closed_time
+
+    override fun assignees(): List<User> {
+        return mrAssigneesQueries.assignees(storedMR.id).executeAsList().map {
+            DBUser(it)
+        }
+    }
 }
 
-fun DBProject.toSyncable(syncQueries: ProjectSyncQueries, branchesQueries: BranchesQueries, mergeRequestsQueries: MergeRequestsQueries): SyncableProjectRepository.SyncableProject {
-    return SyncableProjectImpl(SYNCED_PROJECTS(
-        this.id, this.name, 0
-    ), syncQueries, branchesQueries, mergeRequestsQueries)
+fun DBProject.toSyncable(
+    syncQueries: ProjectSyncQueries,
+    branchesQueries: BranchesQueries,
+    mergeRequestsQueries: MergeRequestsQueries,
+    userQueries: UserQueries,
+    mrAssigneesQueries: Mr_assigneesQueries,
+): SyncableProjectRepository.SyncableProject {
+    return SyncableProjectImpl(
+        SYNCED_PROJECTS(
+            this.id, this.name, 0
+        ), syncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries
+    )
 }
 

@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS merge_requests
 (
-	id INTEGER NOT NULL,
+	id INTEGER NOT NULL PRIMARY KEY,
 	state INTEGER NOT NULL,
 	source_branch_name TEXT,
 	target_branch_name TEXT,

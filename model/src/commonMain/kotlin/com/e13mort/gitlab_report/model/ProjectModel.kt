@@ -39,9 +39,19 @@ interface MergeRequest {
 
     fun closedTime(): Long?
 
+    fun assignees(): List<User>
+
     enum class State {
         OPEN, MERGED, CLOSED
     }
+}
+
+interface User {
+    fun id(): Long
+
+    fun name(): String
+
+    fun userName(): String
 }
 
 interface Branch {

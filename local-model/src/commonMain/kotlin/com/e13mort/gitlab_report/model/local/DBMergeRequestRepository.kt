@@ -8,6 +8,6 @@ class DBMergeRequestRepository(
 ) : MergeRequestRepository {
     override suspend fun mergeRequest(id: Long): MergeRequest? {
         val storedMR = localModel.mergeRequestsQueries.selectById(id).executeAsOneOrNull()
-        return storedMR?.let { DBMergeRequest(it) }
+        return storedMR?.let { DBMergeRequest(it, localModel.mr_assigneesQueries) }
     }
 }

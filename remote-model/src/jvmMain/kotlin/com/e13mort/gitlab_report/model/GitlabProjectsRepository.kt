@@ -7,6 +7,7 @@ import org.gitlab4j.api.Constants
 import org.gitlab4j.api.GitLabApi
 import org.gitlab4j.api.MergeRequestApi
 import org.gitlab4j.api.RepositoryApi
+import org.gitlab4j.api.models.Assignee
 import org.gitlab4j.api.models.MergeRequestFilter
 import java.util.*
 import org.gitlab4j.api.models.Branch as GLBranch
@@ -131,8 +132,28 @@ internal class GitlabMergeRequests(
                 else -> null
             }
         }
+
+        override fun assignees(): List<User> {
+            return mergeRequest.assignees.map {
+                GitlabUser(it)
+            }
+        }
     }
 
+}
+
+internal class GitlabUser(private val assignee: Assignee) : User {
+    override fun name(): String {
+        return assignee.name
+    }
+
+    override fun userName(): String {
+        return assignee.username
+    }
+
+    override fun id(): Long {
+        return assignee.id.toLong()
+    }
 }
 
 internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Int) : Branches {
