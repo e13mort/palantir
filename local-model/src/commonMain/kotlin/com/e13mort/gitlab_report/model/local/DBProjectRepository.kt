@@ -16,17 +16,18 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     private val mergeRequestsQueries = localModel.mergeRequestsQueries
     private val userQueries = localModel.userQueries
     private val mrAssigneesQueries = localModel.mr_assigneesQueries
+    private val mrNotes = localModel.notesQueries
 
     override suspend fun projects(): Flow<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectAll()
             .executeAsList().asFlow().map {
-                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries)
+                SyncableProjectImpl(it, projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes)
             }
     }
 
     override suspend fun findProject(id: Long): SyncableProjectRepository.SyncableProject? {
         return projectQueries.findProject(id).executeAsOneOrNull()
-            ?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries)
+            ?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes)
     }
 
     override suspend fun syncedProjects(): Flow<SyncableProjectRepository.SyncableProject> {
@@ -38,7 +39,8 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
                     branchesQueries,
                     mergeRequestsQueries,
                     userQueries,
-                    mrAssigneesQueries
+                    mrAssigneesQueries,
+                    mrNotes
                 )
             }
     }
@@ -63,7 +65,8 @@ internal class SyncableProjectImpl(
     private val branchesQueries: BranchesQueries,
     private val mergeRequestsQueries: MergeRequestsQueries,
     private val userQueries: UserQueries,
-    private val mrAssigneesQueries: Mr_assigneesQueries
+    private val mrAssigneesQueries: Mr_assigneesQueries,
+    private val mrNotes: NotesQueries
 ) : SyncableProjectRepository.SyncableProject {
     override fun synced(): Boolean {
         return dbItem.synced != 0L
@@ -106,6 +109,12 @@ internal class SyncableProjectImpl(
             mr.assignees().forEach { user ->
                 userQueries.put(user.id(), user.name(), user.userName())
                 mrAssigneesQueries.add(mrId, user.id())
+            }
+            mrNotes.clearForMR(mrId)
+            mr.events().forEach {
+                val user = it.user()
+                userQueries.put(user.id(), user.name(), user.userName())
+                mrNotes.add(it.id(), mrId, it.type().ordinal.toLong(), user.id(), it.content(), it.timeMillis())
             }
         }
     }
@@ -202,6 +211,10 @@ internal class DBMergeRequest(
             DBUser(it)
         }
     }
+
+    override fun events(): List<MergeRequestEvent> {
+        return emptyList()
+    }
 }
 
 fun DBProject.toSyncable(
@@ -210,11 +223,12 @@ fun DBProject.toSyncable(
     mergeRequestsQueries: MergeRequestsQueries,
     userQueries: UserQueries,
     mrAssigneesQueries: Mr_assigneesQueries,
+    mrNotes: NotesQueries,
 ): SyncableProjectRepository.SyncableProject {
     return SyncableProjectImpl(
         SYNCED_PROJECTS(
             this.id, this.name, 0
-        ), syncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries
+        ), syncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes
     )
 }
 

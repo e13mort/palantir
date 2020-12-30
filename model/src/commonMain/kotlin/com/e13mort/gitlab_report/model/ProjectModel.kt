@@ -41,9 +41,27 @@ interface MergeRequest {
 
     fun assignees(): List<User>
 
+    fun events(): List<MergeRequestEvent>
+
     enum class State {
         OPEN, MERGED, CLOSED
     }
+}
+
+interface MergeRequestEvent {
+    enum class Type {
+        APPROVE, COMMENT, GENERAL_NOTE
+    }
+
+    fun id(): Long
+
+    fun type(): Type
+
+    fun timeMillis(): Long
+
+    fun user(): User
+
+    fun content(): String
 }
 
 interface User {

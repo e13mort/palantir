@@ -3,15 +3,12 @@ package com.e13mort.gitlab_report.model
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.gitlab4j.api.Constants
-import org.gitlab4j.api.GitLabApi
-import org.gitlab4j.api.MergeRequestApi
-import org.gitlab4j.api.RepositoryApi
-import org.gitlab4j.api.models.Assignee
+import org.gitlab4j.api.*
+import org.gitlab4j.api.models.AbstractUser
 import org.gitlab4j.api.models.MergeRequestFilter
+import org.gitlab4j.api.models.Note
 import java.util.*
 import org.gitlab4j.api.models.Branch as GLBranch
-import org.gitlab4j.api.models.MergeRequest as GLMergeRequest
 
 class GitlabProjectsRepository(
     url: String,
@@ -24,7 +21,7 @@ class GitlabProjectsRepository(
     override suspend fun projects(): Flow<Project> {
         return flow {
             gitLabApi.projectApi.memberProjects.map {
-                GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi)
+                GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi, gitLabApi.notesApi)
             }.forEach {
                 emit(it)
             }
@@ -35,7 +32,8 @@ class GitlabProjectsRepository(
         return GitlabProject(
             gitLabApi.projectApi.getProject(id.toInt()),
             gitLabApi.repositoryApi,
-            gitLabApi.mergeRequestApi
+            gitLabApi.mergeRequestApi,
+            gitLabApi.notesApi
         )
     }
 
@@ -52,7 +50,8 @@ class GitlabProjectsRepository(
 internal class GitlabProject(
     private val project: org.gitlab4j.api.models.Project,
     private val repositoryApi: RepositoryApi,
-    private val mergeRequestApi: MergeRequestApi
+    private val mergeRequestApi: MergeRequestApi,
+    private val notesApi: NotesApi
 ) : Project {
     override fun id(): String {
         return project.id.toString()
@@ -67,13 +66,14 @@ internal class GitlabProject(
     }
 
     override fun mergeRequests(): MergeRequests {
-        return GitlabMergeRequests(mergeRequestApi, this)
+        return GitlabMergeRequests(mergeRequestApi, this, notesApi)
     }
 }
 
 internal class GitlabMergeRequests(
     private val mergeRequestApi: MergeRequestApi,
-    private val gitlabProject: GitlabProject
+    private val gitlabProject: GitlabProject,
+    private val notesApi: NotesApi
 ) : MergeRequests {
     override suspend fun project(): Project {
         return gitlabProject
@@ -86,7 +86,7 @@ internal class GitlabMergeRequests(
     override suspend fun values(): Flow<MergeRequest> {
         return flow {
             mergeRequestApi.getMergeRequests(createFilter()).forEach {
-                emit(GitlabMergeRequest(it))
+                emit(GitlabMergeRequest(it, notesApi))
             }
         }
     }
@@ -99,7 +99,10 @@ internal class GitlabMergeRequests(
         add(Calendar.MONTH, -1)
     }.time
 
-    internal class GitlabMergeRequest(private val mergeRequest: GLMergeRequest) : MergeRequest {
+    internal class GitlabMergeRequest(
+        private val mergeRequest: org.gitlab4j.api.models.MergeRequest,
+        private val notesApi: NotesApi
+    ) : MergeRequest {
         override fun id(): String {
             return mergeRequest.id.toString()
         }
@@ -138,11 +141,41 @@ internal class GitlabMergeRequests(
                 GitlabUser(it)
             }
         }
+
+        override fun events(): List<MergeRequestEvent> {
+            return notesApi.getMergeRequestNotes(mergeRequest.projectId, mergeRequest.iid).map {
+                GitlabEvent(it)
+            }
+        }
     }
 
 }
 
-internal class GitlabUser(private val assignee: Assignee) : User {
+internal class GitlabEvent(private val note: Note) : MergeRequestEvent {
+    override fun type(): MergeRequestEvent.Type {
+        //todo: analyze content and select appropriate type
+        return MergeRequestEvent.Type.GENERAL_NOTE
+    }
+
+    override fun timeMillis(): Long {
+        return note.createdAt.time
+    }
+
+    override fun user(): User {
+        return GitlabUser(note.author)
+    }
+
+    override fun content(): String {
+        return note.body
+    }
+
+    override fun id(): Long {
+        return note.id.toLong()
+    }
+
+}
+
+internal class GitlabUser(private val assignee: AbstractUser<*>) : User {
     override fun name(): String {
         return assignee.name
     }

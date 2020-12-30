@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS mr_notes
+(
+	id INTEGER NOT NULL
+		CONSTRAINT mr_notes_pk
+			PRIMARY KEY,
+	mr_id INTEGER NOT NULL
+		CONSTRAINT mr_notes_merge_requests_id_fk
+			REFERENCES merge_requests
+				ON UPDATE CASCADE ON DELETE CASCADE,
+	type INTEGER NOT NULL,
+	user_id INTEGER NOT NULL
+		CONSTRAINT mr_notes_users_id_fk
+			REFERENCES users
+				ON UPDATE CASCADE ON DELETE CASCADE,
+	content TEXT,
+	created_time_millis INTEGER
+);
+
+clearForMR:
+DELETE FROM mr_notes WHERE mr_id = ?;
+
+add:
+INSERT INTO mr_notes VALUES(?,?,?,?,?,?);
