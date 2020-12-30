@@ -1,7 +1,11 @@
 package com.e13mort.gitlab_report.utils
 
-fun interface Console {
-    fun write(message: String)
+interface Console {
+    enum class WriteStyle {
+        ADD, REPLACE_LAST
+    }
+
+    fun write(message: String, writeStyle: WriteStyle = WriteStyle.ADD)
 }
 
-fun String.writeTo(console: Console) = console.write(this)
+fun String.writeTo(console: Console, writeStyle: Console.WriteStyle = Console.WriteStyle.ADD) = console.write(this, writeStyle)

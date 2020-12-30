@@ -18,9 +18,10 @@ fun main(args: Array<String>) {
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
-    val console = Console { message -> println(message) }
+    val console = ConsoleImpl()
 
     val consoleOutput = ConsoleRenderOutput(console)
+    val syncCallback = ASCIISyncCallback(console)
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
@@ -42,10 +43,10 @@ fun main(args: Array<String>) {
         ScanCommand().subcommands(
             ScanProjectsInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("projects"),
             LongIdInteractorCommand("project") {
-                ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository).withRender(ASCIISyncProjectResultRender(), consoleOutput)
+                ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository, syncCallback).withRender(ASCIISyncProjectResultRender(), consoleOutput)
             }
         ),
-        SyncInteractor(localProjectsRepository, gitlabProjectsRepository)
+        SyncInteractor(localProjectsRepository, gitlabProjectsRepository, syncCallback)
             .withRender(ASCIISyncProjectsRender(), consoleOutput)
             .asCLICommand("sync")
     ).main(args)

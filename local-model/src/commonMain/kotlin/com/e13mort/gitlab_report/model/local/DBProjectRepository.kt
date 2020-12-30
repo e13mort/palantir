@@ -3,6 +3,10 @@ package com.e13mort.gitlab_report.model.local
 import com.e13mort.gitlab_report.model.*
 import com.e13mort.gitlabreport.model.local.*
 import kotlinx.coroutines.flow.*
+import com.e13mort.gitlab_report.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.BranchAdded as BranchAdded
+import com.e13mort.gitlab_report.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.RemoteLoadingStarted as BRRemoteLoadingStarted
+import com.e13mort.gitlab_report.model.SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent.LoadMR as LoadMREvent
+import com.e13mort.gitlab_report.model.SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent.RemoteLoadingStarted as MRRemoteLoadingStarted
 
 class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
@@ -72,28 +76,34 @@ internal class SyncableProjectImpl(
             syncQueries.removeSyncedProject(projectId())
     }
 
-    override suspend fun updateBranches(branches: Branches) {
+    override suspend fun updateBranches(branches: Branches, callback: SyncableProjectRepository.SyncableProject.UpdateBranchesCallback) {
         branchesQueries.removeProjectsBranches(projectId())
+        callback.onBranchEvent(BRRemoteLoadingStarted)
         branches.values().collect {
             branchesQueries.insert(projectId(), it.name())
+            callback.onBranchEvent(BranchAdded(it.name()))
         }
     }
 
-    override suspend fun updateMergeRequests(mergeRequests: MergeRequests) {
+    override suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback) {
         mergeRequestsQueries.removeProjectsMergeRequests(projectId())
-        mergeRequests.values().collect {
-            val mrId = it.id().toLong()
+        callback.onMREvent(MRRemoteLoadingStarted)
+        val values = mergeRequests.values()
+        val mrList = values.toList()
+        mrList.forEachIndexed { index, mr ->
+            notifyMRProcessing(mr, callback, index, mrList.size)
+            val mrId = mr.id().toLong()
             mergeRequestsQueries.insert(
                 mergeRequests.project().id().toLong(),
                 mrId,
-                it.state().ordinal.toLong(),
-                it.sourceBranch().name(),
-                it.targetBranch().name(),
-                it.createdTime(),
-                it.closedTime()
+                mr.state().ordinal.toLong(),
+                mr.sourceBranch().name(),
+                mr.targetBranch().name(),
+                mr.createdTime(),
+                mr.closedTime()
             )
             mrAssigneesQueries.removeByMR(mrId)
-            it.assignees().forEach { user ->
+            mr.assignees().forEach { user ->
                 userQueries.put(user.id(), user.name(), user.userName())
                 mrAssigneesQueries.add(mrId, user.id())
             }
@@ -143,6 +153,15 @@ internal class SyncableProjectImpl(
     }
 
     private fun projectId() = dbItem.id
+
+    private fun notifyMRProcessing(
+        mergeRequest: MergeRequest,
+        callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback,
+        index: Int,
+        totalSize: Int
+    ) {
+        callback.onMREvent(LoadMREvent(mergeRequest.id(), index, totalSize))
+    }
 
 }
 

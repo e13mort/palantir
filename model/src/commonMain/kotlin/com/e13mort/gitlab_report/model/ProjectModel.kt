@@ -86,8 +86,30 @@ interface SyncableProjectRepository : ProjectRepository {
 
         fun updateSynced(synced: Boolean)
 
-        suspend fun updateBranches(branches: Branches)
+        suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
 
-        suspend fun updateMergeRequests(mergeRequests: MergeRequests)
+        suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: UpdateMRCallback = UpdateMRCallback {})
+
+        fun interface UpdateMRCallback {
+            fun onMREvent(event: MREvent)
+
+            sealed class MREvent {
+                object RemoteLoadingStarted : MREvent()
+
+                data class LoadMR(val mrDescription: String, val index: Int, val totalSize: Int) : MREvent()
+            }
+        }
+
+        fun interface UpdateBranchesCallback {
+            sealed class BranchEvent {
+                object RemoteLoadingStarted : BranchEvent()
+
+                data class BranchAdded(val branchName: String) : BranchEvent()
+            }
+
+            fun onBranchEvent(branchEvent: BranchEvent)
+        }
+
+        interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback
     }
 }
