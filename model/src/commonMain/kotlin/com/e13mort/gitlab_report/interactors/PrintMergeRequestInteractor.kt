@@ -1,5 +1,6 @@
 package com.e13mort.gitlab_report.interactors
 
+import com.e13mort.gitlab_report.model.MergeRequestEvent
 import com.e13mort.gitlab_report.model.MergeRequestRepository
 import com.e13mort.gitlab_report.model.User
 
@@ -15,7 +16,8 @@ class PrintMergeRequestInteractor(
         val to: String,
         val createdMillis: Long,
         val closedMillis: Long?,
-        val assignees: List<User>
+        val assignees: List<User>,
+        val events: List<MergeRequestEvent>
     )
 
     override suspend fun run(): MergeRequestsReport {
@@ -27,7 +29,8 @@ class PrintMergeRequestInteractor(
             mr.targetBranch().name(),
             mr.createdTime(),
             mr.closedTime(),
-            mr.assignees()
+            mr.assignees(),
+            mr.events()
         )
     }
 }

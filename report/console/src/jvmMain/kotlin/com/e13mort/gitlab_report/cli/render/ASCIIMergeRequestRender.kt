@@ -2,8 +2,12 @@ package com.e13mort.gitlab_report.cli.render
 
 import com.e13mort.gitlab_report.interactors.PrintMergeRequestInteractor
 import com.e13mort.gitlab_report.interactors.ReportRender
+import com.e13mort.gitlab_report.model.MergeRequestEvent
 import com.e13mort.gitlab_report.model.User
 import com.jakewharton.picnic.table
+import org.jsoup.Jsoup
+
+const val MAX_MR_CONTENT_LENGTH = 80
 
 class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String> {
     override fun render(value: PrintMergeRequestInteractor.MergeRequestsReport): String {
@@ -41,8 +45,44 @@ class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRe
                 }
 
             }
+            value.events.let {
+                if (it.isEmpty()) {
+                    row {
+                        cell("There are no events yet") {
+                            columnSpan = 2
+                        }
+                    }
+                } else {
+                    row {
+                        cell("Events") {
+                            rowSpan = it.size
+                        }
+                        cell(format(it[0]))
+                    }
+                    it.forEachIndexed { index, event ->
+                        if (index > 0) {
+                            row(format(event))
+                        }
+                    }
+                }
+            }
         }.toString()
     }
 
     private fun format(user: User) = "${user.name()}<${user.userName()}>"
+
+    private fun format(event: MergeRequestEvent) = event.formatted().let {
+        "${it.user().name()}<${it.user().userName()}> ${it.timeMillis().formatAsDate()}\n${it.content()}"
+    }
+
+    internal class FormattedMREvent(private val event: MergeRequestEvent) : MergeRequestEvent by event {
+        override fun content(): String {
+            val chunked: List<String> = Jsoup.parse(event.content()).text().chunked(MAX_MR_CONTENT_LENGTH)
+            return chunked.joinToString(separator = "\n")
+        }
+    }
+}
+
+fun MergeRequestEvent.formatted() : MergeRequestEvent {
+    return ASCIIMergeRequestRender.FormattedMREvent(this)
 }

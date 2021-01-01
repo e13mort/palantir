@@ -154,7 +154,7 @@ internal class SyncableProjectImpl(
 
             override suspend fun values(): Flow<MergeRequest> {
                 return mergeRequestsQueries.selectAll(projectId()).executeAsList().asFlow().map {
-                    DBMergeRequest(it, mrAssigneesQueries)
+                    DBMergeRequest(it, mrAssigneesQueries, mrNotes)
                 }
             }
 
@@ -191,7 +191,8 @@ internal const val UNSPECIFIED_BRANCH_NAME = "unspecified"
 
 internal class DBMergeRequest(
     private val storedMR: Merge_requests,
-    private val mrAssigneesQueries: Mr_assigneesQueries
+    private val mrAssigneesQueries: Mr_assigneesQueries,
+    private val mrNotes: NotesQueries
 ) : MergeRequest {
 
     override fun id(): String = storedMR.id.toString()
@@ -213,7 +214,44 @@ internal class DBMergeRequest(
     }
 
     override fun events(): List<MergeRequestEvent> {
-        return emptyList()
+        return mrNotes.notes(storedMR.id).executeAsList().map {
+            DBMergeRequestEvent(it)
+        }
+    }
+}
+
+internal class DBMergeRequestEvent(private val mrNotesView: Mr_notes_view) : MergeRequestEvent {
+    override fun id(): Long {
+        return mrNotesView.id
+    }
+
+    override fun type(): MergeRequestEvent.Type {
+        return MergeRequestEvent.Type.values()[mrNotesView.type.toInt()]
+    }
+
+    override fun timeMillis(): Long {
+        return mrNotesView.created_time_millis ?: 0
+    }
+
+    override fun user(): User {
+        return object : User {
+            override fun id(): Long {
+                return mrNotesView.user_id
+            }
+
+            override fun name(): String {
+                return mrNotesView.user_name ?: ""
+            }
+
+            override fun userName(): String {
+                return mrNotesView.user_userName ?: ""
+            }
+
+        }
+    }
+
+    override fun content(): String {
+        return mrNotesView.content ?: ""
     }
 }
 

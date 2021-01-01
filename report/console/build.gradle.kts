@@ -17,6 +17,7 @@ kotlin {
                 implementation(project(":model"))
                 implementation(project(":report:common"))
                 implementation("com.jakewharton.picnic:picnic:0.5.0")
+                implementation("org.jsoup:jsoup:1.13.1")
             }
         }
     }

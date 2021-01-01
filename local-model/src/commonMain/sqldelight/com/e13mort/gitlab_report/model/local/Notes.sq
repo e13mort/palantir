@@ -16,8 +16,15 @@ CREATE TABLE IF NOT EXISTS mr_notes
 	created_time_millis INTEGER
 );
 
+CREATE VIEW IF NOT EXISTS mr_notes_view AS
+SELECT mr_notes.*, users.name AS user_name, users.username AS user_userName FROM mr_notes
+LEFT OUTER JOIN users ON mr_notes.user_id = users.id;
+
 clearForMR:
 DELETE FROM mr_notes WHERE mr_id = ?;
 
 add:
 INSERT INTO mr_notes VALUES(?,?,?,?,?,?);
+
+notes:
+SELECT * FROM mr_notes_view WHERE mr_id = ?;
