@@ -7,7 +7,9 @@ import com.e13mort.gitlab_report.model.User
 import com.jakewharton.picnic.table
 import org.jsoup.Jsoup
 
+//todo: extract as config properties
 const val MAX_MR_CONTENT_LENGTH = 80
+const val APPROVE_MARK = "\uD83D\uDC4D"
 
 class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String> {
     override fun render(value: PrintMergeRequestInteractor.MergeRequestsReport): String {
@@ -72,7 +74,8 @@ class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRe
     private fun format(user: User) = "${user.name()}<${user.userName()}>"
 
     private fun format(event: MergeRequestEvent) = event.formatted().let {
-        "${it.user().name()}<${it.user().userName()}> ${it.timeMillis().formatAsDate()}\n${it.content()}"
+        "${it.user().name()}<${it.user().userName()}> ${it.timeMillis().formatAsDate()}\n" +
+                if (it.type() == MergeRequestEvent.Type.APPROVE) APPROVE_MARK else it.content()
     }
 
     internal class FormattedMREvent(private val event: MergeRequestEvent) : MergeRequestEvent by event {
