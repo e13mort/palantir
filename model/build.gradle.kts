@@ -23,5 +23,21 @@ kotlin {
                 implementation(kotlin("test-annotations-common"))
             }
         }
+        val jvmTest by getting {
+            dependencies {
+                implementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+                implementation("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+                implementation("org.junit.jupiter:junit-jupiter-params:5.6.2")
+            }
+        }
+
+        repositories {
+            mavenCentral()
+            jcenter()
+        }
+    }
+
+    tasks.withType(Test::class.java) {
+        useJUnitPlatform()
     }
 }
