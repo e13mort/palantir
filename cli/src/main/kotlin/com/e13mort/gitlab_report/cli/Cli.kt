@@ -3,10 +3,7 @@ package com.e13mort.gitlab_report.cli
 import com.e13mort.gitlab_report.cli.render.*
 import com.e13mort.gitlab_report.interactors.*
 import com.e13mort.gitlab_report.model.GitlabProjectsRepository
-import com.e13mort.gitlab_report.model.local.DBMergeRequestRepository
-import com.e13mort.gitlab_report.model.local.DBProjectRepository
-import com.e13mort.gitlab_report.model.local.DriverFactory
-import com.e13mort.gitlab_report.model.local.LocalModel
+import com.e13mort.gitlab_report.model.local.*
 import com.e13mort.gitlab_report.utils.Console
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
@@ -23,6 +20,7 @@ fun main(args: Array<String>) {
     val consoleOutput = ConsoleRenderOutput(console)
     val syncCallback = ASCIISyncCallback(console)
 
+    val reportsRepository = DBReportsRepository(model)
     RootCommand().subcommands(
         PrintCommand().subcommands(
             PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)
@@ -48,7 +46,10 @@ fun main(args: Array<String>) {
         ),
         SyncInteractor(localProjectsRepository, gitlabProjectsRepository, syncCallback)
             .withRender(ASCIISyncProjectsRender(), consoleOutput)
-            .asCLICommand("sync")
+            .asCLICommand("sync"),
+        ReportCommand().subcommands(
+            ApproveStatisticsInteractor(reportsRepository).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("approves")
+        )
     ).main(args)
 }
 
@@ -67,5 +68,9 @@ class PrintCommand : CliktCommand("print") {
 }
 
 class ScanCommand : CliktCommand("scan") {
+    override fun run() = Unit
+}
+
+class ReportCommand : CliktCommand("report") {
     override fun run() = Unit
 }

@@ -4,12 +4,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.squareup.sqldelight:gradle-plugin:1.4.3")
+        classpath("com.squareup.sqldelight:gradle-plugin:1.4.4")
     }
 }
 
 plugins {
-    id("com.squareup.sqldelight") version "1.4.3"
+    id("com.squareup.sqldelight") version "1.4.4"
     kotlin("multiplatform")
 }
 version = "unspecified"
@@ -26,8 +26,8 @@ kotlin {
             dependencies {
                 implementation(kotlin("stdlib-common"))
                 implementation(project(":model"))
-                implementation("com.squareup.sqldelight:runtime:1.4.3")
-                implementation("com.squareup.sqldelight:coroutines-extensions:1.4.3")
+                implementation("com.squareup.sqldelight:runtime:1.4.4")
+                implementation("com.squareup.sqldelight:coroutines-extensions:1.4.4")
 //                implementation("org.jetbrains.exposed:exposed-core:0.24.1")
 //                implementation("org.jetbrains.exposed:exposed-dao:0.24.1")
 //                implementation("org.jetbrains.exposed:exposed-jdbc:0.24.1")
@@ -42,7 +42,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation("com.squareup.sqldelight:sqlite-driver:1.4.3")
+                implementation("com.squareup.sqldelight:sqlite-driver:1.4.4")
             }
         }
     }

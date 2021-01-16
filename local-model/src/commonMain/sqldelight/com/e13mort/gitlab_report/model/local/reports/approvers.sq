@@ -1,0 +1,8 @@
+selectApproversStatisticsByWeek:
+SELECT STRFTIME('%Y-%W', created_time_millis / 1000, 'unixepoch') AS period,
+       user_id,
+       user_name,
+       user_userName,
+       COUNT(id)                                                  AS aproves_count
+FROM mr_notes_view
+WHERE type = 0 GROUP BY STRFTIME('%Y-%W', created_time_millis / 1000, 'unixepoch'), user_id ORDER BY period DESC, aproves_count DESC;

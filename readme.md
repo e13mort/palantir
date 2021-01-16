@@ -18,3 +18,7 @@ todo: rename the app from ``cli``
 ``./cli print mr <merge-request-id>`` - print merge requests description
 
 ``./cli sync`` - update synced projects
+
+``./cli report`` - print all available reports
+
+``./cli report approves`` - print approves statistics
