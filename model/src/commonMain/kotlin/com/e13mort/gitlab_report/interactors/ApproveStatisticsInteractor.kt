@@ -3,7 +3,10 @@ package com.e13mort.gitlab_report.interactors
 import com.e13mort.gitlab_report.model.ReportsRepository
 import com.e13mort.gitlab_report.model.User
 
-class ApproveStatisticsInteractor(private val reportsRepository: ReportsRepository) :
+class ApproveStatisticsInteractor(
+    private val reportsRepository: ReportsRepository,
+    private val type: StatisticsType
+) :
     Interactor<ApproveStatisticsInteractor.Report> {
 
     interface Report {
@@ -15,7 +18,7 @@ class ApproveStatisticsInteractor(private val reportsRepository: ReportsReposito
     }
 
     override suspend fun run(): Report {
-        val approversByPeriod = reportsRepository.findApproversByPeriod()
+        val approversByPeriod = readDataFromRepository()
         val periodSet = mutableSetOf<String>()
         val approvesMap = mutableMapOf<User, MutableMap<String, Int>>()
         for (item in approversByPeriod) {
@@ -40,5 +43,17 @@ class ApproveStatisticsInteractor(private val reportsRepository: ReportsReposito
             }
 
         }
+    }
+
+    private suspend fun readDataFromRepository(): List<ReportsRepository.ApproveStatisticsItem> {
+        val approversByPeriod = when (type) {
+            StatisticsType.TOTAL_APPROVES -> reportsRepository.findApproversByPeriod()
+            StatisticsType.FIRST_APPROVES -> reportsRepository.findFirstApproversByPeriod()
+        }
+        return approversByPeriod
+    }
+
+    enum class StatisticsType {
+        TOTAL_APPROVES, FIRST_APPROVES
     }
 }

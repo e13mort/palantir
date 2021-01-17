@@ -1,7 +1,9 @@
 package com.e13mort.gitlab_report.cli
 
+import com.e13mort.gitlab_report.cli.ReportCommand.ApprovesCommand
 import com.e13mort.gitlab_report.cli.render.*
 import com.e13mort.gitlab_report.interactors.*
+import com.e13mort.gitlab_report.interactors.ApproveStatisticsInteractor.StatisticsType
 import com.e13mort.gitlab_report.model.GitlabProjectsRepository
 import com.e13mort.gitlab_report.model.local.*
 import com.e13mort.gitlab_report.utils.Console
@@ -48,7 +50,10 @@ fun main(args: Array<String>) {
             .withRender(ASCIISyncProjectsRender(), consoleOutput)
             .asCLICommand("sync"),
         ReportCommand().subcommands(
-            ApproveStatisticsInteractor(reportsRepository).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("approves")
+            ApprovesCommand().subcommands(
+                ApproveStatisticsInteractor(reportsRepository, StatisticsType.TOTAL_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("total"),
+                ApproveStatisticsInteractor(reportsRepository, StatisticsType.FIRST_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("first")
+            )
         )
     ).main(args)
 }
@@ -73,4 +78,8 @@ class ScanCommand : CliktCommand("scan") {
 
 class ReportCommand : CliktCommand("report") {
     override fun run() = Unit
+
+    class ApprovesCommand : CliktCommand("approves") {
+        override fun run() = Unit
+    }
 }

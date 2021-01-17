@@ -1,0 +1,19 @@
+CREATE VIEW IF NOT EXISTS mr_interaction AS
+SELECT mrs.*, mn.*, users.*, (first_interaction_time_millis - mrs.created_time) AS time_diff FROM merge_requests AS mrs
+    LEFT OUTER JOIN (SELECT MIN(created_time_millis) AS first_interaction_time_millis, mr_id, user_id FROM mr_notes WHERE type = 0 GROUP BY mr_id) mn
+        ON mn.mr_id = mrs.id
+    LEFT OUTER JOIN users ON users.id = mn.user_id
+    ORDER BY time_diff;
+
+mrsWithountApproves:
+SELECT * FROM mr_interaction WHERE time_diff IS NULL;
+
+mrsWithApproves:
+SELECT * FROM mr_interaction WHERE time_diff IS NOT NULL;
+
+firstApprovesStatistics:
+SELECT mr_id, user_id, username, name, COUNT(user_id) AS count, STRFTIME('%Y-%W', created_time / 1000, 'unixepoch') AS period
+FROM mr_interaction
+WHERE first_interaction_time_millis IS NOT NULL
+GROUP BY STRFTIME('%Y-%W', created_time / 1000, 'unixepoch'), user_id
+ORDER BY period DESC, count DESC;

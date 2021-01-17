@@ -8,4 +8,6 @@ interface ReportsRepository {
     }
 
     suspend fun findApproversByPeriod(): List<ApproveStatisticsItem>
+
+    suspend fun findFirstApproversByPeriod(): List<ApproveStatisticsItem>
 }

@@ -21,4 +21,8 @@ todo: rename the app from ``cli``
 
 ``./cli report`` - print all available reports
 
-``./cli report approves`` - print approves statistics
+``./cli report approves`` - print approves statistics variants
+
+``./cli report approves total`` - print approves statistics by total approves amount
+
+``./cli report approves first`` - print approves statistics by first approve event
