@@ -15,23 +15,31 @@ class ApproveStatisticsInteractor(
         fun periods(): List<String>
 
         fun approvesBy(user: User, period: String): Int
+
+        fun totalCount(user: User): Int
     }
 
     override suspend fun run(): Report {
         val approversByPeriod = readDataFromRepository()
         val periodSet = mutableSetOf<String>()
         val approvesMap = mutableMapOf<User, MutableMap<String, Int>>()
+        val totalCountMap = mutableMapOf<User, Int>()
         for (item in approversByPeriod) {
             periodSet.add(item.period())
-            approvesMap.getOrPut(item.user()) {
+            val approvesCount = item.approvesCount()
+            val user = item.user()
+            approvesMap.getOrPut(user) {
                 mutableMapOf()
-            }[item.period()] = item.approvesCount()
+            }[item.period()] = approvesCount
+            totalCountMap[user] = totalCountMap.getOrElse(user, { 0 }) + approvesCount
         }
 
 
         return object : Report {
             override fun users(): List<User> {
-                return approvesMap.keys.toList()
+                return approvesMap.keys.toList().sortedByDescending {
+                    totalCount(it)
+                }
             }
 
             override fun periods(): List<String> {
@@ -40,6 +48,10 @@ class ApproveStatisticsInteractor(
 
             override fun approvesBy(user: User, period: String): Int {
                 return approvesMap[user]?.get(period) ?: 0
+            }
+
+            override fun totalCount(user: User): Int {
+                return totalCountMap[user] ?: 0
             }
 
         }

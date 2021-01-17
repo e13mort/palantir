@@ -15,8 +15,14 @@ class ASCIIApproveStatisticsRenderer : ReportRender<ApproveStatisticsInteractor.
                 val users: List<User> = value.users()
                 row {
                     cell("Period")
-                    for (user in users) {
+                    users.forEach { user ->
                         cell(user.name().split(" ")[0])
+                    }
+                }
+                row {
+                    cell("Total")
+                    users.forEach {
+                        cell(value.totalCount(it))
                     }
                 }
                 value.periods().forEach { period ->
