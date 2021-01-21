@@ -77,7 +77,7 @@ private fun createConsole() : Console {
     }
 }
 
-class RootCommand : CliktCommand(name = "cli") {
+class RootCommand : CliktCommand(name = "plntr") {
     override fun run() = Unit
 }
 
