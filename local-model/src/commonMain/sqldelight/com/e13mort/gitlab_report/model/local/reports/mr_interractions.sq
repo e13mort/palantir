@@ -17,3 +17,15 @@ FROM mr_interaction
 WHERE first_interaction_time_millis IS NOT NULL
 GROUP BY STRFTIME('%Y-%W', created_time / 1000, 'unixepoch'), user_id
 ORDER BY period DESC, count DESC;
+
+-- this function can't be compiled because of the issue
+-- https://github.com/cashapp/sqldelight/issues/1206
+-- getPercentiles:
+-- SELECT max(time_diff / 1000) AS seconds, (rank * 100) AS percentile
+-- FROM (
+--          SELECT time_diff,
+--                 ROUND(percent_rank() OVER (ORDER BY time_diff), 1) AS rank
+--          FROM mr_interaction
+--          WHERE time_diff IS NOT NULL
+--      )
+-- GROUP BY RANK;

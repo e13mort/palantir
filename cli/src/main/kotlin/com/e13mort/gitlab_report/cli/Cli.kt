@@ -1,6 +1,7 @@
 package com.e13mort.gitlab_report.cli
 
 import com.e13mort.gitlab_report.cli.ReportCommand.ApprovesCommand
+import com.e13mort.gitlab_report.cli.ReportCommand.MR
 import com.e13mort.gitlab_report.cli.render.*
 import com.e13mort.gitlab_report.interactors.*
 import com.e13mort.gitlab_report.interactors.ApproveStatisticsInteractor.StatisticsType
@@ -17,12 +18,12 @@ fun main(args: Array<String>) {
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository("***REMOVED***/", "***REMOVED***")
-    val console = ConsoleImpl()
+    val console = createConsole()
 
     val consoleOutput = ConsoleRenderOutput(console)
     val syncCallback = ASCIISyncCallback(console)
 
-    val reportsRepository = DBReportsRepository(model)
+    val reportsRepository = DBReportsRepository(model, driver)
     RootCommand().subcommands(
         PrintCommand().subcommands(
             PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)
@@ -53,9 +54,22 @@ fun main(args: Array<String>) {
             ApprovesCommand().subcommands(
                 ApproveStatisticsInteractor(reportsRepository, StatisticsType.TOTAL_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("total"),
                 ApproveStatisticsInteractor(reportsRepository, StatisticsType.FIRST_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("first")
+            ),
+            MR().subcommands(
+                PercentileInteractor(reportsRepository).withRender(ASCIIPercentileReportRenderer(), consoleOutput).asCLICommand("first")
             )
         )
     ).main(args)
+}
+
+private fun createConsole() : Console {
+    return System.console().let {
+        if (it != null) ConsoleImpl(it) else object : Console {
+            override fun write(message: String, writeStyle: Console.WriteStyle) {
+                println(message)
+            }
+        }
+    }
 }
 
 class RootCommand : CliktCommand(name = "cli") {
@@ -80,6 +94,10 @@ class ReportCommand : CliktCommand("report") {
     override fun run() = Unit
 
     class ApprovesCommand : CliktCommand("approves") {
+        override fun run() = Unit
+    }
+
+    class MR : CliktCommand("mr") {
         override fun run() = Unit
     }
 }

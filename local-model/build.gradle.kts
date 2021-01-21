@@ -28,9 +28,6 @@ kotlin {
                 implementation(project(":model"))
                 implementation("com.squareup.sqldelight:runtime:1.4.4")
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.4.4")
-//                implementation("org.jetbrains.exposed:exposed-core:0.24.1")
-//                implementation("org.jetbrains.exposed:exposed-dao:0.24.1")
-//                implementation("org.jetbrains.exposed:exposed-jdbc:0.24.1")
             }
         }
         val commonTest by getting {
@@ -43,6 +40,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("com.squareup.sqldelight:sqlite-driver:1.4.4")
+                implementation("org.xerial:sqlite-jdbc:3.34.0")
             }
         }
     }

@@ -26,3 +26,5 @@ todo: rename the app from ``cli``
 ``./cli report approves total`` - print approves statistics by total approves amount
 
 ``./cli report approves first`` - print approves statistics by first approve event
+
+``./cli report mr first`` - print merge requests statistics by first approve event

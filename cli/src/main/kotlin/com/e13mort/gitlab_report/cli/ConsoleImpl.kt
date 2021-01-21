@@ -1,11 +1,11 @@
 package com.e13mort.gitlab_report.cli
 
 import com.e13mort.gitlab_report.utils.Console
+import java.io.Console as SystemConsole
 
-internal class ConsoleImpl : Console {
+internal class ConsoleImpl(console: SystemConsole) : Console {
     private var lastMessageStyle = Console.WriteStyle.ADD
     private var lastMessageLength = 0
-    private val console = System.console()
     private val writer = console.writer()
 
     override fun write(message: String, writeStyle: Console.WriteStyle) {
