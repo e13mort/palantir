@@ -16,6 +16,6 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.e13mort.gitlab_report.cli.PlntrKt")
+    mainClass.set("com.e13mort.palantir.cli.PlntrKt")
     applicationName = "plntr"
 }

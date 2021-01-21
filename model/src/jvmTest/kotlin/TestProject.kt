@@ -1,4 +1,4 @@
-import com.e13mort.gitlab_report.model.*
+import com.e13mort.palantir.model.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 

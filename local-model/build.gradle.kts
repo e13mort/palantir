@@ -48,6 +48,6 @@ kotlin {
 
 sqldelight {
     database("LocalModel") {
-        packageName = "com.e13mort.gitlab_report.model.local"
+        packageName = "com.e13mort.palantir.model.local"
     }
 }
