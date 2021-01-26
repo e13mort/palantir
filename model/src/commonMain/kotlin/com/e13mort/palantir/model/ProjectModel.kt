@@ -50,7 +50,7 @@ interface MergeRequest {
 
 interface MergeRequestEvent {
     enum class Type {
-        APPROVE, COMMENT, GENERAL_NOTE
+        APPROVE, DISCUSSION, GENERAL_NOTE
     }
 
     fun id(): Long

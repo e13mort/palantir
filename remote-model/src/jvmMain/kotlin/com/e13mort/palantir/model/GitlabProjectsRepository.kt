@@ -158,6 +158,7 @@ internal class GitlabMergeRequests(
 internal class GitlabEvent(private val note: Note) : MergeRequestEvent {
     override fun type(): MergeRequestEvent.Type {
         if (checkIsApproveType()) return MergeRequestEvent.Type.APPROVE
+        if (checkIsCommentType()) return MergeRequestEvent.Type.DISCUSSION
         return MergeRequestEvent.Type.GENERAL_NOTE
     }
 
@@ -179,6 +180,10 @@ internal class GitlabEvent(private val note: Note) : MergeRequestEvent {
 
     //for now I can't find more robust approach to determine this state
     private fun checkIsApproveType() = content() == "approved this merge request"
+
+    private fun checkIsCommentType(): Boolean {
+        return !note.system && note.resolvable
+    }
 }
 
 internal class GitlabUser(private val assignee: AbstractUser<*>) : User {

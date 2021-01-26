@@ -10,6 +10,7 @@ import org.jsoup.Jsoup
 //todo: extract as config properties
 const val MAX_MR_CONTENT_LENGTH = 80
 const val APPROVE_MARK = "\uD83D\uDC4D"
+const val COMMENT_MARK = "\uD83D\uDCAC"
 
 class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String> {
     override fun render(value: PrintMergeRequestInteractor.MergeRequestsReport): String {
@@ -75,7 +76,11 @@ class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRe
 
     private fun format(event: MergeRequestEvent) = event.formatted().let {
         "${it.user().name()}<${it.user().userName()}> ${it.timeMillis().formatAsDate()}\n" +
-                if (it.type() == MergeRequestEvent.Type.APPROVE) APPROVE_MARK else it.content()
+                when (it.type()) {
+                    MergeRequestEvent.Type.APPROVE -> APPROVE_MARK
+                    MergeRequestEvent.Type.DISCUSSION -> "$COMMENT_MARK ${it.content()}"
+                    else -> it.content()
+                }
     }
 
     internal class FormattedMREvent(private val event: MergeRequestEvent) : MergeRequestEvent by event {
