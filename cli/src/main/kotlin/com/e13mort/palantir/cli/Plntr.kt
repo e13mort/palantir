@@ -2,6 +2,7 @@ package com.e13mort.palantir.cli
 
 import com.e13mort.palantir.cli.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.ReportCommand.MR
+import com.e13mort.palantir.cli.properties.*
 import com.e13mort.palantir.cli.render.*
 import com.e13mort.palantir.interactors.*
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
@@ -10,18 +11,17 @@ import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
-import kotlin.IllegalStateException
 
 fun main(args: Array<String>) {
     val driver = DriverFactory().createDriver()
     val model = LocalModel(driver)
-    val properties = EnvironmentProperties()
+    val properties = EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory()
 
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository(
-        properties.stringProperty(Properties.StringProperty.GITLAB_URL),
-        properties.stringProperty(Properties.StringProperty.GITLAB_KEY)
+        properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
+        properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY)
     )
     val console = createConsole()
 
@@ -105,22 +105,4 @@ class ReportCommand : CliktCommand("report") {
     class MR : CliktCommand("mr") {
         override fun run() = Unit
     }
-}
-
-interface Properties {
-    enum class StringProperty {
-        GITLAB_KEY,
-        GITLAB_URL
-    }
-
-    fun stringProperty(property: StringProperty): String
-}
-
-class EnvironmentProperties : Properties {
-
-    override fun stringProperty(property: Properties.StringProperty): String {
-        val propertyName = "PALANTIR_${property.name.toUpperCase()}"
-        return System.getenv(propertyName) ?: throw IllegalStateException("Please provide property $propertyName via env vars")
-    }
-
 }
