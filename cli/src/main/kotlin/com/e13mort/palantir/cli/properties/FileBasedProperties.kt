@@ -25,6 +25,9 @@ class FileBasedProperties(private val filePath: Path) : Properties {
             for (value in Properties.StringProperty.values()) {
                 properties[value.name] = ""
             }
+            for (value in Properties.IntProperty.values()) {
+                properties[value.name] = value.defaultValue.toString()
+            }
             FileWriter(propertiesFile.toFile()).use {
                 properties.store(it, null)
             }
@@ -32,12 +35,20 @@ class FileBasedProperties(private val filePath: Path) : Properties {
     }
 
     override fun stringProperty(property: Properties.StringProperty): String? {
-        val propertyValue = FileReader(filePath.toFile()).use {
-            PlatformProperties().apply {
-                load(it)
-            }[property.name]?.toString()?.trim()
-        }
+        val propertyValue = rawProperty(property.name)
         if (propertyValue == null || propertyValue.isBlank()) return null
         return propertyValue
+    }
+
+    override fun intProperty(property: Properties.IntProperty): Int? {
+        return (rawProperty(property.name) ?: return null).toIntOrNull()
+    }
+
+    private fun rawProperty(property: String): String? {
+        return FileReader(filePath.toFile()).use {
+            PlatformProperties().apply {
+                load(it)
+            }[property]?.toString()?.trim()
+        }
     }
 }

@@ -22,7 +22,8 @@ fun main(args: Array<String>) {
     val mrRepository = DBMergeRequestRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository(
         properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
-        properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY)
+        properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY),
+        properties.safeIntProperty(Properties.IntProperty.SYNC_PERIOD_MONTHS)
     )
     val console = createConsole()
 

@@ -2,8 +2,19 @@ package com.e13mort.palantir.cli.properties
 
 class EnvironmentProperties : Properties {
 
-    override fun stringProperty(property: Properties.StringProperty): String? {
-        return System.getenv("PALANTIR_${property.name.toUpperCase()}")
+    companion object {
+        const val PROPERTY_PREFIX = "PALANTIR"
     }
+
+    override fun stringProperty(property: Properties.StringProperty): String? {
+        return readRawProperty(property.name)
+    }
+
+    override fun intProperty(property: Properties.IntProperty): Int? {
+        return (readRawProperty(property.name) ?: return null).toIntOrNull()
+    }
+
+    private fun readRawProperty(property: String) =
+        System.getenv("${PROPERTY_PREFIX}_${property}")
 
 }

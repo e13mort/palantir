@@ -12,7 +12,8 @@ import org.gitlab4j.api.models.Branch as GLBranch
 
 class GitlabProjectsRepository(
     url: String,
-    key: String
+    key: String,
+    private val syncPeriodMonths: Int
 ) : ProjectRepository {
 
     private val gitLabApi = GitLabApi(url, key)
@@ -21,7 +22,7 @@ class GitlabProjectsRepository(
     override suspend fun projects(): Flow<Project> {
         return flow {
             gitLabApi.projectApi.projects.map {
-                GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi, gitLabApi.notesApi)
+                GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi, gitLabApi.notesApi, syncPeriodMonths)
             }.forEach {
                 emit(it)
             }
@@ -33,7 +34,8 @@ class GitlabProjectsRepository(
             gitLabApi.projectApi.getProject(id.toInt()),
             gitLabApi.repositoryApi,
             gitLabApi.mergeRequestApi,
-            gitLabApi.notesApi
+            gitLabApi.notesApi,
+            syncPeriodMonths
         )
     }
 
@@ -51,7 +53,8 @@ internal class GitlabProject(
     private val project: org.gitlab4j.api.models.Project,
     private val repositoryApi: RepositoryApi,
     private val mergeRequestApi: MergeRequestApi,
-    private val notesApi: NotesApi
+    private val notesApi: NotesApi,
+    private val syncPeriodMonths: Int
 ) : Project {
     override fun id(): String {
         return project.id.toString()
@@ -66,14 +69,15 @@ internal class GitlabProject(
     }
 
     override fun mergeRequests(): MergeRequests {
-        return GitlabMergeRequests(mergeRequestApi, this, notesApi)
+        return GitlabMergeRequests(mergeRequestApi, this, notesApi, syncPeriodMonths)
     }
 }
 
 internal class GitlabMergeRequests(
     private val mergeRequestApi: MergeRequestApi,
     private val gitlabProject: GitlabProject,
-    private val notesApi: NotesApi
+    private val notesApi: NotesApi,
+    private val syncPeriodMonths: Int
 ) : MergeRequests {
     override suspend fun project(): Project {
         return gitlabProject
@@ -96,7 +100,7 @@ internal class GitlabMergeRequests(
         .withCreatedAfter(calculateMRStartDate())
 
     private fun calculateMRStartDate() = Calendar.getInstance().apply {
-        add(Calendar.MONTH, -1)
+        add(Calendar.MONTH, -syncPeriodMonths)
     }.time
 
     internal class GitlabMergeRequest(

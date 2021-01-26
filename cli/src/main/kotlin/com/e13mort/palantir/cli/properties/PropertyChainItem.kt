@@ -8,4 +8,8 @@ internal class PropertyChainItem(
         return activeHandler.stringProperty(property) ?: nextHandler.stringProperty(property)
     }
 
+    override fun intProperty(property: Properties.IntProperty): Int? {
+        return activeHandler.intProperty(property) ?: nextHandler.intProperty(property)
+    }
+
 }
