@@ -20,7 +20,7 @@ class GitlabProjectsRepository(
     @ExperimentalCoroutinesApi
     override suspend fun projects(): Flow<Project> {
         return flow {
-            gitLabApi.projectApi.memberProjects.map {
+            gitLabApi.projectApi.projects.map {
                 GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi, gitLabApi.notesApi)
             }.forEach {
                 emit(it)
