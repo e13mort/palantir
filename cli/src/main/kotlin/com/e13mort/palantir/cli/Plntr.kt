@@ -13,9 +13,10 @@ import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 
 fun main(args: Array<String>) {
-    val driver = DriverFactory().createDriver()
+    val workDirectory = ProgramWorkDirectory().directory()
+    val driver = DriverFactory(workDirectory.toString()).createDriver()
     val model = LocalModel(driver)
-    val properties = EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory()
+    val properties = EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory(workDirectory)
 
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
