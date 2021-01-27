@@ -1,6 +1,7 @@
+-- type in WHERE clause is com.e13mort.palantir.model.MergeRequestEvent.Type enum's ordinal
 CREATE VIEW IF NOT EXISTS mr_interaction AS
 SELECT mrs.*, mn.*, users.*, (first_interaction_time_millis - mrs.created_time) AS time_diff FROM merge_requests AS mrs
-    LEFT OUTER JOIN (SELECT MIN(created_time_millis) AS first_interaction_time_millis, mr_id, user_id FROM mr_notes WHERE type = 0 GROUP BY mr_id) mn
+    LEFT OUTER JOIN (SELECT MIN(created_time_millis) AS first_interaction_time_millis, mr_id, user_id FROM mr_notes WHERE type = 0 OR type = 1 GROUP BY mr_id) mn
         ON mn.mr_id = mrs.id
     LEFT OUTER JOIN users ON users.id = mn.user_id
     ORDER BY time_diff;
