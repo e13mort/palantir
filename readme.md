@@ -21,8 +21,8 @@
 
 ``./plntr report approves`` - print approves statistics variants
 
-``./plntr report approves total`` - print approves statistics by total approves amount
+``./plntr report approves total <project-id>`` - print approves statistics by total approves amount
 
-``./plntr report approves first`` - print approves statistics by first approve event
+``./plntr report approves first <project-id>`` - print approves statistics by first approve event
 
 ``./plntr report mr first <project-id>`` - print merge requests statistics by first approve event

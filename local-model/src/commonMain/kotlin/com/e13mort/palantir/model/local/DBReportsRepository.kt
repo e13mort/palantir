@@ -22,14 +22,14 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
                 "group by rank"
     }
 
-    override suspend fun findApproversByPeriod(): List<ReportsRepository.ApproveStatisticsItem> {
-        return approversQueries.selectApproversStatisticsByWeek().executeAsList().map {
+    override suspend fun findApproversByPeriod(projectId: Long): List<ReportsRepository.ApproveStatisticsItem> {
+        return approversQueries.selectApproversStatisticsByWeek(projectId).executeAsList().map {
             StatItem(it)
         }
     }
 
-    override suspend fun findFirstApproversByPeriod(): List<ReportsRepository.ApproveStatisticsItem> {
-        return mrInteractionsQueries.firstApprovesStatistics().executeAsList().map {
+    override suspend fun findFirstApproversByPeriod(projectId: Long): List<ReportsRepository.ApproveStatisticsItem> {
+        return mrInteractionsQueries.firstApprovesStatistics(projectId).executeAsList().map {
             FirstApprovesStatItem(it)
         }
     }

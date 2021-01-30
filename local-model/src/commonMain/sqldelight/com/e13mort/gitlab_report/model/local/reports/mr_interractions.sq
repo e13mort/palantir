@@ -15,7 +15,7 @@ SELECT * FROM mr_interaction WHERE time_diff IS NOT NULL;
 firstApprovesStatistics:
 SELECT mr_id, user_id, username, name, COUNT(user_id) AS count, STRFTIME('%Y-%W', created_time / 1000, 'unixepoch') AS period
 FROM mr_interaction
-WHERE first_interaction_time_millis IS NOT NULL
+WHERE first_interaction_time_millis IS NOT NULL AND project_id = ?
 GROUP BY STRFTIME('%Y-%W', created_time / 1000, 'unixepoch'), user_id
 ORDER BY period DESC, count DESC;
 

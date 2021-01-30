@@ -59,8 +59,12 @@ fun main(args: Array<String>) {
             .asCLICommand("sync"),
         ReportCommand().subcommands(
             ApprovesCommand().subcommands(
-                ApproveStatisticsInteractor(reportsRepository, StatisticsType.TOTAL_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("total"),
-                ApproveStatisticsInteractor(reportsRepository, StatisticsType.FIRST_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("first")
+                LongIdInteractorCommand("total") {
+                    ApproveStatisticsInteractor(reportsRepository, it, StatisticsType.TOTAL_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput)
+                },
+                LongIdInteractorCommand("first") {
+                    ApproveStatisticsInteractor(reportsRepository, it, StatisticsType.FIRST_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput)
+                }
             ),
             MR().subcommands(
                 LongIdInteractorCommand("first") {

@@ -17,8 +17,10 @@ CREATE TABLE IF NOT EXISTS mr_notes
 );
 
 CREATE VIEW IF NOT EXISTS mr_notes_view AS
-SELECT mr_notes.*, users.name AS user_name, users.username AS user_userName FROM mr_notes
-LEFT OUTER JOIN users ON mr_notes.user_id = users.id;
+SELECT mr_notes.*, users.name AS user_name, users.username AS user_userName, project_id
+FROM mr_notes
+         LEFT OUTER JOIN users ON mr_notes.user_id = users.id
+         LEFT OUTER JOIN merge_requests mr ON mr_notes.mr_id = mr.id;
 
 clearForMR:
 DELETE FROM mr_notes WHERE mr_id = ?;

@@ -5,6 +5,7 @@ import com.e13mort.palantir.model.User
 
 class ApproveStatisticsInteractor(
     private val reportsRepository: ReportsRepository,
+    private val projectId: Long,
     private val type: StatisticsType
 ) :
     Interactor<ApproveStatisticsInteractor.Report> {
@@ -59,8 +60,8 @@ class ApproveStatisticsInteractor(
 
     private suspend fun readDataFromRepository(): List<ReportsRepository.ApproveStatisticsItem> {
         val approversByPeriod = when (type) {
-            StatisticsType.TOTAL_APPROVES -> reportsRepository.findApproversByPeriod()
-            StatisticsType.FIRST_APPROVES -> reportsRepository.findFirstApproversByPeriod()
+            StatisticsType.TOTAL_APPROVES -> reportsRepository.findApproversByPeriod(projectId)
+            StatisticsType.FIRST_APPROVES -> reportsRepository.findFirstApproversByPeriod(projectId)
         }
         return approversByPeriod
     }

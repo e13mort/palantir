@@ -15,9 +15,9 @@ interface ReportsRepository {
         fun firstApproveTimeSeconds(percentile: Percentile): Long
     }
 
-    suspend fun findApproversByPeriod(): List<ApproveStatisticsItem>
+    suspend fun findApproversByPeriod(projectId: Long): List<ApproveStatisticsItem>
 
-    suspend fun findFirstApproversByPeriod(): List<ApproveStatisticsItem>
+    suspend fun findFirstApproversByPeriod(projectId: Long): List<ApproveStatisticsItem>
 
     suspend fun calculateFirstApprovesStatistics(projectId: Long): FirstApproveStatistics
 }
