@@ -63,7 +63,9 @@ fun main(args: Array<String>) {
                 ApproveStatisticsInteractor(reportsRepository, StatisticsType.FIRST_APPROVES).withRender(ASCIIApproveStatisticsRenderer(), consoleOutput).asCLICommand("first")
             ),
             MR().subcommands(
-                PercentileInteractor(reportsRepository).withRender(ASCIIPercentileReportRenderer(), consoleOutput).asCLICommand("first")
+                LongIdInteractorCommand("first") {
+                    PercentileInteractor(reportsRepository, it).withRender(ASCIIPercentileReportRenderer(), consoleOutput)
+                }
             )
         )
     ).main(args)

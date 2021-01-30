@@ -4,6 +4,7 @@ import com.e13mort.palantir.model.ReportsRepository
 
 class PercentileInteractor(
     private val reportsRepository: ReportsRepository,
+    private val projectId: Long,
 ) : Interactor<PercentileInteractor.PercentileReport> {
 
     interface PercentileReport {
@@ -11,7 +12,7 @@ class PercentileInteractor(
     }
 
     override suspend fun run(): PercentileReport {
-        val statistics = reportsRepository.calculateFirstApprovesStatistics()
+        val statistics = reportsRepository.calculateFirstApprovesStatistics(projectId)
 
         return object : PercentileReport {
             override fun iterate(block: (ReportsRepository.Percentile, Long) -> Unit) {

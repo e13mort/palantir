@@ -19,5 +19,5 @@ interface ReportsRepository {
 
     suspend fun findFirstApproversByPeriod(): List<ApproveStatisticsItem>
 
-    suspend fun calculateFirstApprovesStatistics(): FirstApproveStatistics
+    suspend fun calculateFirstApprovesStatistics(projectId: Long): FirstApproveStatistics
 }
