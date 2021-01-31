@@ -67,7 +67,7 @@ fun main(args: Array<String>) {
                 }
             ),
             MR().subcommands(
-                LongIdInteractorCommand("first") {
+                LongIdInteractorCommand("start") {
                     PercentileInteractor(reportsRepository, it).withRender(ASCIIPercentileReportRenderer(), consoleOutput)
                 }
             )

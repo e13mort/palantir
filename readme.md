@@ -25,4 +25,4 @@
 
 ``./plntr report approves first <project-id>`` - print approves statistics by first approve event
 
-``./plntr report mr first <project-id>`` - print merge requests statistics by first approve event
+``./plntr report mr start <project-id>`` - print merge requests statistics by first approve or start discussion event
