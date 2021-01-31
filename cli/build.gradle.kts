@@ -19,3 +19,8 @@ application {
     mainClass.set("com.e13mort.palantir.cli.PlntrKt")
     applicationName = "plntr"
 }
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}

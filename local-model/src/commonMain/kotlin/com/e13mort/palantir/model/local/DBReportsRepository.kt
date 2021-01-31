@@ -17,7 +17,7 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
                 "         select time_diff, " +
                 "                round(percent_rank() over (ORDER BY time_diff), 1) as rank " +
                 "         from mr_interaction " +
-                "         where time_diff is not null and project_id=?" +
+                "         where time_diff is not null and project_id=? and created_time < ? and created_time > ?" +
                 "     ) " +
                 "group by rank"
     }
@@ -34,10 +34,16 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
         }
     }
 
-    override suspend fun calculateFirstApprovesStatistics(projectId: Long): ReportsRepository.FirstApproveStatistics {
+    override suspend fun calculateFirstApprovesStatistics(
+        projectId: Long,
+        createFromMillis: Long,
+        createBeforeMillis: Long
+    ): ReportsRepository.FirstApproveStatistics {
         val map = mutableMapOf<Int, Long>()
-        driver.executeQuery(-1, percentileQuery, 1){
+        driver.executeQuery(-1, percentileQuery, 3){
             bindLong(1, projectId)
+            bindLong(2, createBeforeMillis)
+            bindLong(3, createFromMillis)
         }.let {
             while (it.next()) {
                 map[it.getLong(1)!!.toInt()] = it.getLong(0)!!

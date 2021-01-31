@@ -13,10 +13,10 @@ class ASCIIPercentileReportRenderer : ReportRender<PercentileInteractor.Percenti
             header {
                 row("Percentile", "Time")
             }
-            value.iterate { percentile, l ->
+            value.iterate { percentile, timeDiff ->
                 row(
                     percentile.name,
-                    formatTimeDiff(l)
+                    formatTimeDiff(timeDiff)
                 )
             }
         }.toString()

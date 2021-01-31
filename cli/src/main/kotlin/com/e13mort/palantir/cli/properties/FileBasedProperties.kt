@@ -23,7 +23,7 @@ class FileBasedProperties(private val filePath: Path) : Properties {
             Files.createFile(propertiesFile)
             val properties = PlatformProperties()
             for (value in Properties.StringProperty.values()) {
-                properties[value.name] = ""
+                properties[value.name] = value.defaultValue
             }
             for (value in Properties.IntProperty.values()) {
                 properties[value.name] = value.defaultValue.toString()

@@ -1,9 +1,10 @@
 package com.e13mort.palantir.cli.properties
 
 interface Properties {
-    enum class StringProperty {
+    enum class StringProperty(val defaultValue: String = "") {
         GITLAB_KEY,
-        GITLAB_URL
+        GITLAB_URL,
+        PERIOD_DATE_FORMAT("dd-MM-yyyy")
     }
 
     enum class IntProperty(val defaultValue: Int) {

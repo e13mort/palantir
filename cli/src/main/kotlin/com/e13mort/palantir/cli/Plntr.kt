@@ -25,6 +25,7 @@ fun main(args: Array<String>) {
         properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY),
         properties.safeIntProperty(Properties.IntProperty.SYNC_PERIOD_MONTHS)
     )
+    val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     val console = createConsole()
 
     val consoleOutput = ConsoleRenderOutput(console)
@@ -67,8 +68,11 @@ fun main(args: Array<String>) {
                 }
             ),
             MR().subcommands(
-                LongIdInteractorCommand("start") {
-                    PercentileInteractor(reportsRepository, it).withRender(ASCIIPercentileReportRenderer(), consoleOutput)
+                IdWithTimeIntervalCommand("start", dateFormat) { id, start, end ->
+                    PercentileInteractor(reportsRepository, id, start, end).withRender(
+                        ASCIIPercentileReportRenderer(),
+                        consoleOutput
+                    )
                 }
             )
         )
