@@ -12,12 +12,12 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
     private val mrInteractionsQueries = localModel.mr_interractionsQueries
 
     companion object {
-        const val percentileQuery = "select max(time_diff / 1000) as seconds, (rank * 100) as percentile " +
+        const val percentileQuery = "select max(create_to_first_interaction_time_diff / 1000) as seconds, (rank * 100) as percentile " +
                 "from ( " +
-                "         select time_diff, " +
-                "                round(percent_rank() over (ORDER BY time_diff), 1) as rank " +
+                "         select create_to_first_interaction_time_diff, " +
+                "                round(percent_rank() over (ORDER BY create_to_first_interaction_time_diff), 1) as rank " +
                 "         from mr_interaction " +
-                "         where time_diff is not null and project_id=? and created_time < ? and created_time > ?" +
+                "         where create_to_first_interaction_time_diff is not null and project_id=? and created_time < ? and created_time > ?" +
                 "     ) " +
                 "group by rank"
     }
