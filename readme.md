@@ -25,4 +25,4 @@
 
 ``./plntr report approves first <project-id>`` - print approves statistics by first approve event
 
-``./plntr report mr start <project-id> --from 1.1.1970 --until 1.2.2021`` - print merge requests statistics by first approve or start discussion event
+``./plntr report mr start <project-id> --from 1-1-1970 --until 1-2-2021`` - print merge requests statistics by first approve or start discussion event
