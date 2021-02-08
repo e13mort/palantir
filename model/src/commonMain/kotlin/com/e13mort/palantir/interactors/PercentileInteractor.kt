@@ -14,7 +14,7 @@ class PercentileInteractor(
     }
 
     override suspend fun run(): PercentileReport {
-        val statistics = reportsRepository.calculateFirstApprovesStatistics(projectId, createdFromMillis, createdBeforeMillis)
+        val statistics = reportsRepository.firstApprovesStatistics(projectId, createdFromMillis, createdBeforeMillis)
 
         return object : PercentileReport {
             override fun iterate(block: (ReportsRepository.Percentile, Long) -> Unit) {

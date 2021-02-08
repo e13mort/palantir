@@ -34,7 +34,7 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
         }
     }
 
-    override suspend fun calculateFirstApprovesStatistics(
+    override suspend fun firstApprovesStatistics(
         projectId: Long,
         createFromMillis: Long,
         createBeforeMillis: Long
