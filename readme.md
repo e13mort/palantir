@@ -1,3 +1,23 @@
+# Palantir
+
+``./plntr`` - a CLI tool for GitLab. It allows to:
+* Get information from GitLab via CLI
+* Create reports about projects activities
+
+# How to build
+
+- Clone repository ``git clone https://github.com/e13mort/palantir.git``
+- Run ``./gradlew assembleDist`` command
+- Add ``<cloned-dir>/cli/build/install/plntr/bin`` to your shell config
+- Run ``./plntr`` command
+
+# Configuration
+
+After the first launch palantir will create the working directory at  ``~/.plntr``. 
+
+## Env 
+
+## Config file
 
 # Usage
 
