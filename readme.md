@@ -37,9 +37,28 @@ Properties specified via env vars has a higher priority over the same properties
 
 # Usage
 
+## Start
+
+You might start with the following commands:
+
+1. Get all available remote projects: ``./plntr scan projects`` 
+2. Print local projects with ids ``./plntr print projects``
+3. Download a specific project to a local index ``./plntr scan project <project-id>``
+4. Work with local projects with `print`, `report` and `sync` commands
+
+## Commands
+
+### `scan` & `sync`
+
 ``./plntr scan projects`` - add projects to local index
 
 ``./plntr scan project <project-id>`` - add all project's information to index
+
+``./plntr sync`` - download the latest information from Gitlab 
+
+### `print`
+
+Commands to show some project related information 
 
 ``./plntr print projects`` - print projects from local index
 
@@ -51,14 +70,24 @@ Properties specified via env vars has a higher priority over the same properties
 
 ``./plntr print mr <merge-request-id>`` - print merge requests description
 
-``./plntr sync`` - update synced projects
+### `report`
+
+Commands to print reports for a synced project
 
 ``./plntr report`` - print all available reports
+
+#### `approves`
+
+'Approves' based reports
 
 ``./plntr report approves`` - print approves statistics variants
 
 ``./plntr report approves total <project-id>`` - print approves statistics by total approves amount
 
 ``./plntr report approves first <project-id>`` - print approves statistics by first approve event
+
+#### `mr`
+
+'Merge request' based reports 
 
 ``./plntr report mr start <project-id> --from 1-1-1970 --until 1-2-2021`` - print merge requests statistics by first approve or start discussion event
