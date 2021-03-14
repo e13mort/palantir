@@ -13,11 +13,27 @@
 
 # Configuration
 
-After the first launch palantir will create the working directory at  ``~/.plntr``. 
+## Properties
 
-## Env 
+After the first launch palantir will create the working directory at  ``~/.plntr``.
+
+There are two ways to configure the tool: via environment variables and via config file.
+
+Available configuration properties:
+
+- `GITLAB_URL` Url to your Gitlab instance. E.g. `gitlab.com` 
+- `GITLAB_KEY` Access token for api requests
+- `PERIOD_DATE_FORMAT` format for dates arguments. Default is `dd-MM-yyyy`
+- `SYNC_PERIOD_MONTHS` period for synchronization
 
 ## Config file
+
+All properties are stored in file at `<plntr-work-dir>/settings.properties`. The file is created automatically with default values. 
+
+## Env
+
+Also you can specify properties via env vars. All property names should start with `PALANTIR_`, e.g. `PALANTIR_GITLAB_URL`.
+Properties specified via env vars has a higher priority over the same properties in `settings.properties` file.
 
 # Usage
 
