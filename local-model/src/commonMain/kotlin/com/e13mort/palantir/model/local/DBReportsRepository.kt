@@ -4,23 +4,12 @@ import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.User
 import com.e13mort.gitlabreport.model.local.reports.FirstApprovesStatistics
 import com.e13mort.gitlabreport.model.local.reports.SelectApproversStatisticsByWeek
-import com.squareup.sqldelight.db.SqlDriver
+import kotlin.math.ceil
 
-class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : ReportsRepository {
+class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
 
     private val approversQueries = localModel.approversQueries
     private val mrInteractionsQueries = localModel.mr_interractionsQueries
-
-    companion object {
-        const val percentileQuery = "select max(create_to_first_interaction_time_diff / 1000) as seconds, (rank * 100) as percentile " +
-                "from ( " +
-                "         select create_to_first_interaction_time_diff, " +
-                "                round(percent_rank() over (ORDER BY create_to_first_interaction_time_diff), 1) as rank " +
-                "         from mr_interaction " +
-                "         where create_to_first_interaction_time_diff is not null and project_id=? and created_time < ? and created_time > ?" +
-                "     ) " +
-                "group by rank"
-    }
 
     override suspend fun findApproversByPeriod(projectId: Long): List<ReportsRepository.ApproveStatisticsItem> {
         return approversQueries.selectApproversStatisticsByWeek(projectId).executeAsList().map {
@@ -39,20 +28,15 @@ class DBReportsRepository(localModel: LocalModel, val driver: SqlDriver) : Repor
         createFromMillis: Long,
         createBeforeMillis: Long
     ): ReportsRepository.FirstApproveStatistics {
-        val map = mutableMapOf<Int, Long>()
-        driver.executeQuery(-1, percentileQuery, 3){
-            bindLong(1, projectId)
-            bindLong(2, createBeforeMillis)
-            bindLong(3, createFromMillis)
-        }.let {
-            while (it.next()) {
-                map[it.getLong(1)!!.toInt()] = it.getLong(0)!!
-            }
-            it.close()
-        }
+        val mrsWithApproves = mrInteractionsQueries.mrsWithApproves(projectId, createBeforeMillis, createFromMillis)
+        val results = mrsWithApproves.executeAsList()
+
         return object : ReportsRepository.FirstApproveStatistics {
             override fun firstApproveTimeSeconds(percentile: ReportsRepository.Percentile): Long {
-                return map[percentile.ordinal * 10] ?: -1
+                if (results.isEmpty()) return 0
+                //nearest-rank method: https://en.wikipedia.org/wiki/Percentile
+                val index = ceil(percentile.factor * (results.size)).toInt()
+                return results[index - 1].create_to_first_interaction_time_diff / 1000
             }
         }
     }

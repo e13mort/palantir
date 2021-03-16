@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
     val consoleOutput = ConsoleRenderOutput(console)
     val syncCallback = ASCIISyncCallback(console)
 
-    val reportsRepository = DBReportsRepository(model, driver)
+    val reportsRepository = DBReportsRepository(model)
     RootCommand().subcommands(
         PrintCommand().subcommands(
             PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)

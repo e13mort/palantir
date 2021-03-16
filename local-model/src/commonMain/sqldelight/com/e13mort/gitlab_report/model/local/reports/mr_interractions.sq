@@ -10,7 +10,8 @@ mrsWithountApproves:
 SELECT * FROM mr_interaction WHERE create_to_first_interaction_time_diff IS NULL;
 
 mrsWithApproves:
-SELECT * FROM mr_interaction WHERE create_to_first_interaction_time_diff IS NOT NULL;
+SELECT * FROM mr_interaction WHERE create_to_first_interaction_time_diff IS NOT NULL
+AND project_id=? AND created_time < ? AND created_time > ? ORDER BY create_to_first_interaction_time_diff;
 
 firstApprovesStatistics:
 SELECT mr_id, user_id, username, name, COUNT(user_id) AS count, STRFTIME('%Y-%W', created_time / 1000, 'unixepoch') AS period
@@ -18,15 +19,3 @@ FROM mr_interaction
 WHERE first_interaction_time_millis IS NOT NULL AND project_id = ?
 GROUP BY STRFTIME('%Y-%W', created_time / 1000, 'unixepoch'), user_id
 ORDER BY period DESC, count DESC;
-
--- this function can't be compiled because of the issue
--- https://github.com/cashapp/sqldelight/issues/1206
--- getPercentiles:
--- SELECT max(time_diff / 1000) AS seconds, (rank * 100) AS percentile
--- FROM (
---          SELECT time_diff,
---                 ROUND(percent_rank() OVER (ORDER BY time_diff), 1) AS rank
---          FROM mr_interaction
---          WHERE time_diff IS NOT NULL
---      )
--- GROUP BY RANK;
