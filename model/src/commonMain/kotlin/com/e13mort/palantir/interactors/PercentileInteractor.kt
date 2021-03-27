@@ -10,17 +10,25 @@ class PercentileInteractor(
 ) : Interactor<PercentileInteractor.PercentileReport> {
 
     interface PercentileReport {
-        fun iterate(block: (ReportsRepository.Percentile, Long) -> Unit)
+        fun periodsCount(): Int = 1
+
+        fun period(index: Int): Period
+
+        fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long
+
+        data class Period(val start: Long, val end: Long)
     }
 
     override suspend fun run(): PercentileReport {
         val statistics = reportsRepository.firstApprovesStatistics(projectId, createdFromMillis, createdBeforeMillis)
 
         return object : PercentileReport {
-            override fun iterate(block: (ReportsRepository.Percentile, Long) -> Unit) {
-                ReportsRepository.Percentile.values().forEach {
-                    block(it, statistics.firstApproveTimeSeconds(it))
-                }
+            override fun period(index: Int): PercentileReport.Period {
+                return PercentileReport.Period(createdFromMillis, createdBeforeMillis)
+            }
+
+            override fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long {
+                return statistics.firstApproveTimeSeconds(percentile)
             }
 
         }

@@ -11,6 +11,7 @@ import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import java.text.SimpleDateFormat
 
 fun main(args: Array<String>) {
     val workDirectory = ProgramWorkDirectory().directory()
@@ -70,7 +71,7 @@ fun main(args: Array<String>) {
             MR().subcommands(
                 IdWithTimeIntervalCommand("start", dateFormat) { id, start, end ->
                     PercentileInteractor(reportsRepository, id, start, end).withRender(
-                        ASCIIPercentileReportRenderer(),
+                        ASCIIPercentileReportRenderer(createDateConverter(dateFormat)),
                         consoleOutput
                     )
                 }
@@ -85,6 +86,14 @@ private fun createConsole() : Console {
             override fun write(message: String, writeStyle: Console.WriteStyle) {
                 println(message)
             }
+        }
+    }
+}
+
+private fun createDateConverter(dateFormat: String) : DateStringConverter {
+    return object : DateStringConverter {
+        override fun convertDateToString(date: Long): String {
+            return SimpleDateFormat(dateFormat).format(date)
         }
     }
 }
