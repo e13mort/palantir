@@ -4,7 +4,8 @@ interface Properties {
     enum class StringProperty(val defaultValue: String = "") {
         GITLAB_KEY,
         GITLAB_URL,
-        PERIOD_DATE_FORMAT("dd-MM-yyyy")
+        PERIOD_DATE_FORMAT("dd-MM-yyyy"),
+        PERCENTILES_IN_REPORTS
     }
 
     enum class IntProperty(val defaultValue: Int) {

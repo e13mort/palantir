@@ -5,17 +5,19 @@ import com.e13mort.palantir.interactors.ReportRender
 import com.e13mort.palantir.model.ReportsRepository
 import com.jakewharton.picnic.table
 
-class ASCIIPercentileReportRenderer(private val dateToStringConverter: DateStringConverter) : ReportRender<PercentileInteractor.PercentileReport, String> {
+class ASCIIPercentileReportRenderer(
+    private val dateToStringConverter: DateStringConverter,
+    private val requestedPercentiles: List<ReportsRepository.Percentile>
+) : ReportRender<PercentileInteractor.PercentileReport, String> {
     override fun render(value: PercentileInteractor.PercentileReport): String {
         return table {
             cellStyle {
                 border = true
             }
-            val percentiles = ReportsRepository.Percentile.values().toList()
             header {
                 row {
                     cell("Period")
-                    percentiles.forEach {
+                    requestedPercentiles.forEach {
                         cell(it.name)
                     }
                 }
@@ -23,7 +25,7 @@ class ASCIIPercentileReportRenderer(private val dateToStringConverter: DateStrin
             for (i in 0 until value.periodsCount()) {
                 row {
                     cell(period(value, i))
-                    percentiles.forEach {
+                    requestedPercentiles.forEach {
                         cell(formatTimeDiff(value.periodValue(i, it)))
                     }
                 }

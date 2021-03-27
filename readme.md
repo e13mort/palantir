@@ -25,6 +25,9 @@ Available configuration properties:
 - `GITLAB_KEY` Access token for api requests
 - `PERIOD_DATE_FORMAT` format for dates arguments. Default is `dd-MM-yyyy`
 - `SYNC_PERIOD_MONTHS` period for synchronization
+- `PERCENTILES_IN_REPORTS` target percentiles for reports. 
+  Values from the enum [ReportsRepository.Percentile](model/src/commonMain/kotlin/com/e13mort/palantir/model/ReportsModel.kt)
+  divided by `,` (e.g. `P50,P90`)
 
 ## Config file
 

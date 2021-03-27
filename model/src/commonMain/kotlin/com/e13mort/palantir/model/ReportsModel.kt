@@ -12,7 +12,18 @@ interface ReportsRepository {
         P70(0.7F),
         P80(0.8F),
         P90(0.9F),
-        P100(1F)
+        P100(1F);
+
+        companion object {
+            fun fromString(string: String): List<Percentile> {
+                if (string.isEmpty()) return values().toList()
+                return string.split(",").map {
+                    valueOf(it.toUpperCase())
+                }.sortedBy {
+                    it.ordinal
+                }
+            }
+        }
     }
 
     interface ApproveStatisticsItem {

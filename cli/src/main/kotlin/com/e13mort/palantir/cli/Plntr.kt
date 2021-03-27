@@ -7,6 +7,8 @@ import com.e13mort.palantir.cli.render.*
 import com.e13mort.palantir.interactors.*
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
 import com.e13mort.palantir.model.GitlabProjectsRepository
+import com.e13mort.palantir.model.ReportsRepository
+import com.e13mort.palantir.model.ReportsRepository.Percentile.Companion
 import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
 import com.github.ajalt.clikt.core.CliktCommand
@@ -27,6 +29,7 @@ fun main(args: Array<String>) {
         properties.safeIntProperty(Properties.IntProperty.SYNC_PERIOD_MONTHS)
     )
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
+    val requestedPercentilesProperty = properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
     val console = createConsole()
 
     val consoleOutput = ConsoleRenderOutput(console)
@@ -71,7 +74,7 @@ fun main(args: Array<String>) {
             MR().subcommands(
                 IdWithTimeIntervalCommand("start", dateFormat) { id, start, end ->
                     PercentileInteractor(reportsRepository, id, start, end).withRender(
-                        ASCIIPercentileReportRenderer(createDateConverter(dateFormat)),
+                        ASCIIPercentileReportRenderer(createDateConverter(dateFormat), ReportsRepository.Percentile.fromString(requestedPercentilesProperty)),
                         consoleOutput
                     )
                 }
