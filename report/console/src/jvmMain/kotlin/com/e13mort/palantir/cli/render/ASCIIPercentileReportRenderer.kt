@@ -68,9 +68,6 @@ class ASCIIPercentileReportRenderer(
             ((l / 60) % 60).let {
                 if (it > 0) append("${it}m ")
             }
-            (l % 60).let {
-                if (it > 0) append("${it}s ")
-            }
             if (isEmpty()) append("Invalid")
         }.toString()
     }
