@@ -28,11 +28,24 @@ class ASCIIPercentileReportRenderer(
                     cell(period(value, i))
                     cell(value.totalMRCount(i))
                     requestedPercentiles.forEach {
-                        cell(formatTimeDiff(value.periodValue(i, it)))
+                        val content = StringBuilder(formatTimeDiff(value.periodValue(i, it)))
+                        if (i != 0) {
+                            content.append("(${formatDiff(value.compareTwoPeriods(i, i - 1, it))}%)")
+                        }
+                        cell(content)
                     }
                 }
             }
         }.toString()
+    }
+
+    private fun formatDiff(
+        diff: Float
+    ): String {
+        val diffPercent = (diff * 100 - 100).toInt()
+        return diffPercent.let {
+            if (it > 0) "+${it}" else it.toString()
+        }
     }
 
     private fun period(

@@ -17,6 +17,8 @@ class PercentileInteractor(
 
         fun totalMRCount(index: Int): Int
 
+        fun compareTwoPeriods(firstIndex: Int, secondIndex: Int, percentile: ReportsRepository.Percentile): Float
+
         data class Period(val start: Long, val end: Long)
     }
 
@@ -47,6 +49,15 @@ class PercentileInteractor(
 
             override fun totalMRCount(index: Int): Int {
                 return reports[index].totalMRCount()
+            }
+
+            override fun compareTwoPeriods(
+                firstIndex: Int,
+                secondIndex: Int,
+                percentile: ReportsRepository.Percentile
+            ): Float {
+                if (firstIndex < 0 || secondIndex < 0) throw IllegalArgumentException("Wrong indexes: $firstIndex $secondIndex")
+                return (reports[firstIndex].firstApproveTimeSeconds(percentile).toFloat() / reports[secondIndex].firstApproveTimeSeconds(percentile).toFloat())
             }
 
         }
