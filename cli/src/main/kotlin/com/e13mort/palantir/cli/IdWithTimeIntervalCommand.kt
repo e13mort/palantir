@@ -13,22 +13,26 @@ import java.text.SimpleDateFormat
 class IdWithTimeIntervalCommand(
     name: String,
     private val dateFormat: String,
-    private val factory: (Long, Long, Long) -> Interactor<Unit>
+    private val factory: (Long, List<Range>) -> Interactor<Unit>
 ) : CliktCommand(name = name) {
 
     private val id by argument("id").long()
 
-    private val intervalStartMillis by option("--from").convert {
-        stringToTimeMillis(it)
-    }.default(0)
-
-    private val intervalEndMillis by option("--until").convert {
-        stringToTimeMillis(it)
-    }.default(System.currentTimeMillis())
+    private val ranges by option("--ranges").convert {
+        val ranges = mutableListOf<Range>()
+        val rangeStrings = it.split(":")
+        if (rangeStrings.size < 2) throw IllegalArgumentException("there should be at lease two ranges")
+        rangeStrings.windowed(2).forEach { rangePair ->
+            ranges += Range(stringToTimeMillis(rangePair[0]), stringToTimeMillis(rangePair[1]))
+        }
+        ranges
+    }.default(mutableListOf(Range(0, System.currentTimeMillis())))
 
     override fun run() = runBlocking {
-        factory(id, intervalStartMillis, intervalEndMillis).run()
+        factory(id, ranges).run()
     }
 
     private fun stringToTimeMillis(it: String) = SimpleDateFormat(dateFormat).parse(it).time
+
+    data class Range(val start: Long, val end: Long)
 }

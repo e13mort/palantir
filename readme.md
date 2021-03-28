@@ -93,4 +93,4 @@ Commands to print reports for a synced project
 
 'Merge request' based reports 
 
-``./plntr report mr start <project-id> --from 1-1-1970 --until 1-2-2021`` - print merge requests statistics by first approve or start discussion event
+``./plntr report mr start <project-id> --ranges 1-1-1970:1-2-2021:1-3-2021`` - print merge requests statistics by first approve or start discussion event

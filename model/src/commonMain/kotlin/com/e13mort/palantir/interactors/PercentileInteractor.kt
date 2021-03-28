@@ -5,12 +5,11 @@ import com.e13mort.palantir.model.ReportsRepository
 class PercentileInteractor(
     private val reportsRepository: ReportsRepository,
     private val projectId: Long,
-    private val createdFromMillis: Long,
-    private val createdBeforeMillis: Long
+    private val ranges: List<Range>
 ) : Interactor<PercentileInteractor.PercentileReport> {
 
     interface PercentileReport {
-        fun periodsCount(): Int = 1
+        fun periodsCount(): Int
 
         fun period(index: Int): Period
 
@@ -19,16 +18,29 @@ class PercentileInteractor(
         data class Period(val start: Long, val end: Long)
     }
 
+    interface Range {
+        val start: Long
+        val end: Long
+    }
+
     override suspend fun run(): PercentileReport {
-        val statistics = reportsRepository.firstApprovesStatistics(projectId, createdFromMillis, createdBeforeMillis)
+        val reports = ranges.map {
+            reportsRepository.firstApprovesStatistics(projectId, it.start, it.end)
+        }
 
         return object : PercentileReport {
+            override fun periodsCount(): Int {
+                return reports.size
+            }
+
             override fun period(index: Int): PercentileReport.Period {
-                return PercentileReport.Period(createdFromMillis, createdBeforeMillis)
+                return ranges[index].let {
+                    PercentileReport.Period(it.start, it.end)
+                }
             }
 
             override fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long {
-                return statistics.firstApproveTimeSeconds(percentile)
+                return reports[index].firstApproveTimeSeconds(percentile)
             }
 
         }
