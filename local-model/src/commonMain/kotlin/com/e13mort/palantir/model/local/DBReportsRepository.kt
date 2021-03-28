@@ -38,6 +38,10 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
                 val index = ceil(percentile.factor * (results.size)).toInt()
                 return results[index - 1].create_to_first_interaction_time_diff / 1000
             }
+
+            override fun totalMRCount(): Int {
+                return results.size
+            }
         }
     }
 

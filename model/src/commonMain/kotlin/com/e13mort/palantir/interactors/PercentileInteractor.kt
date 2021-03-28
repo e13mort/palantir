@@ -15,6 +15,8 @@ class PercentileInteractor(
 
         fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long
 
+        fun totalMRCount(index: Int): Int
+
         data class Period(val start: Long, val end: Long)
     }
 
@@ -41,6 +43,10 @@ class PercentileInteractor(
 
             override fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long {
                 return reports[index].firstApproveTimeSeconds(percentile)
+            }
+
+            override fun totalMRCount(index: Int): Int {
+                return reports[index].totalMRCount()
             }
 
         }

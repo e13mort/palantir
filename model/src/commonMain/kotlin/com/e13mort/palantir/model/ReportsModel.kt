@@ -34,6 +34,8 @@ interface ReportsRepository {
 
     interface FirstApproveStatistics {
         fun firstApproveTimeSeconds(percentile: Percentile): Long
+
+        fun totalMRCount(): Int
     }
 
     suspend fun findApproversByPeriod(projectId: Long): List<ApproveStatisticsItem>

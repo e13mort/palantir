@@ -17,6 +17,7 @@ class ASCIIPercentileReportRenderer(
             header {
                 row {
                     cell("Period")
+                    cell("MR count")
                     requestedPercentiles.forEach {
                         cell(it.name)
                     }
@@ -25,6 +26,7 @@ class ASCIIPercentileReportRenderer(
             for (i in 0 until value.periodsCount()) {
                 row {
                     cell(period(value, i))
+                    cell(value.totalMRCount(i))
                     requestedPercentiles.forEach {
                         cell(formatTimeDiff(value.periodValue(i, it)))
                     }
