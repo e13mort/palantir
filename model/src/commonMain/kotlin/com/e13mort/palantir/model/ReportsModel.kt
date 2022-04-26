@@ -18,7 +18,7 @@ interface ReportsRepository {
             fun fromString(string: String): List<Percentile> {
                 if (string.isEmpty()) return values().toList()
                 return string.split(",").map {
-                    valueOf(it.toUpperCase())
+                    valueOf(it.uppercase())
                 }.sortedBy {
                     it.ordinal
                 }
