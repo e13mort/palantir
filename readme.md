@@ -7,7 +7,7 @@
 # How to build
 
 - Clone repository ``git clone https://github.com/e13mort/palantir.git``
-- Run ``./gradlew assembleDist`` command
+- Run ``./gradlew installDist`` command
 - Add ``<cloned-dir>/cli/build/install/plntr/bin`` to your shell config
 - Run ``./plntr`` command
 
