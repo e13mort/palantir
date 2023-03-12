@@ -1,6 +1,8 @@
 CREATE TABLE IF NOT EXISTS DBProject (
     id INTEGER NOT NULL PRIMARY KEY,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    sshClonePath TEXT NOT NULL,
+    httpClonePath TEXT NOT NULL
 );
 
 selectAll:
@@ -16,5 +18,5 @@ clear:
 DELETE FROM DBProject;
 
 insert:
-INSERT INTO DBProject (id, name)
+INSERT INTO DBProject (id, name, sshClonePath, httpClonePath)
 VALUES ?;

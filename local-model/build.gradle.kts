@@ -4,12 +4,12 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.squareup.sqldelight:gradle-plugin:1.4.4")
+        classpath("com.squareup.sqldelight:gradle-plugin:1.5.4")
     }
 }
 
 plugins {
-    id("com.squareup.sqldelight") version "1.4.4"
+    id("com.squareup.sqldelight") version "1.5.4"
     kotlin("multiplatform")
 }
 version = "unspecified"

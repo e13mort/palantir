@@ -8,11 +8,12 @@ import com.e13mort.palantir.interactors.*
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
 import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
-import com.e13mort.palantir.model.ReportsRepository.Percentile.Companion
 import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import java.text.SimpleDateFormat
 
 fun main(args: Array<String>) {
@@ -38,8 +39,11 @@ fun main(args: Array<String>) {
     val reportsRepository = DBReportsRepository(model)
     RootCommand().subcommands(
         PrintCommand().subcommands(
-            PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(), consoleOutput)
-                .asCLICommand("projects"),
+            FlagsCommand("projects") { availableOptions ->
+                PrintAllProjectsInteractor(localProjectsRepository).withRender(ASCIITableProjectsListRender(availableOptions.contains("-a")), consoleOutput)
+            }.apply {
+                registerOption(option("-a").flag())
+            },
             LongIdInteractorCommand("project") {
                 PrintProjectSummaryInteractor(localProjectsRepository, it).withRender(ASCIITableProjectRender(), consoleOutput)
             },

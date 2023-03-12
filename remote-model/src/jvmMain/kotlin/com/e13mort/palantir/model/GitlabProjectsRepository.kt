@@ -64,6 +64,13 @@ internal class GitlabProject(
         return project.name
     }
 
+    override fun clonePaths(): ClonePaths {
+        return GitlabClonePaths(
+            project.sshUrlToRepo,
+            project.httpUrlToRepo
+        )
+    }
+
     override fun branches(): Branches {
         return GitlabBranches(repositoryApi, project.id)
     }
@@ -71,6 +78,15 @@ internal class GitlabProject(
     override fun mergeRequests(): MergeRequests {
         return GitlabMergeRequests(mergeRequestApi, this, notesApi, syncPeriodMonths)
     }
+}
+
+internal data class GitlabClonePaths(
+    val ssh: String,
+    val http: String
+) : ClonePaths {
+    override fun ssh(): String = ssh
+
+    override fun http(): String = http
 }
 
 internal class GitlabMergeRequests(

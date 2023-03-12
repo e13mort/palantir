@@ -36,7 +36,7 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
                 if (results.isEmpty()) return 0
                 //nearest-rank method: https://en.wikipedia.org/wiki/Percentile
                 val index = ceil(percentile.factor * (results.size)).toInt()
-                return results[index - 1].create_to_first_interaction_time_diff / 1000
+                return results[index - 1].create_to_first_interaction_time_diff?.div(1000) ?: 0
             }
 
             override fun totalMRCount(): Int {

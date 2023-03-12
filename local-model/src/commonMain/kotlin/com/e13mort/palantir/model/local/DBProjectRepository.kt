@@ -50,7 +50,7 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     }
 
     override suspend fun addProject(project: Project) {
-        projectQueries.insert(DBProject(project.id().toLong(), project.name()))
+        projectQueries.insert(DBProject(project.id().toLong(), project.name(), project.clonePaths().ssh(), project.clonePaths().http()))
     }
 
     override suspend fun clear() {
@@ -67,7 +67,7 @@ internal class SyncableProjectImpl(
     private val userQueries: UserQueries,
     private val mrAssigneesQueries: Mr_assigneesQueries,
     private val mrNotes: NotesQueries
-) : SyncableProjectRepository.SyncableProject {
+) : SyncableProjectRepository.SyncableProject, ClonePaths {
     override fun synced(): Boolean {
         return dbItem.synced != 0L
     }
@@ -161,6 +161,10 @@ internal class SyncableProjectImpl(
         }
     }
 
+    override fun clonePaths(): ClonePaths {
+        return this
+    }
+
     private fun projectId() = dbItem.id
 
     private fun notifyMRProcessing(
@@ -170,6 +174,14 @@ internal class SyncableProjectImpl(
         totalSize: Int
     ) {
         callback.onMREvent(LoadMREvent(mergeRequest.id(), index, totalSize))
+    }
+
+    override fun ssh(): String {
+        return dbItem.sshClonePath
+    }
+
+    override fun http(): String {
+        return dbItem.httpClonePath
     }
 
 }
@@ -265,8 +277,8 @@ fun DBProject.toSyncable(
 ): SyncableProjectRepository.SyncableProject {
     return SyncableProjectImpl(
         SYNCED_PROJECTS(
-            this.id, this.name, 0
-        ), syncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes
+            this.id, this.name, this.sshClonePath, this.httpClonePath, 0
+        ), syncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes,
     )
 }
 

@@ -8,7 +8,13 @@ class BlockingInteractorCommand(
     private val interactor: Interactor<Unit>,
     name: String
 ) : CliktCommand(name = name) {
-    override fun run() = runBlocking { interactor.run() }
+
+    override fun run() = runBlocking {
+        registeredOptions().forEach {
+            it.names
+        }
+        interactor.run()
+    }
 }
 
 fun Interactor<Unit>.asCLICommand(name: String): CliktCommand {

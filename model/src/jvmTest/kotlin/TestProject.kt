@@ -6,7 +6,8 @@ data class TestProject(
     val id: String,
     val name: String,
     val branches: Branches,
-    val mergeRequests: MergeRequests
+    val mergeRequests: MergeRequests,
+    val clonePaths: ClonePaths
 ) : Project {
     override fun id(): String = id
 
@@ -15,6 +16,8 @@ data class TestProject(
     override fun branches(): Branches = branches
 
     override fun mergeRequests(): MergeRequests = mergeRequests
+
+    override fun clonePaths(): ClonePaths = clonePaths
 }
 
 data class TestBranches(

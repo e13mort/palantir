@@ -10,6 +10,8 @@ interface Project {
     fun branches(): Branches
 
     fun mergeRequests(): MergeRequests
+
+    fun clonePaths(): ClonePaths
 }
 
 interface Branches {
@@ -74,6 +76,12 @@ interface User {
 
 interface Branch {
     fun name(): String
+}
+
+interface ClonePaths {
+    fun ssh(): String
+
+    fun http(): String
 }
 
 interface ProjectRepository {

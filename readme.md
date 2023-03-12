@@ -65,6 +65,8 @@ Commands to show some project related information
 
 ``./plntr print projects`` - print projects from local index
 
+``./plntr print projects -a`` - print projects from local index with clone urls (https & git)
+
 ``./plntr print project <project-id>`` - print project's summary
 
 ``./plntr print branches <project-id>`` - print project branches
