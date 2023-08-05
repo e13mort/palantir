@@ -1,13 +1,4 @@
-repositories {
-    mavenCentral()
-}
-
-allprojects {
-    repositories {
-        mavenCentral()
-    }
-}
-
 plugins {
-    id("org.jetbrains.kotlin.jvm") version "1.6.21"
+    @Suppress("DSL_SCOPE_VIOLATION")
+    alias(libs.plugins.kotlin.multiplatform) apply false
 }

@@ -72,7 +72,7 @@ internal class GitlabProject(
     }
 
     override fun branches(): Branches {
-        return GitlabBranches(repositoryApi, project.id)
+        return GitlabBranches(repositoryApi, project.id.toInt())
     }
 
     override fun mergeRequests(): MergeRequests {
@@ -112,7 +112,7 @@ internal class GitlabMergeRequests(
     }
 
     private fun createFilter() = MergeRequestFilter()
-        .withProjectId(gitlabProject.id().toInt())
+        .withProjectId(gitlabProject.id().toLong())
         .withCreatedAfter(calculateMRStartDate())
 
     private fun calculateMRStartDate() = Calendar.getInstance().apply {

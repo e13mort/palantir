@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("org.jetbrains.kotlin.jvm")
     application
@@ -6,8 +8,7 @@ plugins {
 version = "unspecified"
 
 dependencies {
-    implementation("com.github.ajalt.clikt:clikt:3.0.1")
-    implementation(kotlin("stdlib-common"))
+    implementation(libs.com.github.ajalt.clikt)
     implementation(project(":model"))
     implementation(project(":local-model"))
     implementation(project(":remote-model"))
@@ -18,8 +19,12 @@ dependencies {
 application {
     mainClass.set("com.e13mort.palantir.cli.PlntrKt")
     applicationName = "plntr"
+    java {
+        toolchain.languageVersion.set(JavaLanguageVersion.of(8))
+    }
 }
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+
+tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
     }

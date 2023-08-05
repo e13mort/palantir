@@ -1,0 +1,32 @@
+[versions]
+com-squareup-sqldelight = "1.5.5"
+org-junit-jupiter = "5.9.2"
+kotlin = "1.8.22"
+kotlinx-coroutines = "1.6.4"
+
+[libraries]
+com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
+com-jakewharton-picnic = "com.jakewharton.picnic:picnic:0.6.0"
+com-squareup-sqldelight-coroutines-extensions = { module = "com.squareup.sqldelight:coroutines-extensions", version.ref = "com-squareup-sqldelight" }
+com-squareup-sqldelight-gradle-plugin = { module = "com.squareup.sqldelight:gradle-plugin", version.ref = "com-squareup-sqldelight" }
+com-squareup-sqldelight-runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "com-squareup-sqldelight" }
+com-squareup-sqldelight-sqlite-driver = { module = "com.squareup.sqldelight:sqlite-driver", version.ref = "com-squareup-sqldelight" }
+org-apache-logging-log4j-log4j-core = "org.apache.logging.log4j:log4j-core:2.17.1"
+org-gitlab4j-gitlab4j-api = "org.gitlab4j:gitlab4j-api:5.0.1"
+org-jetbrains-annotations = "org.jetbrains:annotations:13.0"
+kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+org-jetbrains-kotlin-kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
+org-jetbrains-kotlin-kotlin-test-common = { module =  "org.jetbrains.kotlin:kotlin-test-common", version.ref = "kotlin" }
+org-jetbrains-kotlinx-kotlinx-coroutines-core = { module =  "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+org-jsoup = "org.jsoup:jsoup:1.15.4"
+org-junit-jupiter-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "org-junit-jupiter" }
+org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "org-junit-jupiter" }
+org-junit-jupiter-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "org-junit-jupiter" }
+org-xerial-sqlite-jdbc = "org.xerial:sqlite-jdbc:3.41.0.0"
+
+[plugins]
+com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"
+com-squareup-sqldelight = { id = "com.squareup.sqldelight", version.ref = "com-squareup-sqldelight" }
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

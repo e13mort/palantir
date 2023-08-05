@@ -1,16 +1,11 @@
-buildscript {
-    repositories {
-        google()
-        mavenCentral()
-    }
-    dependencies {
-        classpath("com.squareup.sqldelight:gradle-plugin:1.5.4")
-    }
-}
+@file:Suppress("UnstableApiUsage")
 
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.squareup.sqldelight") version "1.5.4"
-    kotlin("multiplatform")
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.com.squareup.sqldelight)
 }
 version = "unspecified"
 
@@ -19,30 +14,37 @@ kotlin {
     *  To find out how to configure the targets, please follow the link:
     *  https://kotlinlang.org/docs/reference/building-mpp-with-gradle.html#setting-up-targets */
 
-    jvm()
+    jvm {
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(kotlin("stdlib-common"))
                 implementation(project(":model"))
-                implementation("com.squareup.sqldelight:runtime:1.4.4")
-                implementation("com.squareup.sqldelight:coroutines-extensions:1.4.4")
+                implementation(libs.com.squareup.sqldelight.runtime)
+                implementation(libs.com.squareup.sqldelight.coroutines.extensions)
             }
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test-common"))
-                implementation(kotlin("test-annotations-common"))
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlin.test.annotations.common)
             }
         }
 
         val jvmMain by getting {
             dependencies {
-                implementation("com.squareup.sqldelight:sqlite-driver:1.4.4")
-                implementation("org.xerial:sqlite-jdbc:3.34.0")
+                implementation(libs.com.squareup.sqldelight.sqlite.driver)
+                implementation(libs.org.xerial.sqlite.jdbc)
             }
         }
+    }
+
+    tasks.withType<KotlinCompile> {
+        kotlinOptions.jvmTarget = "1.8"
     }
 }
 
