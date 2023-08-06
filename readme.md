@@ -8,7 +8,7 @@
 
 - Clone repository ``git clone https://github.com/e13mort/palantir.git``
 - Run ``./gradlew installDist`` command
-- Add ``<cloned-dir>/cli/build/install/plntr/bin`` to your shell config
+- Add ``<cloned-dir>/client/cli/build/install/plntr/bin`` to your shell config
 - Run ``./plntr`` command
 
 # Configuration

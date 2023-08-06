@@ -3,6 +3,7 @@ com-squareup-sqldelight = "1.5.5"
 org-junit-jupiter = "5.9.2"
 kotlin = "1.8.22"
 kotlinx-coroutines = "1.6.4"
+plugin-compose-desktop = "1.4.3"
 
 [libraries]
 com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
@@ -30,3 +31,4 @@ com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"
 com-squareup-sqldelight = { id = "com.squareup.sqldelight", version.ref = "com-squareup-sqldelight" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+compose-desktop = { id = "org.jetbrains.compose", version.ref = "plugin-compose-desktop" }

@@ -2,8 +2,13 @@ package com.e13mort.palantir.cli
 
 import com.e13mort.palantir.cli.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.ReportCommand.MR
-import com.e13mort.palantir.cli.properties.*
 import com.e13mort.palantir.cli.render.*
+import com.e13mort.palantir.client.properties.EnvironmentProperties
+import com.e13mort.palantir.client.properties.FileBasedProperties
+import com.e13mort.palantir.client.properties.Properties
+import com.e13mort.palantir.client.properties.plus
+import com.e13mort.palantir.client.properties.safeIntProperty
+import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.interactors.*
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
 import com.e13mort.palantir.model.GitlabProjectsRepository

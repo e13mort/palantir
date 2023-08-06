@@ -14,6 +14,7 @@ dependencies {
     implementation(project(":remote-model"))
     implementation(project(":report:common"))
     implementation(project(":report:console"))
+    implementation(project(":client:shared"))
 }
 
 application {

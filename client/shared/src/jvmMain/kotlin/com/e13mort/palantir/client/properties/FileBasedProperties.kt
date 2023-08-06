@@ -1,4 +1,4 @@
-package com.e13mort.palantir.cli.properties
+package com.e13mort.palantir.client.properties
 
 import java.io.FileReader
 import java.io.FileWriter
