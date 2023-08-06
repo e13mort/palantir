@@ -11,6 +11,16 @@
 - Add ``<cloned-dir>/client/cli/build/install/plntr/bin`` to your shell config
 - Run ``./plntr`` command
 
+# Desktop App
+
+Palantir desktop application is under construction
+
+## Run
+
+```shell
+./gradlew :client:desktop:run
+```
+
 # Configuration
 
 ## Properties

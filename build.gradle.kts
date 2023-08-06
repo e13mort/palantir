@@ -1,4 +1,5 @@
+@file:Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    @Suppress("DSL_SCOPE_VIOLATION")
     alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.compose.desktop) apply false
 }

@@ -18,5 +18,12 @@ kotlin {
                 implementation(compose.components.resources)
             }
         }
+        val jvmMain by getting {
+            dependencies {
+                dependencies {
+                    api(compose.desktop.common)
+                }
+            }
+        }
     }
 }

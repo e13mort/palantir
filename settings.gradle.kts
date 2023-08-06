@@ -19,6 +19,7 @@ rootProject.name = "gitlab-report"
 include("model")
 include(":client:shared")
 include(":client:cli")
+include(":client:desktop")
 include("local-model")
 include("remote-model")
 include("report:common")
