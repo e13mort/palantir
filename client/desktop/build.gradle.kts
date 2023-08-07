@@ -1,4 +1,5 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
@@ -7,13 +8,17 @@ plugins {
 }
 
 kotlin {
-    jvm("desktop")
+    jvm("desktop") {
+        withJava()
+    }
 
     sourceSets {
         val commonMain by getting {
             dependencies {
                 implementation(project(":client:shared"))
                 implementation(project(":model"))
+                implementation(project(":local-model"))
+                implementation(project(":remote-model"))
             }
         }
         val desktopMain by getting {
