@@ -16,9 +16,6 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":client:shared"))
-                implementation(project(":model"))
-                implementation(project(":local-model"))
-                implementation(project(":remote-model"))
             }
         }
         val desktopMain by getting {

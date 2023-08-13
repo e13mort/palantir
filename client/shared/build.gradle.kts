@@ -10,12 +10,18 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(compose.runtime)
-                implementation(compose.foundation)
-                implementation(compose.material)
-                implementation(compose.materialIconsExtended)
+                api(compose.runtime)
+                api(compose.foundation)
+                api(compose.material)
+                api(compose.material3)
+                api(compose.materialIconsExtended)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
-                implementation(compose.components.resources)
+                api(compose.components.resources)
+                api(libs.premo.main)
+                api(libs.premo.navigation)
+                api(project(":model"))
+                api(project(":local-model"))
+                api(project(":remote-model"))
             }
         }
         val jvmMain by getting {
