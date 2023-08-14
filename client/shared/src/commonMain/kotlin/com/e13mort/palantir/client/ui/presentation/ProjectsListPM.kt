@@ -1,6 +1,6 @@
 package com.e13mort.palantir.client.ui.presentation
 
-import com.e13mort.palantir.interactors.AllProjectsReport
+import com.e13mort.palantir.interactors.AllProjectsResult
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.interactors.ScanProjectInteractor
 import kotlinx.coroutines.CoroutineDispatcher
@@ -15,7 +15,7 @@ import me.dmdev.premo.PresentationModel
 
 class ProjectsListPM(
     pmParams: PmParams,
-    private val projectsInteractor: Interactor<AllProjectsReport>,
+    private val projectsInteractor: Interactor<AllProjectsResult>,
     private val projectSyncInteractorFactory: suspend (Long) -> ScanProjectInteractor.ScanProjectResult,
     private val main: CoroutineScope,
     private val backgroundDispatcher: CoroutineDispatcher
@@ -31,15 +31,20 @@ class ProjectsListPM(
             _state.value = ListState.LOADING
             val projects = CoroutineScope(backgroundDispatcher).async {
                 val resultList = mutableListOf<Project>()
-                projectsInteractor.run().walk { project, b ->
-                    resultList += Project(project.id(), project.name(), b)
-                }
+                val projectsReport = projectsInteractor.run()
+                resultList += wrapProjects(projectsReport, true)
+                resultList += wrapProjects(projectsReport, false)
                 resultList.toList()
             }.await()
             _state.value = ListState.ProjectsList(projects)
         }
 
     }
+
+    private fun wrapProjects(projectsReport: AllProjectsResult, synced: Boolean) =
+        projectsReport.projects(synced).map {
+            Project(it.id(), it.name(), synced)
+        }
 
     fun updateSyncState(projectId: String, newSyncState: Boolean) {
         val listState = _state.value as? ListState.ProjectsList ?: return

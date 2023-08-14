@@ -1,6 +1,5 @@
 package com.e13mort.palantir.client.ui.compose
 
-import androidx.compose.desktop.DesktopTheme
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.e13mort.palantir.client.ui.presentation.ActiveProjectsPM
 import com.e13mort.palantir.client.ui.presentation.MainAppPM
 import com.e13mort.palantir.client.ui.presentation.ProjectsListPM
 import com.e13mort.palantir.client.ui.presentation.SettingsPM
@@ -29,7 +29,6 @@ fun PalantirView() {
 
 @Composable
 fun MainAppPM.Render() {
-    DesktopTheme {  }
     MaterialTheme {
         Row(Modifier.fillMaxSize()) {
             Box(
@@ -79,6 +78,7 @@ fun MainAppPM.TopLevelItems.icon(): ImageVector {
 private fun MainAppPM.RenderMainContent() {
     when (val currentState = this.states.collectAsState().value) {
         is ProjectsListPM -> currentState.Render()
+        is ActiveProjectsPM -> currentState.Render()
         is SettingsPM -> { Text("Settings") }
         else -> {
             Text("Not supported yet")

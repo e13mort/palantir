@@ -10,7 +10,7 @@ class MainAppPM(pmParams: PmParams) : PresentationModel(pmParams) {
     companion object Description : PmDescription
 
     enum class TopLevelItems(val description: PmDescription) {
-        PROJECTS(ProjectsListPM.Description),
+        PROJECTS(ActiveProjectsPM.Description),
         SETTINGS(SettingsPM.Description)
     }
 

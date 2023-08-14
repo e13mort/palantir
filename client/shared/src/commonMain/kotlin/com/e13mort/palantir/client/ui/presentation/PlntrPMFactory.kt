@@ -33,12 +33,15 @@ class PlntrPMFactory(
         properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     private val requestedPercentilesProperty =
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
+    private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
+    private val backgroundDispatcher = Dispatchers.IO
 
     override fun createPm(params: PmParams): PresentationModel {
         return when (params.description) {
             is ProjectsListPM.Description -> createProjectListPM(params)
             is SettingsPM.Description -> SettingsPM(params)
             is MainAppPM.Description -> MainAppPM(params)
+            is ActiveProjectsPM.Description -> ActiveProjectsPM(params, allProjectsInteractor, mainScope, backgroundDispatcher)
             else ->
                 throw IllegalArgumentException("Missed description handler: ${params.description}")
         }
@@ -65,7 +68,7 @@ class PlntrPMFactory(
                     }).run()
             },
             main = mainScope,
-            backgroundDispatcher = Dispatchers.IO
+            backgroundDispatcher = backgroundDispatcher
         )
     }
 
