@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
+import me.dmdev.premo.PmMessage
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
 
@@ -18,7 +19,7 @@ class ActiveProjectsPM(
     private val backgroundDispatcher: CoroutineDispatcher
 ) : PresentationModel(pmParams) {
 
-    companion object Description : PmDescription
+    class Description : PmDescription
 
     private val _stateFlow = MutableStateFlow<List<ProjectInfo>>(emptyList())
 
@@ -45,7 +46,7 @@ class ActiveProjectsPM(
     }
 
     fun handeConfigureBtn() {
-        //todo navigate to ProjectsListPM
+        messageHandler.send(ConfigureMessage)
     }
 
     data class ProjectInfo(
@@ -54,4 +55,6 @@ class ActiveProjectsPM(
         val branchCount: Long,
         val mrCount: Long
     )
+
+    object ConfigureMessage : PmMessage
 }

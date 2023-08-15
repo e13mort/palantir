@@ -38,17 +38,18 @@ class PlntrPMFactory(
 
     override fun createPm(params: PmParams): PresentationModel {
         return when (params.description) {
-            is ProjectsListPM.Description -> createProjectListPM(params)
+            is ConfigureActiveProjectsPM.Description -> createProjectListPM(params)
             is SettingsPM.Description -> SettingsPM(params)
             is MainAppPM.Description -> MainAppPM(params)
+            is ProjectsScreenPM.Description -> ProjectsScreenPM(params)
             is ActiveProjectsPM.Description -> ActiveProjectsPM(params, allProjectsInteractor, mainScope, backgroundDispatcher)
             else ->
                 throw IllegalArgumentException("Missed description handler: ${params.description}")
         }
     }
 
-    private fun createProjectListPM(params: PmParams): ProjectsListPM {
-        return ProjectsListPM(
+    private fun createProjectListPM(params: PmParams): ConfigureActiveProjectsPM {
+        return ConfigureActiveProjectsPM(
             pmParams = params,
             PrintAllProjectsInteractor(localProjectsRepository),
             projectSyncInteractorFactory = { projectId -> //todo: refactor

@@ -17,9 +17,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.e13mort.palantir.client.ui.presentation.ActiveProjectsPM
 import com.e13mort.palantir.client.ui.presentation.MainAppPM
-import com.e13mort.palantir.client.ui.presentation.ProjectsListPM
+import com.e13mort.palantir.client.ui.presentation.ProjectsScreenPM
 import com.e13mort.palantir.client.ui.presentation.SettingsPM
 
 @Composable
@@ -77,8 +76,7 @@ fun MainAppPM.TopLevelItems.icon(): ImageVector {
 @Composable
 private fun MainAppPM.RenderMainContent() {
     when (val currentState = this.states.collectAsState().value) {
-        is ProjectsListPM -> currentState.Render()
-        is ActiveProjectsPM -> currentState.Render()
+        is ProjectsScreenPM -> currentState.Render()
         is SettingsPM -> { Text("Settings") }
         else -> {
             Text("Not supported yet")

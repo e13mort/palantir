@@ -28,6 +28,7 @@ org-junit-jupiter-junit-jupiter-params = { module = "org.junit.jupiter:junit-jup
 org-xerial-sqlite-jdbc = "org.xerial:sqlite-jdbc:3.41.0.0"
 premo-main = { module = "me.dmdev.premo:premo", version.ref = "premo" }
 premo-navigation = { module = "me.dmdev.premo:premo-navigation", version.ref = "premo" }
+kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 
 [plugins]
 com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"

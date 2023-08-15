@@ -10,7 +10,7 @@ class MainAppPM(pmParams: PmParams) : PresentationModel(pmParams) {
     companion object Description : PmDescription
 
     enum class TopLevelItems(val description: PmDescription) {
-        PROJECTS(ActiveProjectsPM.Description),
+        PROJECTS(ProjectsScreenPM.Description),
         SETTINGS(SettingsPM.Description)
     }
 
@@ -30,6 +30,7 @@ class MainAppPM(pmParams: PmParams) : PresentationModel(pmParams) {
         get() = TopLevelItems.values().asList()
 
     fun switchToItem(item: TopLevelItems) {
+        navigator.current?.messageHandler?.send(RootChangedMessage)
         navigator.changeCurrent(item.ordinal)
     }
 }

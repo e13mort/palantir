@@ -12,8 +12,9 @@ import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
+import me.dmdev.premo.navigation.back
 
-class ProjectsListPM(
+class ConfigureActiveProjectsPM(
     pmParams: PmParams,
     private val projectsInteractor: Interactor<AllProjectsResult>,
     private val projectSyncInteractorFactory: suspend (Long) -> ScanProjectInteractor.ScanProjectResult,
@@ -41,11 +42,6 @@ class ProjectsListPM(
 
     }
 
-    private fun wrapProjects(projectsReport: AllProjectsResult, synced: Boolean) =
-        projectsReport.projects(synced).map {
-            Project(it.id(), it.name(), synced)
-        }
-
     fun updateSyncState(projectId: String, newSyncState: Boolean) {
         val listState = _state.value as? ListState.ProjectsList ?: return
         for (project in listState.projects) {
@@ -57,8 +53,20 @@ class ProjectsListPM(
         _state.value = ListState.ProjectsList(listState.projects)
     }
 
-    fun startSync() {
+    fun handleButton(actionButton: ActionButton) {
+        when(actionButton) {
+            ActionButton.CANCEL -> back()
+            ActionButton.SAVE -> { /* save projects for sync */ }
+        }
+    }
 
+    private fun wrapProjects(projectsReport: AllProjectsResult, synced: Boolean) =
+        projectsReport.projects(synced).map {
+            Project(it.id(), it.name(), synced)
+        }
+
+    enum class ActionButton {
+        CANCEL, SAVE
     }
 
     sealed interface ListState {
