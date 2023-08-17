@@ -1,20 +1,26 @@
 package com.e13mort.palantir.client.ui.presentation
 
+import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
+import com.e13mort.palantir.cli.render.DateStringConverter
 import com.e13mort.palantir.client.properties.Properties
 import com.e13mort.palantir.client.properties.safeIntProperty
 import com.e13mort.palantir.client.properties.safeStringProperty
+import com.e13mort.palantir.interactors.PercentileInteractor
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.ScanProjectInteractor
 import com.e13mort.palantir.model.GitlabProjectsRepository
+import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.SyncableProjectRepository
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
+import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.LocalModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.dmdev.premo.PmFactory
 import me.dmdev.premo.PmParams
 import me.dmdev.premo.PresentationModel
+import java.text.SimpleDateFormat
 
 class PlntrPMFactory(
     properties: Properties,
@@ -24,6 +30,7 @@ class PlntrPMFactory(
 
     private val localProjectsRepository = DBProjectRepository(model)
     private val mrRepository = DBMergeRequestRepository(model)
+    private val reportsRepository = DBReportsRepository(model)
     private val gitlabProjectsRepository = GitlabProjectsRepository(
         properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
         properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY),
@@ -33,6 +40,15 @@ class PlntrPMFactory(
         properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     private val requestedPercentilesProperty =
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
+    private val reportRenderer = ASCIIPercentileReportRenderer(
+        dateToStringConverter = object : DateStringConverter {
+            override fun convertDateToString(date: Long): String {
+                return SimpleDateFormat(dateFormat).format(date)
+            }
+        },
+        requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty),
+        showBorders = false
+    )
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val backgroundDispatcher = Dispatchers.IO
 
@@ -42,7 +58,22 @@ class PlntrPMFactory(
             is SettingsPM.Description -> SettingsPM(params)
             is MainAppPM.Description -> MainAppPM(params)
             is ProjectsScreenPM.Description -> ProjectsScreenPM(params)
-            is ActiveProjectsPM.Description -> ActiveProjectsPM(params, allProjectsInteractor, mainScope, backgroundDispatcher)
+            is MRReportsPM.Description -> MRReportsPM(
+                params,
+                backgroundDispatcher,
+                allProjectsInteractor,
+                reportRenderer
+            ) { projectId, ranges ->
+                PercentileInteractor(reportsRepository, projectId, ranges)
+            }
+
+            is ActiveProjectsPM.Description -> ActiveProjectsPM(
+                params,
+                allProjectsInteractor,
+                mainScope,
+                backgroundDispatcher
+            )
+
             else ->
                 throw IllegalArgumentException("Missed description handler: ${params.description}")
         }

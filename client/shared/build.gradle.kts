@@ -22,6 +22,8 @@ kotlin {
                 api(project(":model"))
                 api(project(":local-model"))
                 api(project(":remote-model"))
+                api(project(":report:common")) //temporal for fast visualisation
+                api(project(":report:console")) //temporal for fast visualisation
             }
         }
         val jvmMain by getting {

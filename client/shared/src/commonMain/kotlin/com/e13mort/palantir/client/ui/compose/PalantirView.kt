@@ -9,6 +9,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalDrawerSheet
@@ -17,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.e13mort.palantir.client.ui.presentation.MRReportsPM
 import com.e13mort.palantir.client.ui.presentation.MainAppPM
 import com.e13mort.palantir.client.ui.presentation.ProjectsScreenPM
 import com.e13mort.palantir.client.ui.presentation.SettingsPM
@@ -63,6 +65,7 @@ fun MainAppPM.TopLevelItems.name() : String {
     return when(this) {
         MainAppPM.TopLevelItems.PROJECTS -> "Projects"
         MainAppPM.TopLevelItems.SETTINGS -> "Settings"
+        MainAppPM.TopLevelItems.REPORTS -> "Reports"
     }
 }
 
@@ -70,6 +73,7 @@ fun MainAppPM.TopLevelItems.icon(): ImageVector {
     return when(this) {
         MainAppPM.TopLevelItems.PROJECTS -> Icons.Default.List
         MainAppPM.TopLevelItems.SETTINGS -> Icons.Default.Settings
+        MainAppPM.TopLevelItems.REPORTS -> Icons.Default.Report
     }
 }
 
@@ -78,6 +82,7 @@ private fun MainAppPM.RenderMainContent() {
     when (val currentState = this.states.collectAsState().value) {
         is ProjectsScreenPM -> currentState.Render()
         is SettingsPM -> { Text("Settings") }
+        is MRReportsPM -> currentState.Render()
         else -> {
             Text("Not supported yet")
         }

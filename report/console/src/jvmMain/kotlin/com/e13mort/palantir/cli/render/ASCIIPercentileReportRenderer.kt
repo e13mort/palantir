@@ -1,18 +1,19 @@
 package com.e13mort.palantir.cli.render
 
-import com.e13mort.palantir.interactors.PercentileInteractor
+import com.e13mort.palantir.interactors.PercentileReport
 import com.e13mort.palantir.interactors.ReportRender
 import com.e13mort.palantir.model.ReportsRepository
 import com.jakewharton.picnic.table
 
 class ASCIIPercentileReportRenderer(
     private val dateToStringConverter: DateStringConverter,
-    private val requestedPercentiles: List<ReportsRepository.Percentile>
-) : ReportRender<PercentileInteractor.PercentileReport, String> {
-    override fun render(value: PercentileInteractor.PercentileReport): String {
+    private val requestedPercentiles: List<ReportsRepository.Percentile>,
+    private val showBorders: Boolean = true
+) : ReportRender<PercentileReport, String> {
+    override fun render(value: PercentileReport): String {
         return table {
             cellStyle {
-                border = true
+                border = showBorders
             }
             header {
                 row {
@@ -49,7 +50,7 @@ class ASCIIPercentileReportRenderer(
     }
 
     private fun period(
-        value: PercentileInteractor.PercentileReport,
+        value: PercentileReport,
         i: Int
     ): String {
         return value.period(i).let {

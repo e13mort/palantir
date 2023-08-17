@@ -82,7 +82,7 @@ fun main(args: Array<String>) {
             ),
             MR().subcommands(
                 IdWithTimeIntervalCommand("start", dateFormat) { id, ranges ->
-                    PercentileInteractor(reportsRepository, id, ranges.toPercentileInteractorRanges()).withRender(
+                    PercentileInteractor(reportsRepository, id, ranges).withRender(
                         ASCIIPercentileReportRenderer(createDateConverter(dateFormat), ReportsRepository.Percentile.fromString(requestedPercentilesProperty)),
                         consoleOutput
                     )
@@ -106,17 +106,6 @@ private fun createDateConverter(dateFormat: String) : DateStringConverter {
     return object : DateStringConverter {
         override fun convertDateToString(date: Long): String {
             return SimpleDateFormat(dateFormat).format(date)
-        }
-    }
-}
-
-private fun List<IdWithTimeIntervalCommand.Range>.toPercentileInteractorRanges(): List<PercentileInteractor.Range> {
-    return map {
-        object : PercentileInteractor.Range {
-            override val start: Long
-                get() = it.start
-            override val end: Long
-                get() = it.end
         }
     }
 }
