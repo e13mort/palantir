@@ -1,7 +1,6 @@
 package com.e13mort.palantir.client.ui.presentation
 
-import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
-import com.e13mort.palantir.cli.render.DateStringConverter
+import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.client.properties.Properties
 import com.e13mort.palantir.client.properties.safeIntProperty
 import com.e13mort.palantir.client.properties.safeStringProperty
@@ -40,15 +39,8 @@ class PlntrPMFactory(
         properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     private val requestedPercentilesProperty =
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
-    private val reportRenderer = ASCIIPercentileReportRenderer(
-        dateToStringConverter = object : DateStringConverter {
-            override fun convertDateToString(date: Long): String {
-                return SimpleDateFormat(dateFormat).format(date)
-            }
-        },
-        requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty),
-        showBorders = false
-    )
+    private val dateToStringConverter = DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
+    private val requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val backgroundDispatcher = Dispatchers.IO
 
@@ -62,7 +54,8 @@ class PlntrPMFactory(
                 params,
                 backgroundDispatcher,
                 allProjectsInteractor,
-                reportRenderer
+                dateToStringConverter,
+                requestedPercentiles,
             ) { projectId, ranges ->
                 PercentileInteractor(reportsRepository, projectId, ranges)
             }

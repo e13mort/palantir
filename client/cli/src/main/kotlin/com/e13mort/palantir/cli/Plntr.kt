@@ -15,6 +15,7 @@ import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
+import com.e13mort.palantir.utils.DateStringConverter
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
@@ -103,11 +104,7 @@ private fun createConsole() : Console {
 }
 
 private fun createDateConverter(dateFormat: String) : DateStringConverter {
-    return object : DateStringConverter {
-        override fun convertDateToString(date: Long): String {
-            return SimpleDateFormat(dateFormat).format(date)
-        }
-    }
+    return DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
 }
 
 class RootCommand : CliktCommand(name = "plntr") {
