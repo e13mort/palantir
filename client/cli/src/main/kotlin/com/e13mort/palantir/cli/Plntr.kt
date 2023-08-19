@@ -15,6 +15,8 @@ import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.local.*
 import com.e13mort.palantir.utils.Console
+import com.e13mort.palantir.utils.DateStringConverter
+import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
@@ -35,6 +37,7 @@ fun main(args: Array<String>) {
         properties.safeIntProperty(Properties.IntProperty.SYNC_PERIOD_MONTHS)
     )
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
+    val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     val requestedPercentilesProperty = properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
     val console = createConsole()
 
@@ -81,8 +84,8 @@ fun main(args: Array<String>) {
                 }
             ),
             MR().subcommands(
-                IdWithTimeIntervalCommand("start", dateFormat) { id, ranges ->
-                    PercentileInteractor(reportsRepository, id, ranges.toPercentileInteractorRanges()).withRender(
+                IdWithTimeIntervalCommand("start", stringToDateConverter) { id, ranges ->
+                    PercentileInteractor(reportsRepository, id, ranges).withRender(
                         ASCIIPercentileReportRenderer(createDateConverter(dateFormat), ReportsRepository.Percentile.fromString(requestedPercentilesProperty)),
                         consoleOutput
                     )
@@ -103,22 +106,7 @@ private fun createConsole() : Console {
 }
 
 private fun createDateConverter(dateFormat: String) : DateStringConverter {
-    return object : DateStringConverter {
-        override fun convertDateToString(date: Long): String {
-            return SimpleDateFormat(dateFormat).format(date)
-        }
-    }
-}
-
-private fun List<IdWithTimeIntervalCommand.Range>.toPercentileInteractorRanges(): List<PercentileInteractor.Range> {
-    return map {
-        object : PercentileInteractor.Range {
-            override val start: Long
-                get() = it.start
-            override val end: Long
-                get() = it.end
-        }
-    }
+    return DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
 }
 
 class RootCommand : CliktCommand(name = "plntr") {

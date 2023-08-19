@@ -11,6 +11,7 @@ class MainAppPM(pmParams: PmParams) : PresentationModel(pmParams) {
 
     enum class TopLevelItems(val description: PmDescription) {
         PROJECTS(ProjectsScreenPM.Description),
+        REPORTS(MRReportsPM.Description),
         SETTINGS(SettingsPM.Description)
     }
 

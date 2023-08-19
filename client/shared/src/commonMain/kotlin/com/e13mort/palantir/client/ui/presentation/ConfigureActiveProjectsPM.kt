@@ -42,11 +42,11 @@ class ConfigureActiveProjectsPM(
 
     }
 
-    fun updateSyncState(projectId: String, newSyncState: Boolean) {
+    fun updateSyncState(projectId: String) {
         val listState = _state.value as? ListState.ProjectsList ?: return
         for (project in listState.projects) {
             if (project.id == projectId) {
-                project.indexed = newSyncState
+                project.indexed = !project.indexed
                 break
             }
         }

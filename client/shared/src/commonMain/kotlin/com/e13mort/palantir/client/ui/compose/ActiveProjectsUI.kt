@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.Button
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,14 +46,17 @@ private fun RenderScreen(
         Box(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Button(
+            Plntr.Button(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .padding(horizontal = 16.dp)
                 ,
                 onClick = { configureClickListener() }
             ) {
-                Text("Configure")
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Edit, contentDescription = null)
+                    Text("Configure")
+                }
             }
         }
         LazyVerticalGrid(

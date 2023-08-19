@@ -22,6 +22,7 @@ kotlin {
                 api(project(":model"))
                 api(project(":local-model"))
                 api(project(":remote-model"))
+                api(libs.io.github.chozzle.composemacostheme)
             }
         }
         val jvmMain by getting {

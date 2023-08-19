@@ -6,26 +6,7 @@ class PercentileInteractor(
     private val reportsRepository: ReportsRepository,
     private val projectId: Long,
     private val ranges: List<Range>
-) : Interactor<PercentileInteractor.PercentileReport> {
-
-    interface PercentileReport {
-        fun periodsCount(): Int
-
-        fun period(index: Int): Period
-
-        fun periodValue(index: Int, percentile: ReportsRepository.Percentile): Long
-
-        fun totalMRCount(index: Int): Int
-
-        fun compareTwoPeriods(firstIndex: Int, secondIndex: Int, percentile: ReportsRepository.Percentile): Float
-
-        data class Period(val start: Long, val end: Long)
-    }
-
-    interface Range {
-        val start: Long
-        val end: Long
-    }
+) : Interactor<PercentileReport> {
 
     override suspend fun run(): PercentileReport {
         val reports = ranges.map {
@@ -37,9 +18,9 @@ class PercentileInteractor(
                 return reports.size
             }
 
-            override fun period(index: Int): PercentileReport.Period {
+            override fun period(index: Int): Range {
                 return ranges[index].let {
-                    PercentileReport.Period(it.start, it.end)
+                    Range(it.start, it.end)
                 }
             }
 
