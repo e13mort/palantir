@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
@@ -30,18 +29,16 @@ fun PalantirView() {
 
 @Composable
 fun MainAppPM.Render() {
-    MaterialTheme {
-        Row(Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier.fillMaxSize().weight(0.3F)
-            ) {
-                RenderMenu()
-            }
-            Box(
-                modifier = Modifier.fillMaxSize().weight(0.7F)
-            ) {
-                RenderMainContent()
-            }
+    Row(Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier.fillMaxSize().weight(0.3F)
+        ) {
+            RenderMenu()
+        }
+        Box(
+            modifier = Modifier.fillMaxSize().weight(0.7F)
+        ) {
+            RenderMainContent()
         }
     }
 }

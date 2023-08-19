@@ -14,6 +14,7 @@ import com.e13mort.palantir.client.ui.presentation.MainAppPM
 import com.e13mort.palantir.client.ui.presentation.PlntrPMFactory
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
+import io.chozzle.composemacostheme.MacTheme
 import kotlinx.coroutines.CoroutineScope
 import me.dmdev.premo.PmDelegate
 import me.dmdev.premo.PmParams
@@ -34,7 +35,7 @@ fun main() = singleWindowApplication(
         }
     }
 
-    MaterialTheme {
+    MacTheme {
         app.Render()
     }
 }
