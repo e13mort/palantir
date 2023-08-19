@@ -3,16 +3,16 @@ package com.e13mort.palantir.client.ui.compose
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.LocalScrollbarStyle
 import androidx.compose.foundation.ScrollbarStyle
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.Button
-import androidx.compose.material.Checkbox
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -38,12 +38,16 @@ fun ConfigureActiveProjectsPM.Render() {
 private fun ConfigureActiveProjectsPM.MainContent(
     listState: ConfigureActiveProjectsPM.ListState
 ) {
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
         RenderActionButtons {
             handleButton(it)
         }
-        RenderProjectList(listState) { projectId, newState ->
-            updateSyncState(projectId, newState)
+        RenderProjectList(listState) { projectId ->
+            updateSyncState(projectId)
         }
     }
 }
@@ -52,20 +56,21 @@ private fun ConfigureActiveProjectsPM.MainContent(
 fun RenderActionButtons(
     callback: (ActionButton) -> Unit = { }
 ) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp),
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
         horizontalAlignment = Alignment.End
     ) {
         Box {
             Row {
-                Button(
+                Plntr.Button(
                     modifier = Modifier,
                     onClick = { callback(ActionButton.SAVE) }
                 ) {
                     Text("Save")
                 }
-                Button(
+                Plntr.Button(
                     modifier = Modifier.padding(start = 8.dp),
                     onClick = { callback(ActionButton.CANCEL) }
                 ) {
@@ -79,7 +84,7 @@ fun RenderActionButtons(
 @Composable
 private fun RenderProjectList(
     listState: ConfigureActiveProjectsPM.ListState,
-    callback: (String, Boolean) -> Unit = { _,_ -> }
+    callback: (String) -> Unit = { _ -> }
     ) {
     val scrollbar = ScrollbarStyle(
         minimalHeight = 16.dp,
@@ -92,8 +97,8 @@ private fun RenderProjectList(
     CompositionLocalProvider(LocalScrollbarStyle provides scrollbar) {
         when (listState) {
             ConfigureActiveProjectsPM.ListState.LOADING -> RenderLoading()
-            is ConfigureActiveProjectsPM.ListState.ProjectsList -> RenderProjects(listState) { id, newState ->
-                callback(id, newState)
+            is ConfigureActiveProjectsPM.ListState.ProjectsList -> RenderProjects(listState) { id ->
+                callback(id)
             }
 
             ConfigureActiveProjectsPM.ListState.READY -> {}
@@ -110,20 +115,37 @@ private fun RenderLoading() {
 @Composable
 private fun RenderProjects(
     projects: ConfigureActiveProjectsPM.ListState.ProjectsList,
-    syncUpdateCallback: (String, Boolean) -> Unit
+    syncUpdateCallback: (String) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize()
     ) {
         items(projects.projects) { project ->
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Checkbox(
-                    checked = project.indexed,
-                    onCheckedChange = {
-                        syncUpdateCallback(project.id, it)
-                    },
-                )
-                Text(project.name)
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp)
+                    .clickable {
+                        syncUpdateCallback(project.id)
+                    }
+            ) {
+                Spacer(modifier = Modifier.padding(2.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Plntr.CheckBox(
+                        checked = project.indexed,
+                        onCheckedChange = {
+                            syncUpdateCallback(project.id)
+                        },
+                        modifier = Modifier
+                    )
+                    Text(
+                        text = project.name,
+                        modifier = Modifier.padding(start = 4.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.padding(4.dp))
             }
         }
     }

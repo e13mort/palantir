@@ -1,6 +1,5 @@
 package com.e13mort.palantir.client.desktop
 
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.window.WindowState
@@ -9,12 +8,12 @@ import com.e13mort.palantir.cli.ProgramWorkDirectory
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
 import com.e13mort.palantir.client.properties.plus
+import com.e13mort.palantir.client.ui.compose.Plntr
 import com.e13mort.palantir.client.ui.compose.Render
 import com.e13mort.palantir.client.ui.presentation.MainAppPM
 import com.e13mort.palantir.client.ui.presentation.PlntrPMFactory
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
-import io.chozzle.composemacostheme.MacTheme
 import kotlinx.coroutines.CoroutineScope
 import me.dmdev.premo.PmDelegate
 import me.dmdev.premo.PmParams
@@ -35,7 +34,7 @@ fun main() = singleWindowApplication(
         }
     }
 
-    MacTheme {
+    Plntr.Theme {
         app.Render()
     }
 }

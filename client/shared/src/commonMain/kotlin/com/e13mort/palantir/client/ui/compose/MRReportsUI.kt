@@ -10,13 +10,14 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Button
-import androidx.compose.material.Card
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -28,24 +29,23 @@ import com.e13mort.palantir.client.ui.presentation.MRReportsPM
 fun MRReportsPM.Render() {
     val currentState = uiStates.collectAsState().value
     val controlsEnabled = currentState !is MRReportsPM.State.LOADING
-    Column {
-        Row {
-            val rangeTextFieldState = textFieldState.collectAsState().value
-            TextField(
-                value = rangeTextFieldState.value,
-                onValueChange = {
-                    updateReportsRanges(it)
-                },
-                isError = !rangeTextFieldState.valid,
-                placeholder = { Text("Ranges") }
-            )
-            Button(onClick = {
+    val rangeTextFieldState = textFieldState.collectAsState().value
+    LaunchedEffect(Unit) {
+        calculateReports()
+    }
+    Column(
+        modifier = Modifier.padding(8.dp)
+    ) {
+        RenderRangesUI(
+            textState = rangeTextFieldState,
+            controlsEnabled = controlsEnabled,
+            rangesTextListener = {
+                updateReportsRanges(it)
+            },
+            actionClickListener = {
                 calculateReports()
-            }, enabled = controlsEnabled && rangeTextFieldState.valid) {
-                Text("Show report")
             }
-        }
-
+        )
         RenderStateData(currentState)
     }
 }
@@ -54,10 +54,12 @@ fun MRReportsPM.Render() {
 fun RenderStateData(
     currentState: MRReportsPM.State
 ) {
-    when (currentState) {
-        MRReportsPM.State.LOADING -> ShowLoadingUI()
-        MRReportsPM.State.READY -> ShowReadyUI()
-        is MRReportsPM.State.ReportsReady -> ShowReports(currentState)
+    Scaffold {
+        when (currentState) {
+            MRReportsPM.State.LOADING -> ShowLoadingUI()
+            MRReportsPM.State.READY -> ShowReadyUI()
+            is MRReportsPM.State.ReportsReady -> ShowReports(currentState)
+        }
     }
 }
 
@@ -70,57 +72,80 @@ fun ShowReports(
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             reportsReadyState.reports.forEach { (projectName, report) ->
-                Card(
-                    modifier = Modifier
-                ) {
+                Column {
+                    val cell1Weight = .2F
+                    val cell2Weight = .1F
+                    val dataHeaders = reportsReadyState.dataHeaders
+                    val dataCellWeight = (1 - cell1Weight - cell2Weight) / dataHeaders.size
+                    Text(
+                        text = projectName,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
                     Column(modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(top = 8.dp)
                     ) {
-                        val cell1Weight = .2F
-                        val cell2Weight = .1F
-                        val dataHeaders = reportsReadyState.dataHeaders
-                        val dataCellWeight = (1 - cell1Weight - cell2Weight) / dataHeaders.size
-                        Text(
-                            text = projectName,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Column(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp)
+                        Row(
+                            modifier = Modifier.background(MaterialTheme.colors.secondary)
                         ) {
-                            Row(
-                                modifier = Modifier.background(MaterialTheme.colors.secondary)
-                            ) {
-                                Cell("Period", cell1Weight)
-                                Cell("MR Count", cell2Weight)
+                            Cell("Period", cell1Weight)
+                            Cell("MR Count", cell2Weight)
 
-                                dataHeaders.forEach {
-                                    Cell(it, dataCellWeight)
-                                }
-                            }
-                            report.forEach { dataRow ->
-                                Row {
-                                    Cell(dataRow.period, cell1Weight)
-                                    Cell(dataRow.totalMrCount.toString(), cell2Weight)
-                                    dataRow.data.forEach {
-                                        val text = "${it.compactTimeDuration} (${it.relativeTimeDiff}%)"
-                                        Cell(text, dataCellWeight)
-                                    }
-                                }
-
+                            dataHeaders.forEach {
+                                Cell(it, dataCellWeight)
                             }
                         }
-                    }
+                        report.forEach { dataRow ->
+                            Row {
+                                Cell(dataRow.period, cell1Weight)
+                                Cell(dataRow.totalMrCount.toString(), cell2Weight)
+                                dataRow.data.forEach {
+                                    val text = "${it.compactTimeDuration} (${it.relativeTimeDiff}%)"
+                                    Cell(text, dataCellWeight)
+                                }
+                            }
 
+                        }
+                    }
                 }
                 Spacer(modifier = Modifier.padding(16.dp))
             }
 
         }
     }
+}
+
+@Composable
+private fun RenderRangesUI(
+    textState: MRReportsPM.RangeTextFieldState,
+    controlsEnabled: Boolean = true,
+    rangesTextListener: (String) -> Unit = {},
+    actionClickListener: () -> Unit = {}
+) {
+    Row(modifier = Modifier
+        .fillMaxWidth()
+        .wrapContentHeight()
+    ) {
+        Plntr.TextField(
+            value = textState.value,
+            onValueChange = rangesTextListener,
+            modifier = Modifier
+                .align(Alignment.CenterVertically)
+                .weight(1F)
+                .padding(end = 8.dp),
+            isError = !textState.valid,
+            singleLine = true
+        ) { Text("Ranges") }
+        Plntr.Button(
+            onClick = actionClickListener,
+            enabled = controlsEnabled && textState.valid
+        ) {
+            Text("Show report")
+        }
+    }
+
 }
 
 @Composable
@@ -148,8 +173,8 @@ fun ShowLoadingUI() {
 @Preview
 @Composable
 fun PreviewReady() {
-    MaterialTheme {
-        Box(
+    Plntr.Theme {
+        Box (
             modifier = Modifier
                 .background(Color.Gray)
                 .padding(8.dp)
@@ -165,6 +190,19 @@ fun PreviewReady() {
                 )
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun PreviewRangesUI() {
+    Plntr.Theme {
+        RenderRangesUI(
+            textState = MRReportsPM.RangeTextFieldState("some value", true, emptyList()),
+            controlsEnabled = true,
+            rangesTextListener = { println(it) },
+            actionClickListener = { println("Clicked") }
+        )
     }
 }
 
