@@ -4,7 +4,7 @@ import com.e13mort.palantir.interactors.PercentileReport
 import com.e13mort.palantir.interactors.ReportRender
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.utils.DateStringConverter
-import com.e13mort.palantir.utils.period
+import com.e13mort.palantir.utils.asString
 import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
 import com.jakewharton.picnic.table
 
@@ -29,7 +29,7 @@ class ASCIIPercentileReportRenderer(
             }
             for (i in 0 until value.periodsCount()) {
                 row {
-                    cell(value.period(i, dateToStringConverter))
+                    cell(value.period(i).asString(dateToStringConverter))
                     cell(value.totalMRCount(i))
                     requestedPercentiles.forEach {
                         cell(value.formatPercentileString(i, it))

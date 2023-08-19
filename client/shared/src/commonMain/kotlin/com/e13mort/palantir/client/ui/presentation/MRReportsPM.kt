@@ -6,7 +6,10 @@ import com.e13mort.palantir.interactors.PercentileReport
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.model.ReportsRepository
-import com.e13mort.palantir.utils.period
+import com.e13mort.palantir.utils.StringDateConverter
+import com.e13mort.palantir.utils.asInputString
+import com.e13mort.palantir.utils.asRanges
+import com.e13mort.palantir.utils.asString
 import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +24,7 @@ class MRReportsPM(
     private val backgroundDispatcher: CoroutineDispatcher,
     private val projectsInteractor: PrintAllProjectsInteractor,
     private val dateStringConverter: DateStringConverter,
+    private val stringDateConverter: StringDateConverter,
     private val percentiles: List<ReportsRepository.Percentile>,
     val reportsInteractorFactory: (Long, List<Range>) -> Interactor<PercentileReport>,
 ) : PresentationModel(pmParams) {
@@ -30,7 +34,10 @@ class MRReportsPM(
     val uiStates: StateFlow<State>
         get() = _states
 
-    val textFieldState = MutableStateFlow(RangeTextFieldState(""))
+    private val _textFieldState = MutableStateFlow(createInitRange())
+
+    val textFieldState: StateFlow<RangeTextFieldState>
+        get() = _textFieldState
 
     fun calculateReports() {
         scope.launch {
@@ -44,7 +51,7 @@ class MRReportsPM(
                 syncedProjects.forEach { project ->
                     val report = reportsInteractorFactory(
                         project.id().toLong(), //todo refactor to avoid casting
-                        rangeTextFieldState.ranges()
+                        rangeTextFieldState.ranges
                     ).run()
                     resultMap[project.name()] = report.prepareReports()
                     val dataHeaders = percentiles.map {
@@ -58,11 +65,25 @@ class MRReportsPM(
         }
     }
 
+
+    fun updateReportsRanges(newValue: String) {
+        val newRanges = try {
+            newValue.asRanges(stringDateConverter)
+        } catch (e: Exception) {
+            emptyList()
+        }
+        val valid = newRanges.isNotEmpty()
+        _textFieldState.value =
+            _textFieldState.value.copy(
+                value = newValue, valid = valid, ranges = newRanges
+            )
+    }
+
     private fun PercentileReport.prepareReports(): List<State.ReportsReady.ReportDataRow> {
         return mutableListOf<State.ReportsReady.ReportDataRow>().also { resultContainer ->
             for (i in 0 until periodsCount()) {
                 resultContainer += State.ReportsReady.ReportDataRow(
-                    period = period(i, dateStringConverter),
+                    period = period(i).asString(dateStringConverter),
                     totalMrCount = totalMRCount(i),
                     data = mutableListOf<State.ReportsReady.ReportDataRow.CellData>().also { dataContainer ->
                         percentiles.forEach { percentile ->
@@ -78,6 +99,15 @@ class MRReportsPM(
         }
     }
 
+    private fun createInitRange(): RangeTextFieldState {
+        val element = Range(0, System.currentTimeMillis())
+        return RangeTextFieldState(
+            value = element.asInputString(dateStringConverter),
+            valid = true,
+            ranges = listOf(element)
+        )
+    }
+
     private fun PercentileReport.convertDiffToPercents(
         i: Int,
         percentile: ReportsRepository.Percentile
@@ -87,13 +117,10 @@ class MRReportsPM(
     }
 
     data class RangeTextFieldState(
-        val value: String,
-        val valid: Boolean = true
-    ) {
-        fun ranges(): List<Range> {
-            return listOf(Range(0, System.currentTimeMillis()))
-        }
-    }
+        val value: String = "",
+        val valid: Boolean = true,
+        val ranges: List<Range> = listOf(Range(0, System.currentTimeMillis()))
+    )
 
     sealed interface State {
         object READY : State

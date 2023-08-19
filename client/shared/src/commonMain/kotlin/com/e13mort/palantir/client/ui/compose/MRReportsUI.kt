@@ -29,13 +29,19 @@ fun MRReportsPM.Render() {
     val currentState = uiStates.collectAsState().value
     val controlsEnabled = currentState !is MRReportsPM.State.LOADING
     Column {
-        Column {
-            TextField("", enabled = controlsEnabled, onValueChange = {
-                textFieldState.value = textFieldState.value.copy(value = it)
-            })
+        Row {
+            val rangeTextFieldState = textFieldState.collectAsState().value
+            TextField(
+                value = rangeTextFieldState.value,
+                onValueChange = {
+                    updateReportsRanges(it)
+                },
+                isError = !rangeTextFieldState.valid,
+                placeholder = { Text("Ranges") }
+            )
             Button(onClick = {
                 calculateReports()
-            }, enabled = controlsEnabled) {
+            }, enabled = controlsEnabled && rangeTextFieldState.valid) {
                 Text("Show report")
             }
         }

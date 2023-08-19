@@ -18,9 +18,9 @@ class PercentileInteractor(
                 return reports.size
             }
 
-            override fun period(index: Int): PercentileReport.Period {
+            override fun period(index: Int): Range {
                 return ranges[index].let {
-                    PercentileReport.Period(it.start, it.end)
+                    Range(it.start, it.end)
                 }
             }
 

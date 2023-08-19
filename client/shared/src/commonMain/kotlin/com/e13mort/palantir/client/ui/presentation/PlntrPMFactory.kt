@@ -14,6 +14,7 @@ import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.LocalModel
+import com.e13mort.palantir.utils.StringDateConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import me.dmdev.premo.PmFactory
@@ -40,6 +41,7 @@ class PlntrPMFactory(
     private val requestedPercentilesProperty =
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
     private val dateToStringConverter = DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
+    private val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     private val requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val backgroundDispatcher = Dispatchers.IO
@@ -55,6 +57,7 @@ class PlntrPMFactory(
                 backgroundDispatcher,
                 allProjectsInteractor,
                 dateToStringConverter,
+                stringToDateConverter,
                 requestedPercentiles,
             ) { projectId, ranges ->
                 PercentileInteractor(reportsRepository, projectId, ranges)

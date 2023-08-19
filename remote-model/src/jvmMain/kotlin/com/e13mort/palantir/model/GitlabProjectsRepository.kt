@@ -31,7 +31,7 @@ class GitlabProjectsRepository(
 
     override suspend fun findProject(id: Long): Project {
         return GitlabProject(
-            gitLabApi.projectApi.getProject(id.toInt()),
+            gitLabApi.projectApi.getProject(id),
             gitLabApi.repositoryApi,
             gitLabApi.mergeRequestApi,
             gitLabApi.notesApi,
@@ -72,7 +72,7 @@ internal class GitlabProject(
     }
 
     override fun branches(): Branches {
-        return GitlabBranches(repositoryApi, project.id.toInt())
+        return GitlabBranches(repositoryApi, project.id)
     }
 
     override fun mergeRequests(): MergeRequests {
@@ -216,7 +216,7 @@ internal class GitlabUser(private val assignee: AbstractUser<*>) : User {
     }
 }
 
-internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Int) : Branches {
+internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Long) : Branches {
     override suspend fun count(): Long {
         return repositoryApi.getBranches(id).size.toLong()
     }

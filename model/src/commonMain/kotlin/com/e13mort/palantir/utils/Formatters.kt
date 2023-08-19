@@ -1,6 +1,6 @@
 package com.e13mort.palantir.utils
 
-import com.e13mort.palantir.interactors.PercentileReport
+import com.e13mort.palantir.interactors.Range
 
 fun Long.secondsToFormattedTimeDiff(): String {
     return StringBuilder().apply {
@@ -17,11 +17,10 @@ fun Long.secondsToFormattedTimeDiff(): String {
     }.toString()
 }
 
-fun PercentileReport.period(
-    i: Int,
+fun Range.asString(
     dateStringConverter: DateStringConverter
 ): String {
-    return period(i).let {
+    return let {
         "${it.start.toDateString(dateStringConverter)} - ${it.end.toDateString(dateStringConverter)}"
     }
 }
@@ -33,3 +32,22 @@ fun Long.toDateString(dateStringConverter: DateStringConverter): String {
 fun interface DateStringConverter {
     fun convertDateToString(date: Long): String
 }
+
+fun interface StringDateConverter {
+    fun convertStringToDate(string: String): Long
+}
+
+fun String.asRanges(converter: StringDateConverter): MutableList<Range> {
+    val ranges = mutableListOf<Range>()
+    val rangeStrings = split(":")
+    if (rangeStrings.size < 2) throw IllegalArgumentException("there should be at lease two ranges")
+    rangeStrings.windowed(2).forEach { rangePair ->
+        ranges += Range(converter.convertStringToDate(rangePair[0]), converter.convertStringToDate(rangePair[1]))
+    }
+    return ranges
+}
+
+fun Range.asInputString(dateStringConverter: DateStringConverter): String {
+    return "${start.toDateString(dateStringConverter)}:${end.toDateString(dateStringConverter)}"
+}
+
