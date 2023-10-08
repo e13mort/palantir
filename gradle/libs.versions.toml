@@ -2,7 +2,7 @@
 com-squareup-sqldelight = "1.5.5"
 org-junit-jupiter = "5.9.2"
 kotlin = "1.8.22"
-kotlinx-coroutines = "1.6.4"
+kotlinx-coroutines = "1.7.3"
 plugin-compose-desktop = "1.4.3"
 premo = "1.0.0-alpha.10"
 
