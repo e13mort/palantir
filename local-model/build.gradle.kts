@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.com.squareup.sqldelight)
+    alias(libs.plugins.sqldelight)
 }
 version = "unspecified"
 
@@ -24,8 +24,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":model"))
-                implementation(libs.com.squareup.sqldelight.runtime)
-                implementation(libs.com.squareup.sqldelight.coroutines.extensions)
+                implementation(libs.sqldelight.coroutines)
             }
         }
         val commonTest by getting {
@@ -37,7 +36,7 @@ kotlin {
 
         val jvmMain by getting {
             dependencies {
-                implementation(libs.com.squareup.sqldelight.sqlite.driver)
+                implementation(libs.sqldelight.driver.jvm)
                 implementation(libs.org.xerial.sqlite.jdbc)
             }
         }
@@ -49,7 +48,9 @@ kotlin {
 }
 
 sqldelight {
-    database("LocalModel") {
-        packageName = "com.e13mort.palantir.model.local"
+    databases {
+        create("LocalModel") {
+            packageName.set("com.e13mort.palantir.model.local")
+        }
     }
 }

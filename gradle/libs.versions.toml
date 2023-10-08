@@ -1,22 +1,24 @@
 [versions]
-com-squareup-sqldelight = "1.5.5"
+sqldelight = "2.0.0"
 org-junit-jupiter = "5.9.2"
-kotlin = "1.8.22"
+kotlin = "1.9.10"
 kotlinx-coroutines = "1.7.3"
-plugin-compose-desktop = "1.4.3"
+kotlinx-serialization = "1.6.0"
+plugin-compose-desktop = "1.5.1"
 premo = "1.0.0-alpha.10"
 
 [libraries]
 com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
 com-jakewharton-picnic = "com.jakewharton.picnic:picnic:0.6.0"
-com-squareup-sqldelight-coroutines-extensions = { module = "com.squareup.sqldelight:coroutines-extensions", version.ref = "com-squareup-sqldelight" }
-com-squareup-sqldelight-gradle-plugin = { module = "com.squareup.sqldelight:gradle-plugin", version.ref = "com-squareup-sqldelight" }
-com-squareup-sqldelight-runtime = { module = "com.squareup.sqldelight:runtime", version.ref = "com-squareup-sqldelight" }
-com-squareup-sqldelight-sqlite-driver = { module = "com.squareup.sqldelight:sqlite-driver", version.ref = "com-squareup-sqldelight" }
+sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
+sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
 org-apache-logging-log4j-log4j-core = "org.apache.logging.log4j:log4j-core:2.17.1"
 org-gitlab4j-gitlab4j-api = "org.gitlab4j:gitlab4j-api:5.0.1"
 org-jetbrains-annotations = "org.jetbrains:annotations:13.0"
 kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
+kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 org-jetbrains-kotlin-kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
 org-jetbrains-kotlin-kotlin-test-common = { module =  "org.jetbrains.kotlin:kotlin-test-common", version.ref = "kotlin" }
@@ -33,7 +35,7 @@ io-github-chozzle-composemacostheme = "io.github.chozzle:compose-macos-theme:0.4
 
 [plugins]
 com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"
-com-squareup-sqldelight = { id = "com.squareup.sqldelight", version.ref = "com-squareup-sqldelight" }
+sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 compose-desktop = { id = "org.jetbrains.compose", version.ref = "plugin-compose-desktop" }
