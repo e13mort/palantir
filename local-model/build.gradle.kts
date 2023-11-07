@@ -29,7 +29,9 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
+                implementation(project(":model-stubs"))
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlin.test.annotations.common)
             }
         }

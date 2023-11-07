@@ -98,6 +98,8 @@ interface ProjectRepository {
 
 interface MergeRequestRepository {
     suspend fun mergeRequest(id: Long): MergeRequest?
+
+    suspend fun saveMergeRequests(projectId: Long, mergeRequests: List<MergeRequest>)
 }
 
 interface SyncableProjectRepository : ProjectRepository {
@@ -112,8 +114,10 @@ interface SyncableProjectRepository : ProjectRepository {
 
         fun updateSynced(synced: Boolean)
 
+        @Deprecated("this logic should be moved to interactor")
         suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
 
+        @Deprecated("this logic should be moved to interactor")
         suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: UpdateMRCallback = UpdateMRCallback {})
 
         fun interface UpdateMRCallback {

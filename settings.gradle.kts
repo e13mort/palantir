@@ -16,7 +16,8 @@ pluginManagement {
 }
 
 rootProject.name = "gitlab-report"
-include("model")
+include(":model")
+include(":model-stubs")
 include(":client:shared")
 include(":client:cli")
 include(":client:desktop")
