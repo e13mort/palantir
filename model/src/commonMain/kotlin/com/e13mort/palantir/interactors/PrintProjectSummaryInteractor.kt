@@ -1,6 +1,6 @@
 package com.e13mort.palantir.interactors
 
-import com.e13mort.palantir.model.ProjectRepository
+import com.e13mort.palantir.repository.ProjectRepository
 
 class PrintProjectSummaryInteractor(
     private val projectRepository: ProjectRepository,

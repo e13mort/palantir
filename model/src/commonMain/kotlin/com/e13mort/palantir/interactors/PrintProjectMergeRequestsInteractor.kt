@@ -1,7 +1,7 @@
 package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.model.MergeRequests
-import com.e13mort.palantir.model.ProjectRepository
+import com.e13mort.palantir.repository.ProjectRepository
 import kotlinx.coroutines.flow.toList
 
 class PrintProjectMergeRequestsInteractor(

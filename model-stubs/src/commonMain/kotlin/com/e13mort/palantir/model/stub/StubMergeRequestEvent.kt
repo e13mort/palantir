@@ -5,10 +5,10 @@ import com.e13mort.palantir.model.User
 
 data class StubMergeRequestEvent(
     val id: Long,
-    val type: MergeRequestEvent.Type,
-    val timeMillis: Long,
-    val user: User,
-    val content: String
+    val type: MergeRequestEvent.Type = MergeRequestEvent.Type.GENERAL_NOTE,
+    val timeMillis: Long = 0L,
+    val user: User = StubUser(1L, "Test user", "test.user"),
+    val content: String = "Test content"
 ) : MergeRequestEvent {
     override fun id(): Long = id
 

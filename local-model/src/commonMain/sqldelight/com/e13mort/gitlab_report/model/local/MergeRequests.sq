@@ -29,3 +29,6 @@ DELETE FROM merge_requests WHERE project_id = ?;
 
 selectById:
 SELECT * FROM merge_requests WHERE id = ?;
+
+removeById:
+DELETE FROM merge_requests WHERE id = ?;

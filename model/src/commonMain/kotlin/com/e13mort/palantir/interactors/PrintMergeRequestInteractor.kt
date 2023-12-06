@@ -1,7 +1,7 @@
 package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.model.MergeRequestEvent
-import com.e13mort.palantir.model.MergeRequestRepository
+import com.e13mort.palantir.repository.MergeRequestRepository
 import com.e13mort.palantir.model.User
 
 class PrintMergeRequestInteractor(

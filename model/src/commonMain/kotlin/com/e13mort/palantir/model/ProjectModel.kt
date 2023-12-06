@@ -1,5 +1,6 @@
 package com.e13mort.palantir.model
 
+import com.e13mort.palantir.repository.ProjectRepository
 import kotlinx.coroutines.flow.Flow
 
 interface Project {
@@ -82,24 +83,6 @@ interface ClonePaths {
     fun ssh(): String
 
     fun http(): String
-}
-
-interface ProjectRepository {
-    suspend fun projects(): Flow<Project>
-
-    suspend fun findProject(id: Long): Project?
-
-    suspend fun addProject(project: Project)
-
-    suspend fun projectsCount(): Long
-
-    suspend fun clear()
-}
-
-interface MergeRequestRepository {
-    suspend fun mergeRequest(id: Long): MergeRequest?
-
-    suspend fun saveMergeRequests(projectId: Long, mergeRequests: List<MergeRequest>)
 }
 
 interface SyncableProjectRepository : ProjectRepository {

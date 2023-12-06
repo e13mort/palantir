@@ -1,8 +1,7 @@
 package com.e13mort.palantir.interactors
 
-import com.e13mort.palantir.model.ProjectRepository
+import com.e13mort.palantir.repository.ProjectRepository
 import com.e13mort.palantir.model.SyncableProjectRepository
-import kotlinx.coroutines.flow.collect
 
 class SyncInteractor(
     private val projectRepository: SyncableProjectRepository,
