@@ -3,6 +3,7 @@ package com.e13mort.palantir.model.local
 import com.e13mort.palantir.model.stub.StubMergeRequest
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -45,5 +46,35 @@ class DBMergeRequestRepositoryTest {
         repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
         testModel.model.projectQueries.clear()
         assertNull(repository.mergeRequest(TEST_PROJECT_ID))
+    }
+    @Test
+    fun `assignees are empty`() = runTest {
+        testModel.prepareTestProject()
+        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
+        assertEquals(0, repository.assignees(1L).size)
+    }
+    @Test
+    fun `assignees are saved`() = runTest {
+        testModel.prepareTestProject()
+        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(
+            StubMergeRequest(
+                id = "1",
+                assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
+            ))
+        )
+        assertEquals(1, repository.assignees(1L).size)
+    }
+
+    @Test
+    fun `assignees are removed after MR removal`() = runTest {
+        testModel.prepareTestProject()
+        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(
+            StubMergeRequest(
+                id = "1",
+                assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
+            ))
+        )
+        repository.deleteMergeRequest(1)
+        assertEquals(0, repository.assignees(1L).size)
     }
 }
