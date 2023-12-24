@@ -1,12 +1,12 @@
 package com.e13mort.palantir.interactors
 
-import com.e13mort.palantir.repository.ProjectRepository
 import com.e13mort.palantir.model.SyncableProjectRepository
+import com.e13mort.palantir.repository.ProjectRepository
 
 class SyncInteractor(
     private val projectRepository: SyncableProjectRepository,
     private val remoteRepository: ProjectRepository,
-    private val syncCallback: SyncableProjectRepository.SyncableProject.SyncCallback
+    private val syncCallback: SyncableProjectRepository.SyncableProject.SyncCallback = SyncableProjectRepository.SyncableProject.SyncCallback.Empty
 ) : Interactor<SyncInteractor.SyncResult> {
 
     data class SyncResult(val projectsUpdated: Long)
@@ -16,7 +16,11 @@ class SyncInteractor(
         projectRepository.syncedProjects().collect {
             remoteRepository.findProject(it.id().toLong())?.let { remoteProject ->
                 it.updateBranches(remoteProject.branches(), syncCallback)
-                it.updateMergeRequests(remoteProject.mergeRequests(), syncCallback)
+                it.updateMergeRequests(
+                    remoteProject.id(),
+                    remoteProject.mergeRequests(),
+                    syncCallback
+                )
                 syncedCounter++
             }
         }

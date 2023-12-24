@@ -88,7 +88,12 @@ internal class SyncableProjectImpl(
         }
     }
 
-    override suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback) {
+    override suspend fun updateMergeRequests(
+        projectId: String,
+        mergeRequests: MergeRequests,
+        callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback
+    ) {
+
         mergeRequestsQueries.removeProjectsMergeRequests(projectId())
         callback.onMREvent(MRRemoteLoadingStarted)
         val values = mergeRequests.values()
@@ -97,7 +102,7 @@ internal class SyncableProjectImpl(
             notifyMRProcessing(mr, callback, index, mrList.size)
             val mrId = mr.id().toLong()
             mergeRequestsQueries.insert(
-                mergeRequests.project().id().toLong(),
+                projectId.toLong(),
                 mrId,
                 mr.state().ordinal.toLong(),
                 mr.sourceBranch().name(),
@@ -144,9 +149,6 @@ internal class SyncableProjectImpl(
 
     override fun mergeRequests(): MergeRequests {
         return object : MergeRequests {
-            override suspend fun project(): Project {
-                return this@SyncableProjectImpl
-            }
 
             override suspend fun count(): Long {
                 return mergeRequestsQueries.mergeRequestCount(this@SyncableProjectImpl.id().toLong()).executeAsOne()

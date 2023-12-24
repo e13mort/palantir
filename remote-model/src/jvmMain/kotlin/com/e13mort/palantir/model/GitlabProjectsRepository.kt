@@ -1,5 +1,6 @@
 package com.e13mort.palantir.model
 
+import com.e13mort.palantir.repository.ProjectRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -95,10 +96,6 @@ internal class GitlabMergeRequests(
     private val notesApi: NotesApi,
     private val syncPeriodMonths: Int
 ) : MergeRequests {
-    override suspend fun project(): Project {
-        return gitlabProject
-    }
-
     override suspend fun count(): Long {
         return mergeRequestApi.getMergeRequests(createFilter()).size.toLong()
     }
@@ -162,6 +159,7 @@ internal class GitlabMergeRequests(
             }
         }
 
+        @Deprecated("Use dedicated repository")
         override fun events(): List<MergeRequestEvent> {
             return notesApi.getMergeRequestNotes(mergeRequest.projectId, mergeRequest.iid).map {
                 GitlabEvent(it)

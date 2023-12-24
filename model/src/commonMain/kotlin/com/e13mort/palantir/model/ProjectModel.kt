@@ -22,8 +22,6 @@ interface Branches {
 }
 
 interface MergeRequests {
-    suspend fun project(): Project
-
     suspend fun count(): Long
 
     suspend fun values(): Flow<MergeRequest>
@@ -44,6 +42,7 @@ interface MergeRequest {
 
     fun assignees(): List<User>
 
+    @Deprecated("Use dedicated repository")
     fun events(): List<MergeRequestEvent>
 
     enum class State {
@@ -101,7 +100,11 @@ interface SyncableProjectRepository : ProjectRepository {
         suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
 
         @Deprecated("this logic should be moved to interactor")
-        suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: UpdateMRCallback = UpdateMRCallback {})
+        suspend fun updateMergeRequests(
+            projectId: String,
+            mergeRequests: MergeRequests,
+            callback: UpdateMRCallback = UpdateMRCallback {}
+        )
 
         fun interface UpdateMRCallback {
             fun onMREvent(event: MREvent)
@@ -123,6 +126,13 @@ interface SyncableProjectRepository : ProjectRepository {
             fun onBranchEvent(branchEvent: BranchEvent)
         }
 
-        interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback
+        interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback {
+            companion object Empty : SyncCallback {
+                override fun onBranchEvent(branchEvent: UpdateBranchesCallback.BranchEvent) = Unit
+
+                override fun onMREvent(event: UpdateMRCallback.MREvent) = Unit
+
+            }
+        }
     }
 }

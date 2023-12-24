@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 
 data class StubBranches(
-    val branches: List<Branch>
+    val branches: List<Branch> = emptyList()
 ) : Branches {
     override suspend fun count(): Long = branches.size.toLong()
 

@@ -4,8 +4,8 @@ import com.e13mort.palantir.model.User
 
 data class StubUser(
     val id: Long,
-    val name: String,
-    val userName: String
+    var name: String = "StubUser$id",
+    var userName: String = "StubUser$id"
 ) : User {
     override fun id(): Long = id
 

@@ -7,7 +7,7 @@ import com.e13mort.palantir.utils.writeTo
 class ScanProjectsInteractor(
     private val localRepository: ProjectRepository,
     private val remoteRepository: ProjectRepository,
-    private val console: Console
+    private val console: Console = Console.Empty
 ) : Interactor<Unit> {
     override suspend fun run() {
         localRepository.clear()

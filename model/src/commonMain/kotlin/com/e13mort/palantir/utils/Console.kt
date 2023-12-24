@@ -1,6 +1,11 @@
 package com.e13mort.palantir.utils
 
 interface Console {
+
+    companion object Empty : Console {
+        override fun write(message: String, writeStyle: WriteStyle) = Unit
+    }
+
     enum class WriteStyle {
         ADD, REPLACE_LAST
     }

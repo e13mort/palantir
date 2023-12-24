@@ -14,7 +14,11 @@ class ScanProjectInteractor(
         val localProject = projectRepository.findProject(projectId) ?: throw Exception("Project $projectId isn't found")
         localProject.updateSynced(true)
         localProject.updateBranches(remoteProject.branches(), syncCallback)
-        localProject.updateMergeRequests(remoteProject.mergeRequests(), syncCallback)
+        localProject.updateMergeRequests(
+            remoteProject.id(),
+            remoteProject.mergeRequests(),
+            syncCallback
+        )
         val syncedBranches = localProject.branches().count()
         val syncedMergeRequests = localProject.mergeRequests().count()
         return ScanProjectResult(syncedBranches, syncedMergeRequests, localProject)
