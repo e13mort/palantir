@@ -10,5 +10,7 @@ interface MergeRequestRepository {
 
     suspend fun deleteMergeRequest(id: Long)
 
+    suspend fun deleteMergeRequestsForProject(projectId: Long)
+
     suspend fun assignees(id: Long): List<User>
 }

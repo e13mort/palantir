@@ -210,7 +210,9 @@ class SyncInteractorTest {
         targetRepository: SyncableProjectRepository = localComponent.projectRepository
     ) = SyncInteractor(
         projectRepository = targetRepository,
-        remoteRepository = sourceRepository
+        remoteRepository = sourceRepository,
+        mergeRequestRepository = localComponent.mrRepository,
+        mergeRequestNotesRepository = localComponent.notesRepository
     )
 
     class LocalComponent(model: LocalModel) {

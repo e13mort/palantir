@@ -25,6 +25,10 @@ class DBMergeRequestRepository(
         localModel.mergeRequestsQueries.removeById(id)
     }
 
+    override suspend fun deleteMergeRequestsForProject(projectId: Long) {
+        localModel.mergeRequestsQueries.removeProjectsMergeRequests(projectId)
+    }
+
     override suspend fun saveMergeRequests(projectId: Long, mergeRequests: List<MergeRequest>) {
         val mergeRequestsQueries = localModel.mergeRequestsQueries
         mergeRequestsQueries.transaction {

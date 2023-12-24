@@ -47,6 +47,20 @@ class DBMergeRequestRepositoryTest {
         testModel.model.projectQueries.clear()
         assertNull(repository.mergeRequest(TEST_PROJECT_ID))
     }
+
+    @Test
+    fun `created MRs deletes after remove operation`() = runTest {
+        testModel.prepareTestProject()
+        repository.saveMergeRequests(
+            TEST_PROJECT_ID, listOf(
+                StubMergeRequest("1"),
+                StubMergeRequest("2")
+            )
+        )
+        repository.deleteMergeRequestsForProject(TEST_PROJECT_ID)
+        assertNull(repository.mergeRequest(1))
+        assertNull(repository.mergeRequest(2))
+    }
     @Test
     fun `assignees are empty`() = runTest {
         testModel.prepareTestProject()

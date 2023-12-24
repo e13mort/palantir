@@ -31,6 +31,7 @@ fun main(args: Array<String>) {
 
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
+    val notesRepository = DBNotesRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository(
         properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
         properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY),
@@ -71,7 +72,7 @@ fun main(args: Array<String>) {
                 ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository, syncCallback).withRender(ASCIISyncProjectResultRender(), consoleOutput)
             }
         ),
-        SyncInteractor(localProjectsRepository, gitlabProjectsRepository, syncCallback)
+        SyncInteractor(localProjectsRepository, gitlabProjectsRepository, mrRepository, notesRepository, syncCallback)
             .withRender(ASCIISyncProjectsRender(), consoleOutput)
             .asCLICommand("sync"),
         ReportCommand().subcommands(
