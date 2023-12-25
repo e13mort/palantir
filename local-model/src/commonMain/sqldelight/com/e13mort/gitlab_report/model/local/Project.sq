@@ -20,3 +20,6 @@ DELETE FROM DBProject;
 insert:
 INSERT INTO DBProject (id, name, sshClonePath, httpClonePath)
 VALUES ?;
+
+delete:
+DELETE FROM DBProject WHERE id = ?;

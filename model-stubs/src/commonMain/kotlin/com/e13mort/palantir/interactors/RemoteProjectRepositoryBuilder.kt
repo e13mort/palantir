@@ -45,6 +45,10 @@ class RemoteProjectRepositoryBuilder {
         }
     }
 
+    fun removeProject(id: Long) {
+        projectScopes.removeIf { it.id == id }
+    }
+
     private fun createProject(config: StubProjectScope.() -> Unit) {
         val newId = (projectScopes.lastOrNull()?.id?.inc()) ?: 1L
         projectScopes.add(

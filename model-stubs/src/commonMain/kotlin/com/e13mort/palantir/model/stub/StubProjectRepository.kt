@@ -13,6 +13,10 @@ class StubProjectRepository(
         return projects.asFlow()
     }
 
+    override suspend fun removeProjects(ids: Set<Long>) {
+        projects.removeIf { ids.contains(it.id().toLong()) }
+    }
+
     override suspend fun findProject(id: Long): Project? {
         return projects.firstOrNull {
             it.id().toLong() == id

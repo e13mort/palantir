@@ -57,6 +57,14 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
         projectQueries.clear()
     }
 
+    override suspend fun removeProjects(ids: Set<Long>) {
+        projectQueries.transaction {
+            ids.forEach {
+                projectQueries.delete(it)
+            }
+        }
+    }
+
 }
 
 internal class SyncableProjectImpl(

@@ -3,6 +3,7 @@ package com.e13mort.palantir.interactors
 import com.e13mort.palantir.repository.ProjectRepository
 import com.e13mort.palantir.model.SyncableProjectRepository
 
+@Deprecated("Use SyncInteractor with a dedicated strategy")
 class ScanProjectInteractor(
     private val projectId: Long,
     private val projectRepository: SyncableProjectRepository,

@@ -13,4 +13,6 @@ interface ProjectRepository {
     suspend fun projectsCount(): Long
 
     suspend fun clear()
+
+    suspend fun removeProjects(ids: Set<Long>)
 }

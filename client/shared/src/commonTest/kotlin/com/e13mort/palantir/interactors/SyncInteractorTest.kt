@@ -11,13 +11,11 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.DriverType
 import com.e13mort.palantir.model.local.LocalModel
-import com.e13mort.palantir.repository.ProjectRepository
 import io.kotest.matchers.collections.shouldMatchEach
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertNotNull
 
@@ -28,34 +26,22 @@ class SyncInteractorTest {
         it.addBaseTestProject()
     }
 
-    @Before
-    fun setUp() = runTest {
-        val scanInteractor = ScanProjectsInteractor(
-            localComponent.projectRepository,
-            repositoryBuilder.build()
-        )
-        scanInteractor.run()
-        localComponent.projectRepository.projects().collect {
-            it.updateSynced(true)
-        }
-    }
-
     @Test
     fun `sync a single remote project leads to a single updated project`() = runTest {
-        createSyncInteractor().run() should {
+        prepareSyncInteractor().run() should {
             it.projectsUpdated shouldBe 1
         }
     }
 
     @Test
     fun `sync a single remote project leads to a single local project`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         localComponent.projectRepository.projectsCount() shouldBe 1
     }
 
     @Test
     fun `sync leads to correct local mr info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         localComponent.mrRepository.mergeRequest(1L) should {
             assertNotNull(it) // keeps nullability info
             it.assignees() shouldMatchEach listOf(matchUser(1L, "StubUser1", "StubUser1"))
@@ -65,17 +51,17 @@ class SyncInteractorTest {
 
     @Test
     fun `second sync with removed mr leads to null local mr`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         repositoryBuilder.project(1) {
             removeMr(1L)
         }
-        createSyncInteractor().run()
+        prepareSyncInteractor(false).run()
         localComponent.mrRepository.mergeRequest(1L) shouldBe null
     }
 
     @Test
     fun `second sync leads to correct local mr info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         repositoryBuilder.project(1L) {
             mr(1L) {
                 assignees {
@@ -83,7 +69,7 @@ class SyncInteractorTest {
                 }
             }
         }
-        createSyncInteractor().run()
+        prepareSyncInteractor(false).run()
         localComponent.mrRepository.mergeRequest(1L) should {
             assertNotNull(it) // keeps nullability info
             it.assignees() shouldMatchEach listOf(
@@ -96,7 +82,7 @@ class SyncInteractorTest {
 
     @Test
     fun `sync project leads to two local event notes`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         localComponent.notesRepository.events(1L, 1L) shouldMatchEach listOf(
             matchEvent(
                 MergeRequestEvent.Type.DISCUSSION,
@@ -110,7 +96,7 @@ class SyncInteractorTest {
 
     @Test
     fun `second sync project leads to new local event notes`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         repositoryBuilder.project(1L) {
             mr(1L) {
                 events {
@@ -122,7 +108,7 @@ class SyncInteractorTest {
                 }
             }
         }
-        createSyncInteractor().run()
+        prepareSyncInteractor(false).run()
         localComponent.notesRepository.events(1L, 1L) shouldMatchEach listOf(
             matchEvent(
                 MergeRequestEvent.Type.DISCUSSION,
@@ -139,7 +125,7 @@ class SyncInteractorTest {
 
     @Test
     fun `sync updates branches info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         val project = localComponent.projectRepository.findProject(1L)!!
         project.branches().values().toList() shouldMatchEach listOf(
             matchBranch("master"),
@@ -149,7 +135,7 @@ class SyncInteractorTest {
 
     @Test
     fun `sync a single remote project updates mr branches info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         val mr = localComponent.mrRepository.mergeRequest(1L)!!
         mr.sourceBranch() should matchBranch("dev")
         mr.targetBranch() should matchBranch("master")
@@ -157,14 +143,14 @@ class SyncInteractorTest {
 
     @Test
     fun `second sync updates mr branches info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         repositoryBuilder.project(1L) {
             mr(1L) {
                 sourceBranch = "dev2"
                 targetBranch = "master2"
             }
         }
-        createSyncInteractor().run()
+        prepareSyncInteractor(false).run()
         val mr = localComponent.mrRepository.mergeRequest(1L)!!
         mr.sourceBranch() should matchBranch("dev2")
         mr.targetBranch() should matchBranch("master2")
@@ -172,18 +158,51 @@ class SyncInteractorTest {
 
     @Test
     fun `second sync updates branches info`() = runTest {
-        createSyncInteractor().run()
+        prepareSyncInteractor().run()
         repositoryBuilder.project(1L) {
             branches {
                 add("dev2")
                 add("master2")
             }
         }
-        createSyncInteractor().run()
+        prepareSyncInteractor(false).run()
         val project = localComponent.projectRepository.findProject(1L)!!
         project.branches().values().toList() shouldMatchEach listOf(
             matchBranch("dev2"),
             matchBranch("master2")
+        )
+    }
+
+    @Test
+    fun `interactor with update strategy syncs one project`() = runTest {
+        val interactorForProjectUpdate = createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects)
+        interactorForProjectUpdate.run()
+        localComponent.projectRepository.projects().toList() shouldMatchEach listOf(
+            matchProjectWithId(1)
+        )
+    }
+
+    @Test
+    fun `interactor with update strategy syncs two projects on second request`() = runTest {
+        createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects).run()
+        repositoryBuilder.project { }
+        repositoryBuilder.project { }
+        repositoryBuilder.removeProject(1)
+        createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects).run()
+        localComponent.projectRepository.projects().toList() shouldMatchEach listOf(
+            matchProjectWithId(2),
+            matchProjectWithId(3),
+        )
+    }
+
+    @Test
+    fun `interactor with update strategy removes missed project`() = runTest {
+        repositoryBuilder.project { }
+        createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects).run()
+        repositoryBuilder.removeProject(1)
+        createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects).run()
+        localComponent.projectRepository.projects().toList() shouldMatchEach listOf(
+            matchProjectWithId(2)
         )
     }
 
@@ -205,15 +224,35 @@ class SyncInteractorTest {
         it.userName() shouldBe userName
     }
 
-    private fun createSyncInteractor(
-        sourceRepository: ProjectRepository = repositoryBuilder.build(),
-        targetRepository: SyncableProjectRepository = localComponent.projectRepository
-    ) = SyncInteractor(
-        projectRepository = targetRepository,
-        remoteRepository = sourceRepository,
-        mergeRequestRepository = localComponent.mrRepository,
-        mergeRequestNotesRepository = localComponent.notesRepository
-    )
+    private fun matchProjectWithId(id: Long): (SyncableProjectRepository.SyncableProject) -> Unit =
+        { it.id() shouldBe id.toString() }
+
+    private suspend fun prepareSyncInteractor(
+        prepare: Boolean = true,
+        syncStrategy: SyncInteractor.SyncStrategy = SyncInteractor.SyncStrategy.FullSyncForActiveProjects
+    ): SyncInteractor {
+        if (prepare) {
+            val scanInteractor = ScanProjectsInteractor(
+                localComponent.projectRepository,
+                repositoryBuilder.build()
+            )
+            scanInteractor.run()
+            localComponent.projectRepository.projects().collect {
+                it.updateSynced(true)
+            }
+        }
+        return createSyncInteractor(syncStrategy)
+    }
+
+    private fun createSyncInteractor(syncStrategy: SyncInteractor.SyncStrategy): SyncInteractor {
+        return SyncInteractor(
+            projectRepository = localComponent.projectRepository,
+            remoteRepository = repositoryBuilder.build(),
+            mergeRequestRepository = localComponent.mrRepository,
+            mergeRequestNotesRepository = localComponent.notesRepository,
+            strategy = syncStrategy
+        )
+    }
 
     class LocalComponent(model: LocalModel) {
         val projectRepository = DBProjectRepository(model)

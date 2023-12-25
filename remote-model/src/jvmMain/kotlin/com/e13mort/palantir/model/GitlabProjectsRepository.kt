@@ -48,6 +48,8 @@ class GitlabProjectsRepository(
         throw UnsupportedRepositoryOperationException("addProject")
 
     override suspend fun clear(): Unit = throw UnsupportedRepositoryOperationException("clear")
+
+    override suspend fun removeProjects(ids: Set<Long>): Unit = throw UnsupportedRepositoryOperationException("removeProjects")
 }
 
 internal class GitlabProject(
