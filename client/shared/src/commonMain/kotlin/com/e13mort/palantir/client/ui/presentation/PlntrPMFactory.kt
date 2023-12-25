@@ -6,10 +6,8 @@ import com.e13mort.palantir.client.properties.safeIntProperty
 import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.interactors.PercentileInteractor
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
-import com.e13mort.palantir.interactors.ScanProjectInteractor
 import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
-import com.e13mort.palantir.model.SyncableProjectRepository
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
@@ -79,22 +77,6 @@ class PlntrPMFactory(
         return ConfigureActiveProjectsPM(
             pmParams = params,
             PrintAllProjectsInteractor(localProjectsRepository),
-            projectSyncInteractorFactory = { projectId -> //todo: refactor
-                ScanProjectInteractor(
-                    projectId,
-                    localProjectsRepository,
-                    gitlabProjectsRepository,
-                    object : SyncableProjectRepository.SyncableProject.SyncCallback {
-                        override fun onBranchEvent(branchEvent: SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent) {
-
-                        }
-
-                        override fun onMREvent(event: SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent) {
-
-                        }
-
-                    }).run()
-            },
             main = mainScope,
             backgroundDispatcher = backgroundDispatcher
         )

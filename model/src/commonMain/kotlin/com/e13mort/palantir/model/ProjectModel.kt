@@ -99,13 +99,6 @@ interface SyncableProjectRepository : ProjectRepository {
         @Deprecated("this logic should be moved to interactor")
         suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
 
-        @Deprecated("this logic should be moved to interactor")
-        suspend fun updateMergeRequests(
-            projectId: String,
-            mergeRequests: MergeRequests,
-            callback: UpdateMRCallback = UpdateMRCallback {}
-        )
-
         fun interface UpdateMRCallback {
             fun onMREvent(event: MREvent)
 

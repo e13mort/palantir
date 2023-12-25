@@ -67,12 +67,15 @@ fun main(args: Array<String>) {
             }
         ),
         ScanCommand().subcommands(
-            ScanProjectsInteractor(localProjectsRepository, gitlabProjectsRepository, console).asCLICommand("projects"),
+            SyncInteractor(localProjectsRepository, gitlabProjectsRepository, mrRepository, notesRepository, SyncInteractor.SyncStrategy.UpdateProjects, syncCallback)
+                .withRender(ASCIISyncProjectsRender(), consoleOutput)
+                .asCLICommand("projects"),
             LongIdInteractorCommand("project") {
-                ScanProjectInteractor(it, localProjectsRepository, gitlabProjectsRepository, syncCallback).withRender(ASCIISyncProjectResultRender(), consoleOutput)
+                SyncInteractor(localProjectsRepository, gitlabProjectsRepository, mrRepository, notesRepository, SyncInteractor.SyncStrategy.FullSyncForProject(it), syncCallback)
+                    .withRender(ASCIISyncProjectsRender(), consoleOutput)
             }
         ),
-        SyncInteractor(localProjectsRepository, gitlabProjectsRepository, mrRepository, notesRepository, syncCallback)
+        SyncInteractor(localProjectsRepository, gitlabProjectsRepository, mrRepository, notesRepository, SyncInteractor.SyncStrategy.FullSyncForActiveProjects, syncCallback)
             .withRender(ASCIISyncProjectsRender(), consoleOutput)
             .asCLICommand("sync"),
         ReportCommand().subcommands(

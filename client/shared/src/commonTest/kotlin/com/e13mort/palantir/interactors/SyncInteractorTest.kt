@@ -232,10 +232,7 @@ class SyncInteractorTest {
         syncStrategy: SyncInteractor.SyncStrategy = SyncInteractor.SyncStrategy.FullSyncForActiveProjects
     ): SyncInteractor {
         if (prepare) {
-            val scanInteractor = ScanProjectsInteractor(
-                localComponent.projectRepository,
-                repositoryBuilder.build()
-            )
+            val scanInteractor = createSyncInteractor(SyncInteractor.SyncStrategy.UpdateProjects)
             scanInteractor.run()
             localComponent.projectRepository.projects().collect {
                 it.updateSynced(true)

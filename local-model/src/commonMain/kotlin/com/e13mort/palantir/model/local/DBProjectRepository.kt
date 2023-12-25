@@ -6,7 +6,6 @@ import kotlinx.coroutines.flow.*
 import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.BranchAdded as BranchAdded
 import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.RemoteLoadingStarted as BRRemoteLoadingStarted
 import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent.LoadMR as LoadMREvent
-import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent.RemoteLoadingStarted as MRRemoteLoadingStarted
 
 class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
@@ -93,42 +92,6 @@ internal class SyncableProjectImpl(
         branches.values().collect {
             branchesQueries.insert(projectId(), it.name())
             callback.onBranchEvent(BranchAdded(it.name()))
-        }
-    }
-
-    override suspend fun updateMergeRequests(
-        projectId: String,
-        mergeRequests: MergeRequests,
-        callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback
-    ) {
-
-        mergeRequestsQueries.removeProjectsMergeRequests(projectId())
-        callback.onMREvent(MRRemoteLoadingStarted)
-        val values = mergeRequests.values()
-        val mrList = values.toList()
-        mrList.forEachIndexed { index, mr ->
-            notifyMRProcessing(mr, callback, index, mrList.size)
-            val mrId = mr.id().toLong()
-            mergeRequestsQueries.insert(
-                projectId.toLong(),
-                mrId,
-                mr.state().ordinal.toLong(),
-                mr.sourceBranch().name(),
-                mr.targetBranch().name(),
-                mr.createdTime(),
-                mr.closedTime()
-            )
-            mrAssigneesQueries.removeByMR(mrId)
-            mr.assignees().forEach { user ->
-                userQueries.put(user.id(), user.name(), user.userName())
-                mrAssigneesQueries.add(mrId, user.id())
-            }
-            mrNotes.clearForMR(mrId)
-            mr.events().forEach {
-                val user = it.user()
-                userQueries.put(user.id(), user.name(), user.userName())
-                mrNotes.add(it.id(), mrId, it.type().ordinal.toLong(), user.id(), it.content(), it.timeMillis())
-            }
         }
     }
 

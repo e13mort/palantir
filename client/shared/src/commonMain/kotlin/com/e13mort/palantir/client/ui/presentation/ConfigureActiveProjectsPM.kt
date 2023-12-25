@@ -2,7 +2,6 @@ package com.e13mort.palantir.client.ui.presentation
 
 import com.e13mort.palantir.interactors.AllProjectsResult
 import com.e13mort.palantir.interactors.Interactor
-import com.e13mort.palantir.interactors.ScanProjectInteractor
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.async
@@ -17,7 +16,6 @@ import me.dmdev.premo.navigation.back
 class ConfigureActiveProjectsPM(
     pmParams: PmParams,
     private val projectsInteractor: Interactor<AllProjectsResult>,
-    private val projectSyncInteractorFactory: suspend (Long) -> ScanProjectInteractor.ScanProjectResult,
     private val main: CoroutineScope,
     private val backgroundDispatcher: CoroutineDispatcher
 ) : PresentationModel(pmParams) {
