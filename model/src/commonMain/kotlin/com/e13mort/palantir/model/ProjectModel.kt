@@ -119,6 +119,7 @@ interface SyncableProjectRepository : ProjectRepository {
             fun onBranchEvent(branchEvent: BranchEvent)
         }
 
+        @Deprecated("use data from flowable")
         interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback {
             companion object Empty : SyncCallback {
                 override fun onBranchEvent(branchEvent: UpdateBranchesCallback.BranchEvent) = Unit

@@ -10,11 +10,27 @@ class ASCIISyncProjectsRender : ReportRender<SyncInteractor.SyncResult, String, 
             cellStyle {
                 border = true
             }
-            if (value.projectsUpdated == -1L) { //fixme
-                row("Sync in process...")
-            } else {
-                row("Projects updated")
-                row(value.projectsUpdated)
+            when(val state = value.state) {
+                is SyncInteractor.SyncResult.State.Done -> {
+                    row("Projects updated")
+                    row(state.itemsUpdated)
+                }
+                is SyncInteractor.SyncResult.State.InProgress -> {
+                    when(state.state) {
+                        SyncInteractor.SyncResult.State.ProgressState.LOADING -> {
+                            row("Loading remote projects...")
+                        }
+                        SyncInteractor.SyncResult.State.ProgressState.SAVING -> {
+                            row("Saving remote projects...")
+                        }
+                    }
+                }
+                SyncInteractor.SyncResult.State.Pending -> {
+                    row("Waiting for sync start...")
+                }
+                SyncInteractor.SyncResult.State.Skipped -> {
+                    row("Project sync skipped...")
+                }
             }
         }.toString()
     }

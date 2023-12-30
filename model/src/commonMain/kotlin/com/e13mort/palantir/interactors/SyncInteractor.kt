@@ -7,6 +7,7 @@ import com.e13mort.palantir.repository.MergeRequestRepository
 import com.e13mort.palantir.repository.NotesRepository
 import com.e13mort.palantir.repository.ProjectRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
@@ -26,22 +27,55 @@ class SyncInteractor(
         data class FullSyncForProject(val projectId: Long) : SyncStrategy
     }
 
-    data class SyncResult(val projectsUpdated: Long)
+    data class SyncResult(
+        val state: State,
+        val projects: Map<Long, ProjectSyncState> = emptyMap()
+    ) {
+
+        data class ProjectSyncState(
+            val projectSyncState: State,
+            val branchesState: State,
+            val mrs: List<MRSyncState>
+        )
+
+        data class MRSyncState(val id: Long, val state: State)
+
+        sealed class State {
+
+            enum class ProgressState { LOADING, SAVING }
+
+            data object Pending : State()
+            data class InProgress(val state: ProgressState) : State()
+            data class Done(val itemsUpdated: Long) : State()
+            data object Skipped : State()
+        }
+
+        //projectN ->
+        //  branches ->
+        //      loading...
+        //      saving...
+        //  mrs ->
+        //      loading all info
+        //       mr N ->
+        //           loading...
+        //           saving...
+    }
 
     override suspend fun run(arg: SyncStrategy): Flow<SyncResult> {
         return flow {
-            emit(SyncResult(-1))
-            val value = when (arg) {
-                SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects()
-                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(arg.projectId)
-                SyncStrategy.UpdateProjects -> updateLocalProjects()
+            when (arg) {
+                SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(this)
+                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(this, arg.projectId)
+                SyncStrategy.UpdateProjects -> updateLocalProjects(this)
             }
-            emit(value)
         }
     }
 
-    private suspend fun updateLocalProjects(): SyncResult {
+    private suspend fun updateLocalProjects(flowCollector: FlowCollector<SyncResult>) {
+        flowCollector.emit(SyncResult(SyncResult.State.Pending))
+        flowCollector.emit(SyncResult(SyncResult.State.InProgress(SyncResult.State.ProgressState.LOADING)))
         val remoteProjects = remoteRepository.projects().toList()
+        flowCollector.emit(SyncResult(SyncResult.State.InProgress(SyncResult.State.ProgressState.SAVING)))
         val localProjects = projectRepository.projects().toList()
 
         val remoteProjectIds = remoteProjects.map { it.id().toLong() }.toSet()
@@ -58,35 +92,40 @@ class SyncInteractor(
         }.forEach { project ->
             projectRepository.addProject(project)
         }
-        return SyncResult(remoteProjectsForAddition.size.toLong())
+        flowCollector.emit(SyncResult(SyncResult.State.Done(remoteProjectsForAddition.size.toLong())))
     }
 
-    private suspend fun runFullSyncForSelectedProjects(): SyncResult {
+    private suspend fun runFullSyncForSelectedProjects(flowCollector: FlowCollector<SyncResult>) {
         var syncedCounter = 0L
         projectRepository.syncedProjects().collect {
             remoteRepository.findProject(it.id().toLong())?.let { remoteProject ->
-                syncProject(it, remoteProject)
+                syncProject(it, remoteProject, flowCollector)
                 syncedCounter++
             }
         }
-        return SyncResult(syncedCounter)
     }
 
-    private suspend fun runFullSyncForProject(projectId: Long): SyncResult {
+    private suspend fun runFullSyncForProject(
+        flowCollector: FlowCollector<SyncResult>,
+        projectId: Long
+    ) {
         val localProject = projectRepository.projects().filter { it.id().toLong() == projectId }.firstOrNull()
             ?: throw IllegalArgumentException("Local project with id $projectId doesn't exists")
         val remoteProject = remoteRepository.findProject(projectId) ?: throw IllegalArgumentException("Remote project with id $projectId doesn't exists")
         localProject.updateSynced(true)
-        syncProject(localProject, remoteProject)
-        return SyncResult(1)
+        syncProject(localProject, remoteProject, flowCollector)
     }
 
     private suspend fun syncProject(
         localProject: SyncableProjectRepository.SyncableProject,
-        remoteProject: Project
+        remoteProject: Project,
+        flowCollector: FlowCollector<SyncResult>
     ) {
+        flowCollector.emit(SyncResult(state = SyncResult.State.Pending))
+//        val remoteBranches = remoteProject.branches().values().toList()
         localProject.updateBranches(remoteProject.branches(), syncCallback)
         syncMRs(remoteProject, syncCallback)
+        flowCollector.emit(SyncResult(state = SyncResult.State.Done(1))) //fixme
     }
 
     private suspend fun syncMRs(

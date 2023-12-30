@@ -30,7 +30,7 @@ class SyncInteractorTest {
     @Test
     fun `sync a single remote project leads to a single updated project`() = testSyncResult { syncResult ->
         syncResult should {
-            it.projectsUpdated shouldBe 1
+            (it.state as SyncInteractor.SyncResult.State.Done).itemsUpdated shouldBe 1
         }
     }
 
