@@ -1,11 +1,11 @@
 package com.e13mort.palantir.client.ui.presentation
 
-import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.interactors.PercentileReport
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.model.ReportsRepository
+import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.e13mort.palantir.utils.asInputString
 import com.e13mort.palantir.utils.asRanges
@@ -14,6 +14,7 @@ import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
@@ -26,7 +27,7 @@ class MRReportsPM(
     private val dateStringConverter: DateStringConverter,
     private val stringDateConverter: StringDateConverter,
     private val percentiles: List<ReportsRepository.Percentile>,
-    val reportsInteractorFactory: (Long, List<Range>) -> Interactor<PercentileReport>,
+    private val reportsInteractor: Interactor<Pair<Long, List<Range>>, PercentileReport>,
 ) : PresentationModel(pmParams) {
     companion object Description : PmDescription
 
@@ -44,21 +45,23 @@ class MRReportsPM(
             val rangeTextFieldState = textFieldState.value
             if (!rangeTextFieldState.valid) return@launch
             _states.value = State.LOADING
-            launch(backgroundDispatcher) {
-                val allProjectsResult = projectsInteractor.run()
+            projectsInteractor.run(Unit).flowOn(backgroundDispatcher).collect {
+                val allProjectsResult = it
                 val syncedProjects = allProjectsResult.projects(true)
                 val resultMap = mutableMapOf<String, List<State.ReportsReady.ReportDataRow>>()
                 syncedProjects.forEach { project ->
-                    val report = reportsInteractorFactory(
-                        project.id().toLong(), //todo refactor to avoid casting
-                        rangeTextFieldState.ranges
-                    ).run()
-                    resultMap[project.name()] = report.prepareReports()
-                    val dataHeaders = percentiles.map {
-                        it.name
-                    }
                     scope.launch {
-                        _states.value = State.ReportsReady(resultMap.toMap(), dataHeaders)
+                        reportsInteractor.run(
+                            project.id().toLong() to //todo refactor to avoid casting
+                                    rangeTextFieldState.ranges
+                        ).flowOn(backgroundDispatcher).collect { report: PercentileReport ->
+                            resultMap[project.name()] = report.prepareReports()
+                            val dataHeaders = percentiles.map { percentile ->
+                                percentile.name
+                            }
+                            _states.value = State.ReportsReady(resultMap.toMap(), dataHeaders)
+                        }
+
                     }
                 }
             }

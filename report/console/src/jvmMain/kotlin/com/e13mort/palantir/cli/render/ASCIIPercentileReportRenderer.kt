@@ -1,7 +1,7 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.PercentileReport
-import com.e13mort.palantir.interactors.ReportRender
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
@@ -9,20 +9,21 @@ import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
 import com.jakewharton.picnic.table
 
 class ASCIIPercentileReportRenderer(
-    private val dateToStringConverter: DateStringConverter,
-    private val requestedPercentiles: List<ReportsRepository.Percentile>,
-    private val showBorders: Boolean = true
-) : ReportRender<PercentileReport, String> {
-    override fun render(value: PercentileReport): String {
+    private val dateToStringConverter: DateStringConverter
+) : ReportRender<PercentileReport, String, List<ReportsRepository.Percentile>> {
+    override fun render(
+        value: PercentileReport,
+        params: List<ReportsRepository.Percentile>
+    ): String {
         return table {
             cellStyle {
-                border = showBorders
+                border = true
             }
             header {
                 row {
                     cell("Period")
                     cell("MR count")
-                    requestedPercentiles.forEach {
+                    params.forEach {
                         cell(it.name)
                     }
                 }
@@ -31,7 +32,7 @@ class ASCIIPercentileReportRenderer(
                 row {
                     cell(value.period(i).asString(dateToStringConverter))
                     cell(value.totalMRCount(i))
-                    requestedPercentiles.forEach {
+                    params.forEach {
                         cell(value.formatPercentileString(i, it))
                     }
                 }

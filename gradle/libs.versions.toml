@@ -34,6 +34,7 @@ premo-navigation = { module = "me.dmdev.premo:premo-navigation", version.ref = "
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 io-github-chozzle-composemacostheme = "io.github.chozzle:compose-macos-theme:0.4.2"
 io-kotest-assertions = "io.kotest:kotest-assertions-core:5.8.0"
+turbine = "app.cash.turbine:turbine:1.0.0"
 
 [plugins]
 com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"

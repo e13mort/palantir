@@ -42,6 +42,7 @@ class PlntrPMFactory(
     private val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     private val requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
+    private val percentileInteractor = PercentileInteractor(reportsRepository)
     private val backgroundDispatcher = Dispatchers.IO
 
     override fun createPm(params: PmParams): PresentationModel {
@@ -57,14 +58,12 @@ class PlntrPMFactory(
                 dateToStringConverter,
                 stringToDateConverter,
                 requestedPercentiles,
-            ) { projectId, ranges ->
-                PercentileInteractor(reportsRepository, projectId, ranges)
-            }
+                percentileInteractor
+            )
 
             is ActiveProjectsPM.Description -> ActiveProjectsPM(
                 params,
                 allProjectsInteractor,
-                mainScope,
                 backgroundDispatcher
             )
 
@@ -77,7 +76,6 @@ class PlntrPMFactory(
         return ConfigureActiveProjectsPM(
             pmParams = params,
             PrintAllProjectsInteractor(localProjectsRepository),
-            main = mainScope,
             backgroundDispatcher = backgroundDispatcher
         )
     }

@@ -3,10 +3,10 @@ package com.e13mort.palantir.client.ui.presentation
 import com.e13mort.palantir.interactors.AllProjectsResult
 import com.e13mort.palantir.interactors.Interactor
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import me.dmdev.premo.PmDescription
 import me.dmdev.premo.PmParams
@@ -15,8 +15,7 @@ import me.dmdev.premo.navigation.back
 
 class ConfigureActiveProjectsPM(
     pmParams: PmParams,
-    private val projectsInteractor: Interactor<AllProjectsResult>,
-    private val main: CoroutineScope,
+    private val projectsInteractor: Interactor<Unit, AllProjectsResult>,
     private val backgroundDispatcher: CoroutineDispatcher
 ) : PresentationModel(pmParams) {
     object Description : PmDescription
@@ -26,16 +25,19 @@ class ConfigureActiveProjectsPM(
         get() = _state
 
     fun load() {
-        main.launch {
+        scope.launch {
             _state.value = ListState.LOADING
-            val projects = CoroutineScope(backgroundDispatcher).async {
-                val resultList = mutableListOf<Project>()
-                val projectsReport = projectsInteractor.run()
-                resultList += wrapProjects(projectsReport, true)
-                resultList += wrapProjects(projectsReport, false)
-                resultList.toList()
-            }.await()
-            _state.value = ListState.ProjectsList(projects)
+            projectsInteractor.run(Unit)
+                .flowOn(backgroundDispatcher)
+                .map {
+                    val resultList = mutableListOf<Project>()
+                    resultList += wrapProjects(it, true)
+                    resultList += wrapProjects(it, false)
+                    ListState.ProjectsList(resultList.toList())
+                }
+                .collect {
+                    _state.value = it
+                }
         }
 
     }

@@ -1,38 +1,42 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.AllProjectsResult
-import com.e13mort.palantir.interactors.ReportRender
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.model.Project
 import com.jakewharton.picnic.TableSectionDsl
 import com.jakewharton.picnic.table
 
-class ASCIITableProjectsListRender(
-    private val showFullInfo: Boolean
-) : ReportRender<AllProjectsResult, String> {
-    override fun render(value: AllProjectsResult) : String {
+class ASCIITableProjectsListRender : ReportRender<AllProjectsResult, String, Boolean> {
+
+    override fun render(value: AllProjectsResult, showExtendedInfo: Boolean): String {
         return table {
             cellStyle {
                 border = true
             }
             header {
                 row("Id", "Project Name", "Synced")
-                printProjects(value, true)
-                printProjects(value, false)
+                printProjects(value, true, showExtendedInfo)
+                printProjects(value, false, showExtendedInfo)
             }
         }.toString()
     }
 
-    private fun TableSectionDsl.printProjects(value: AllProjectsResult, synced: Boolean) {
+    private fun TableSectionDsl.printProjects(
+        value: AllProjectsResult,
+        synced: Boolean,
+        showExtendedInfo: Boolean
+    ) {
         value.projects(synced).forEach {
-            printProject(it, synced)
+            printProject(it, synced, showExtendedInfo)
         }
     }
 
     private fun TableSectionDsl.printProject(
         project: Project,
-        synced: Boolean
+        synced: Boolean,
+        showExtendedInfo: Boolean
     ) {
-        if (showFullInfo) {
+        if (showExtendedInfo) {
             row(
                 project.id(),
                 renderFullProjectInfo(project),

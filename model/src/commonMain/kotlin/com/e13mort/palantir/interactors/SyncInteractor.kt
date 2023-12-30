@@ -6,8 +6,10 @@ import com.e13mort.palantir.model.SyncableProjectRepository
 import com.e13mort.palantir.repository.MergeRequestRepository
 import com.e13mort.palantir.repository.NotesRepository
 import com.e13mort.palantir.repository.ProjectRepository
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 
 class SyncInteractor(
@@ -15,9 +17,8 @@ class SyncInteractor(
     private val remoteRepository: ProjectRepository,
     private val mergeRequestRepository: MergeRequestRepository,
     private val mergeRequestNotesRepository: NotesRepository,
-    private val strategy: SyncStrategy = SyncStrategy.FullSyncForActiveProjects,
-    private val syncCallback: SyncableProjectRepository.SyncableProject.SyncCallback = SyncableProjectRepository.SyncableProject.SyncCallback.Empty
-) : Interactor<SyncInteractor.SyncResult> {
+    private val syncCallback: SyncableProjectRepository.SyncableProject.SyncCallback = SyncableProjectRepository.SyncableProject.SyncCallback
+) : Interactor<SyncInteractor.SyncStrategy, SyncInteractor.SyncResult> {
 
     sealed interface SyncStrategy {
         data object UpdateProjects : SyncStrategy
@@ -27,11 +28,15 @@ class SyncInteractor(
 
     data class SyncResult(val projectsUpdated: Long)
 
-    override suspend fun run(): SyncResult {
-        return when(strategy) {
-            SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects()
-            is SyncStrategy.FullSyncForProject -> runFullSyncForProject(strategy.projectId)
-            SyncStrategy.UpdateProjects -> updateLocalProjects()
+    override suspend fun run(arg: SyncStrategy): Flow<SyncResult> {
+        return flow {
+            emit(SyncResult(-1))
+            val value = when (arg) {
+                SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects()
+                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(arg.projectId)
+                SyncStrategy.UpdateProjects -> updateLocalProjects()
+            }
+            emit(value)
         }
     }
 

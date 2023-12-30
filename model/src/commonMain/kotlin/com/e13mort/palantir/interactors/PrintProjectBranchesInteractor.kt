@@ -2,12 +2,13 @@ package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.model.Branches
 import com.e13mort.palantir.repository.ProjectRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.toList
 
 class PrintProjectBranchesInteractor(
-    private val localRepository: ProjectRepository,
-    private val projectId: Long
-) : Interactor<PrintProjectBranchesInteractor.BranchesReport> {
+    private val localRepository: ProjectRepository
+) : Interactor<Long, PrintProjectBranchesInteractor.BranchesReport> {
 
     class BranchesReport(private val branches: Branches) {
 
@@ -19,8 +20,11 @@ class PrintProjectBranchesInteractor(
         }
     }
 
-    override suspend fun run(): BranchesReport {
-        val project = localRepository.findProject(projectId) ?: throw Exception("Project with id $projectId not found")
-        return BranchesReport(project.branches())
+    override suspend fun run(arg: Long): Flow<BranchesReport> {
+        return flow {
+            val project = localRepository.findProject(arg)
+                ?: throw Exception("Project with id $arg not found")
+            emit(BranchesReport(project.branches()))
+        }
     }
 }

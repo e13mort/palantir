@@ -1,4 +1,4 @@
-package com.e13mort.palantir.cli
+package com.e13mort.palantir.cli.output
 
 import com.e13mort.palantir.utils.Console
 import java.io.Console as SystemConsole

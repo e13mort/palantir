@@ -40,6 +40,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlin.test.annotations.common)
                 implementation(libs.io.kotest.assertions)
+                implementation(libs.turbine)
             }
         }
     }
