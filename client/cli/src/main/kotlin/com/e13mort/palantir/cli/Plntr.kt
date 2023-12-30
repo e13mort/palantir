@@ -7,6 +7,7 @@ import com.e13mort.palantir.cli.commands.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.MR
 import com.e13mort.palantir.cli.commands.RootCommand
 import com.e13mort.palantir.cli.commands.ScanCommand
+import com.e13mort.palantir.cli.commands.SyncCommand
 import com.e13mort.palantir.cli.commands.asLongCommand
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitCommandParams
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitRenderParams
@@ -126,6 +127,8 @@ fun main(args: Array<String>) {
                 render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
                 commandParamsMapper = { SyncInteractor.SyncStrategy.UpdateProjects },
             ),
+        ),
+        SyncCommand().subcommands(
             syncInteractor.asLongCommand(
                 name = "project",
                 render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
@@ -133,11 +136,11 @@ fun main(args: Array<String>) {
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId)
                 }
             ),
-        ),
-        syncInteractor.asUnitCommandWithUnitRenderParams(
-            name = "sync",
-            render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
-            commandParamsMapper = { SyncInteractor.SyncStrategy.FullSyncForActiveProjects },
+            syncInteractor.asUnitCommandWithUnitRenderParams(
+                name = "active",
+                render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
+                commandParamsMapper = { SyncInteractor.SyncStrategy.FullSyncForActiveProjects },
+            )
         ),
         ReportCommand().subcommands(
             ApprovesCommand().subcommands(
