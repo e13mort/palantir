@@ -21,7 +21,7 @@ class PrintMergeRequestInteractor(
         val events: List<MergeRequestEvent>
     )
 
-    override suspend fun run(arg: Long): Flow<MergeRequestsReport> {
+    override fun run(arg: Long): Flow<MergeRequestsReport> {
         return flow {
             val mr = mrRepository.mergeRequest(arg)
                 ?: throw Exception("MR with id $arg not found")

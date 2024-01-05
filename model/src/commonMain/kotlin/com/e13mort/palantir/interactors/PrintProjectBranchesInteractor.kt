@@ -20,7 +20,7 @@ class PrintProjectBranchesInteractor(
         }
     }
 
-    override suspend fun run(arg: Long): Flow<BranchesReport> {
+    override fun run(arg: Long): Flow<BranchesReport> {
         return flow {
             val project = localRepository.findProject(arg)
                 ?: throw Exception("Project with id $arg not found")

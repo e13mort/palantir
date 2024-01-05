@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.flow
 class PrintProjectSummaryInteractor(
     private val projectRepository: ProjectRepository
 ) : Interactor<Long, ProjectSummary> {
-    override suspend fun run(arg: Long): Flow<ProjectSummary> {
+    override fun run(arg: Long): Flow<ProjectSummary> {
         return flow {
             val project =
                 projectRepository.findProject(arg) ?: throw Exception("Project $arg not found")

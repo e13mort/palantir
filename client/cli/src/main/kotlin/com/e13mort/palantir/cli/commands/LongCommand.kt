@@ -8,7 +8,7 @@ import com.github.ajalt.clikt.parameters.types.long
 class LongCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name: String,
     interactor: Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>,
-    render: ReportRender<INTERACTOR_OUTPUT, Unit, RENDER_PARAMS>,
+    render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT,
     renderParamsMapper: (CommandParams) -> RENDER_PARAMS,
     private val commandParamMapper: (Long) -> INTERACTOR_INPUT
@@ -25,7 +25,7 @@ class LongCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asLongCommand(
     name: String,
-    render: ReportRender<INTERACTOR_OUTPUT, Unit, Unit>,
+    render: ReportRender<INTERACTOR_OUTPUT, String, Unit>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> Unit = {},
     commandParamMapper: (Long) -> INTERACTOR_INPUT,
@@ -38,7 +38,7 @@ fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTO
 
 fun <INTERACTOR_OUTPUT> Interactor<Long, INTERACTOR_OUTPUT>.asLongCommand(
     name: String,
-    render: ReportRender<INTERACTOR_OUTPUT, Unit, Unit>,
+    render: ReportRender<INTERACTOR_OUTPUT, String, Unit>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> Unit = { },
     config: CommandWithRender<Long, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit>.() -> Unit = { },

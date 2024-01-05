@@ -52,7 +52,7 @@ class SyncInteractor(
         }
     }
 
-    override suspend fun run(arg: SyncStrategy): Flow<SyncResult> {
+    override fun run(arg: SyncStrategy): Flow<SyncResult> {
         return flow {
             when (arg) {
                 SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(this)

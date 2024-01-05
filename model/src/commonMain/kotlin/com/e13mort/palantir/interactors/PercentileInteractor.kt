@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.flow
 class PercentileInteractor(
     private val reportsRepository: ReportsRepository
 ) : Interactor<Pair<Long, List<Range>>, PercentileReport> {
-    override suspend fun run(arg: Pair<Long, List<Range>>): Flow<PercentileReport> {
+    override fun run(arg: Pair<Long, List<Range>>): Flow<PercentileReport> {
         return flow {
             val reports = arg.second.map {
                 reportsRepository.firstApprovesStatistics(arg.first, it.start, it.end)

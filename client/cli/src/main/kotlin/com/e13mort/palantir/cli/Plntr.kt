@@ -11,9 +11,6 @@ import com.e13mort.palantir.cli.commands.SyncCommand
 import com.e13mort.palantir.cli.commands.asLongCommand
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitCommandParams
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitRenderParams
-import com.e13mort.palantir.cli.output.ConsoleImpl
-import com.e13mort.palantir.cli.output.ConsoleRenderOutput
-import com.e13mort.palantir.cli.output.asConsole
 import com.e13mort.palantir.cli.render.ASCIIApproveStatisticsRenderer
 import com.e13mort.palantir.cli.render.ASCIIBranchesRender
 import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
@@ -46,7 +43,6 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
-import com.e13mort.palantir.utils.Console
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.subcommands
@@ -71,10 +67,6 @@ fun main(args: Array<String>) {
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     val requestedPercentilesProperty = properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
-    val console = createConsole()
-
-    val consoleOutput = ConsoleRenderOutput(console)
-    val continuousConsoleOutput = ConsoleRenderOutput(console, Console.WriteStyle.REPLACE_LAST)
 
     val reportsRepository = DBReportsRepository(model)
     val syncInteractor = SyncInteractor(
@@ -95,7 +87,7 @@ fun main(args: Array<String>) {
         PrintCommand().subcommands(
             printAllProjectsInteractor.asUnitCommandWithUnitCommandParams(
                 name = "projects",
-                render = ASCIITableProjectsListRender().asConsole(consoleOutput),
+                render = ASCIITableProjectsListRender(),
                 renderParamsMapper = { params ->
                     params.flags.contains("-a")
                 },
@@ -104,39 +96,39 @@ fun main(args: Array<String>) {
             },
             projectSummaryInteractor.asLongCommand(
                 "project",
-                ASCIITableProjectRender().asConsole(consoleOutput),
+                ASCIITableProjectRender(),
             ),
             printBranchesInteractor.asLongCommand(
                 name = "branches",
-                render = ASCIIBranchesRender().asConsole(consoleOutput),
+                render = ASCIIBranchesRender()
             ),
             printMergeRequestsInteractor.asLongCommand(
                 name = "mrs",
-                render = ASCIIMergeRequestsRender().asConsole(consoleOutput),
+                render = ASCIIMergeRequestsRender()
             ),
             printMergeRequestInteractor.asLongCommand(
                 name = "mr",
-                render = ASCIIMergeRequestRender().asConsole(consoleOutput),
+                render = ASCIIMergeRequestRender(),
             )
         ),
         ScanCommand().subcommands(
             syncInteractor.asUnitCommandWithUnitRenderParams(
                 name = "projects",
-                render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
+                render = ASCIISyncProjectsRender(),
                 commandParamsMapper = { SyncInteractor.SyncStrategy.UpdateProjects },
             ),
         ),
         SyncCommand().subcommands(
             syncInteractor.asLongCommand(
                 name = "project",
-                render = ASCIIFullSyncProjectsRender().asConsole(continuousConsoleOutput),
+                render = ASCIIFullSyncProjectsRender(),
                 commandParamMapper = { projectId ->
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId)
                 }
             ),
             syncInteractor.asUnitCommandWithUnitRenderParams(
                 name = "active",
-                render = ASCIIFullSyncProjectsRender().asConsole(continuousConsoleOutput),
+                render = ASCIIFullSyncProjectsRender(),
                 commandParamsMapper = { SyncInteractor.SyncStrategy.FullSyncForActiveProjects },
             )
         ),
@@ -144,7 +136,7 @@ fun main(args: Array<String>) {
             ApprovesCommand().subcommands(
                 approveStatisticsInteractor.asLongCommand(
                     name = "total",
-                    render = ASCIIApproveStatisticsRenderer().asConsole(consoleOutput),
+                    render = ASCIIApproveStatisticsRenderer(),
                     commandParamMapper = { projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
@@ -154,7 +146,7 @@ fun main(args: Array<String>) {
                 ),
                 approveStatisticsInteractor.asLongCommand(
                     name = "first",
-                    render = ASCIIApproveStatisticsRenderer().asConsole(consoleOutput),
+                    render = ASCIIApproveStatisticsRenderer(),
                     commandParamMapper = { projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
@@ -169,7 +161,7 @@ fun main(args: Array<String>) {
                     interactor = projectStatisticsInteractor,
                     render = ASCIIPercentileReportRenderer(
                         createDateConverter(dateFormat)
-                    ).asConsole(consoleOutput),
+                    ),
                     renderValueMapper = { it },
                     renderParamsMapper = { ReportsRepository.Percentile.fromString(requestedPercentilesProperty) },
                     commandParamMapper = { a, b -> a to b },
@@ -178,16 +170,6 @@ fun main(args: Array<String>) {
             )
         )
     ).main(args)
-}
-
-private fun createConsole() : Console {
-    return System.console().let {
-        if (it != null) ConsoleImpl(it) else object : Console {
-            override fun write(message: String, writeStyle: Console.WriteStyle) {
-                println(message)
-            }
-        }
-    }
 }
 
 private fun createDateConverter(dateFormat: String) : DateStringConverter {

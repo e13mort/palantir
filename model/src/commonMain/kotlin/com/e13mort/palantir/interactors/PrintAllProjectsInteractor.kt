@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.toList
 class PrintAllProjectsInteractor(
     private val projectRepository: SyncableProjectRepository
 ) : Interactor<Unit, AllProjectsResult>{
-    override suspend fun run(arg: Unit): Flow<AllProjectsResult> {
+    override fun run(arg: Unit): Flow<AllProjectsResult> {
         return flow {
             val result = projectRepository.projects().toList()
             object : AllProjectsResult {

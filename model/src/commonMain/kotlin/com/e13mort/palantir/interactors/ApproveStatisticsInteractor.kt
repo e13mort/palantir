@@ -22,7 +22,7 @@ class ApproveStatisticsInteractor(
 
     data class Params(val projectId: Long, val type: StatisticsType)
 
-    override suspend fun run(arg: Params): Flow<Report> {
+    override fun run(arg: Params): Flow<Report> {
         return flow {
             val approversByPeriod = readDataFromRepository(arg.projectId, arg.type)
             val periodSet = mutableSetOf<String>()

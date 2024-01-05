@@ -27,7 +27,7 @@ class PrintProjectMergeRequestsInteractor(
         }
     }
 
-    override suspend fun run(arg: Long): Flow<MergeRequestsReport> {
+    override fun run(arg: Long): Flow<MergeRequestsReport> {
         return flow {
             val project = localRepository.findProject(arg)
                 ?: throw Exception("Project with id $arg not found")
