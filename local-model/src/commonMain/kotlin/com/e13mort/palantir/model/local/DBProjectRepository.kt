@@ -3,9 +3,6 @@ package com.e13mort.palantir.model.local
 import com.e13mort.palantir.model.*
 import com.e13mort.gitlabreport.model.local.*
 import kotlinx.coroutines.flow.*
-import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.BranchAdded as BranchAdded
-import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent.RemoteLoadingStarted as BRRemoteLoadingStarted
-import com.e13mort.palantir.model.SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent.LoadMR as LoadMREvent
 
 class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
 
@@ -29,9 +26,9 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
             ?.toSyncable(projectSyncQueries, branchesQueries, mergeRequestsQueries, userQueries, mrAssigneesQueries, mrNotes)
     }
 
-    override suspend fun syncedProjects(): Flow<SyncableProjectRepository.SyncableProject> {
+    override suspend fun syncedProjects(): List<SyncableProjectRepository.SyncableProject> {
         return projectSyncQueries.selectSynced()
-            .executeAsList().asFlow().map {
+            .executeAsList().map {
                 SyncableProjectImpl(
                     it,
                     projectSyncQueries,
@@ -86,12 +83,10 @@ internal class SyncableProjectImpl(
             syncQueries.removeSyncedProject(projectId())
     }
 
-    override suspend fun updateBranches(branches: Branches, callback: SyncableProjectRepository.SyncableProject.UpdateBranchesCallback) {
+    override suspend fun updateBranches(branches: List<Branch>) {
         branchesQueries.removeProjectsBranches(projectId())
-        callback.onBranchEvent(BRRemoteLoadingStarted)
-        branches.values().collect {
+        branches.forEach {
             branchesQueries.insert(projectId(), it.name())
-            callback.onBranchEvent(BranchAdded(it.name()))
         }
     }
 
@@ -139,15 +134,6 @@ internal class SyncableProjectImpl(
     }
 
     private fun projectId() = dbItem.id
-
-    private fun notifyMRProcessing(
-        mergeRequest: MergeRequest,
-        callback: SyncableProjectRepository.SyncableProject.UpdateMRCallback,
-        index: Int,
-        totalSize: Int
-    ) {
-        callback.onMREvent(LoadMREvent(mergeRequest.id(), index, totalSize))
-    }
 
     override fun ssh(): String {
         return dbItem.sshClonePath

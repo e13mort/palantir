@@ -89,7 +89,7 @@ interface SyncableProjectRepository : ProjectRepository {
 
     override suspend fun findProject(id: Long): SyncableProject?
 
-    suspend fun syncedProjects(): Flow<SyncableProject>
+    suspend fun syncedProjects(): List<SyncableProject>
 
     interface SyncableProject : Project {
         fun synced(): Boolean
@@ -97,36 +97,7 @@ interface SyncableProjectRepository : ProjectRepository {
         fun updateSynced(synced: Boolean)
 
         @Deprecated("this logic should be moved to interactor")
-        suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
+        suspend fun updateBranches(branches: List<Branch>)
 
-        fun interface UpdateMRCallback {
-            fun onMREvent(event: MREvent)
-
-            sealed class MREvent {
-                object RemoteLoadingStarted : MREvent()
-
-                data class LoadMR(val mrDescription: String, val index: Int, val totalSize: Int) : MREvent()
-            }
-        }
-
-        fun interface UpdateBranchesCallback {
-            sealed class BranchEvent {
-                object RemoteLoadingStarted : BranchEvent()
-
-                data class BranchAdded(val branchName: String) : BranchEvent()
-            }
-
-            fun onBranchEvent(branchEvent: BranchEvent)
-        }
-
-        @Deprecated("use data from flowable")
-        interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback {
-            companion object Empty : SyncCallback {
-                override fun onBranchEvent(branchEvent: UpdateBranchesCallback.BranchEvent) = Unit
-
-                override fun onMREvent(event: UpdateMRCallback.MREvent) = Unit
-
-            }
-        }
     }
 }

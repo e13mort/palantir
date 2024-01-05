@@ -1,34 +1,35 @@
 package com.e13mort.palantir.cli.render
 
+import com.e13mort.palantir.interactors.SyncInteractor.SyncResult
 import com.e13mort.palantir.render.ReportRender
-import com.e13mort.palantir.interactors.SyncInteractor
 import com.jakewharton.picnic.table
 
-class ASCIISyncProjectsRender : ReportRender<SyncInteractor.SyncResult, String, Unit> {
-    override fun render(value: SyncInteractor.SyncResult, params: Unit): String {
+class ASCIISyncProjectsRender : ReportRender<SyncResult, String, Unit> {
+    override fun render(value: SyncResult, params: Unit): String {
         return table {
             cellStyle {
                 border = true
             }
             when(val state = value.state) {
-                is SyncInteractor.SyncResult.State.Done -> {
+                is SyncResult.State.Done -> {
                     row("Projects updated")
                     row(state.itemsUpdated)
                 }
-                is SyncInteractor.SyncResult.State.InProgress -> {
+                is SyncResult.State.InProgress -> {
                     when(state.state) {
-                        SyncInteractor.SyncResult.State.ProgressState.LOADING -> {
+                        SyncResult.State.ProgressState.LOADING -> {
                             row("Loading remote projects...")
                         }
-                        SyncInteractor.SyncResult.State.ProgressState.SAVING -> {
+                        SyncResult.State.ProgressState.SAVING -> {
                             row("Saving remote projects...")
                         }
+                        SyncResult.State.ProgressState.COMPLEX -> Unit
                     }
                 }
-                SyncInteractor.SyncResult.State.Pending -> {
+                SyncResult.State.Pending -> {
                     row("Waiting for sync start...")
                 }
-                SyncInteractor.SyncResult.State.Skipped -> {
+                SyncResult.State.Skipped -> {
                     row("Project sync skipped...")
                 }
             }

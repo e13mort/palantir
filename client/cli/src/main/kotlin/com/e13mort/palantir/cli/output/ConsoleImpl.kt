@@ -31,7 +31,8 @@ internal class ConsoleImpl(console: SystemConsole) : Console {
 
     private fun removePreviousMessage() {
         if (lastMessageLength > 0) {
-            writer.format("%1$${lastMessageLength}s", " ")
+            writer.print(String.format("\u001b[%dA", lastMessageLength))
+            writer.print("\u001b[2K")
         }
     }
 

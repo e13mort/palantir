@@ -1,6 +1,6 @@
 package com.e13mort.palantir.interactors
 
-import app.cash.turbine.test
+import com.e13mort.palantir.interactors.SyncInteractor.SyncResult.State
 import com.e13mort.palantir.model.Branch
 import com.e13mort.palantir.model.MergeRequest
 import com.e13mort.palantir.model.MergeRequestEvent
@@ -13,6 +13,8 @@ import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.DriverType
 import com.e13mort.palantir.model.local.LocalModel
 import io.kotest.matchers.collections.shouldMatchEach
+import io.kotest.matchers.collections.shouldMatchInOrderSubset
+import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.flow.toList
@@ -30,7 +32,7 @@ class SyncInteractorTest {
     @Test
     fun `sync a single remote project leads to a single updated project`() = testSyncResult { syncResult ->
         syncResult should {
-            (it.state as SyncInteractor.SyncResult.State.Done).itemsUpdated shouldBe 1
+            (it.state as State.Done).itemsUpdated shouldBe 1
         }
     }
 
@@ -197,18 +199,98 @@ class SyncInteractorTest {
         )
     }
 
+    @Test
+    fun `sync process emits correct high level states`() = runTestWithResultList { syncEvents ->
+        syncEvents shouldMatchInOrderSubset listOf(
+            matchSyncState(State.Pending),
+            matchSyncState(State.InProgress(State.ProgressState.COMPLEX)),
+            matchSyncState(State.Done(1))
+        )
+    }
+
+    @Test
+    fun `sync process emits correct branch sync states`() = runTestWithResultList { syncEvents ->
+        syncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            matchBranchesState(1, State.Pending),
+            matchBranchesState(1, State.InProgress(State.ProgressState.LOADING)),
+            matchBranchesState(1, State.InProgress(State.ProgressState.SAVING)),
+            matchBranchesState(1, State.Done(2)),
+        )
+    }
+
+    @Test
+    fun `sync process emits correct MR sync states`() = runTestWithResultList { syncEvents ->
+        syncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            matchMRsState(1, State.Pending),
+            matchMRsState(1, State.InProgress(State.ProgressState.LOADING)),
+            matchMRsState(1, State.InProgress(State.ProgressState.SAVING)),
+            matchMRsState(1, State.Done(1)),
+        )
+    }
+
+    @Test
+    fun `sync process emits correct MR notes sync states`() = runTestWithResultList { syncEvents ->
+        syncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            mrSyncResultsExists(1, 1),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.LOADING)),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.SAVING)),
+            matchMRNotesState(1, 1, State.Done(1)),
+        )
+    }
+
+    private fun runTestWithResultList(block: (List<SyncInteractor.SyncResult>) -> Unit) = runTest {
+        val interactor = createSyncInteractor()
+        interactor.prepareForTest()
+        val syncResults = interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1)).toList()
+        block(syncResults)
+    }
+
+    private fun projectsSyncResultsExists(projectId: Long): (SyncInteractor.SyncResult) -> Unit =
+        { it.projects shouldContainKey projectId }
+
+    private fun mrSyncResultsExists(projectId: Long, mrId: Long): (SyncInteractor.SyncResult) -> Unit =
+        {
+            it.projects shouldContainKey projectId
+            it.projects[projectId]!!.mrs.mergeRequests shouldContainKey mrId
+            it.projects[projectId]!!.mrs.mergeRequests[mrId]!! should matchState(State.Pending)
+        }
+
+    private fun matchBranchesState(projectId: Long, state: State): (SyncInteractor.SyncResult) -> Unit {
+        return { syncResult ->
+            syncResult.projects[projectId]!!.branchesState should matchState(state)
+        }
+    }
+
+    private fun matchMRsState(projectId: Long, state: State): (SyncInteractor.SyncResult) -> Unit {
+        return { syncResult ->
+            syncResult.projects[projectId]!!.mrs.state should matchState(state)
+        }
+    }
+
+    private fun matchMRNotesState(projectId: Long, mrId: Long, state: State): (SyncInteractor.SyncResult) -> Unit {
+        return { syncResult ->
+            syncResult.projects[projectId]!!.mrs.mergeRequests[mrId]!! should matchState(state)
+        }
+    }
+
     private fun testSyncResult(prepare: Boolean = true, block: suspend (SyncInteractor.SyncResult) -> Unit) = runTest {
         val syncInteractor = createSyncInteractor()
         if (prepare)
             syncInteractor.prepareForTest()
-        syncInteractor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects).test {
-            skipItems(1)
-            val item = awaitItem()
-            block(item)
-            awaitComplete()
-        }
+        val syncResultFlow = syncInteractor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects)
+        val results = syncResultFlow.toList()
+        block(results.last())
     }
 
+    private fun matchSyncState(state: State): (SyncInteractor.SyncResult) -> Unit = {
+        it.state should matchState(state)
+    }
+
+    private fun matchState(state: State): (State) -> Unit =
+        { it shouldBe state }
 
     private fun matchBranch(branchName: String): (Branch) -> Unit = {
         it.name() shouldBe branchName

@@ -16,10 +16,10 @@ import com.e13mort.palantir.cli.output.ConsoleRenderOutput
 import com.e13mort.palantir.cli.output.asConsole
 import com.e13mort.palantir.cli.render.ASCIIApproveStatisticsRenderer
 import com.e13mort.palantir.cli.render.ASCIIBranchesRender
+import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestsRender
 import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
-import com.e13mort.palantir.cli.render.ASCIISyncCallback
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
@@ -75,15 +75,13 @@ fun main(args: Array<String>) {
 
     val consoleOutput = ConsoleRenderOutput(console)
     val continuousConsoleOutput = ConsoleRenderOutput(console, Console.WriteStyle.REPLACE_LAST)
-    val syncCallback = ASCIISyncCallback(console)
 
     val reportsRepository = DBReportsRepository(model)
     val syncInteractor = SyncInteractor(
         localProjectsRepository,
         gitlabProjectsRepository,
         mrRepository,
-        notesRepository,
-        syncCallback
+        notesRepository
     )
     val projectSummaryInteractor = PrintProjectSummaryInteractor(localProjectsRepository)
     val printBranchesInteractor = PrintProjectBranchesInteractor(localProjectsRepository)
@@ -131,14 +129,14 @@ fun main(args: Array<String>) {
         SyncCommand().subcommands(
             syncInteractor.asLongCommand(
                 name = "project",
-                render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
+                render = ASCIIFullSyncProjectsRender().asConsole(continuousConsoleOutput),
                 commandParamMapper = { projectId ->
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId)
                 }
             ),
             syncInteractor.asUnitCommandWithUnitRenderParams(
                 name = "active",
-                render = ASCIISyncProjectsRender().asConsole(continuousConsoleOutput),
+                render = ASCIIFullSyncProjectsRender().asConsole(continuousConsoleOutput),
                 commandParamsMapper = { SyncInteractor.SyncStrategy.FullSyncForActiveProjects },
             )
         ),
