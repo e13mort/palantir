@@ -2,6 +2,7 @@ package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.render.ReportRender
+import com.jakewharton.picnic.TableDsl
 import com.jakewharton.picnic.table
 
 class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, String, Unit> {
@@ -15,37 +16,92 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
                     columnSpan = 2
                 }
             }
-            value.visitActiveProjects { id, activeProject ->
-                row {
-                    cell("Sync project $id: ")
-                    cell(value.state)
-                }
-                activeProject.let {
-                    row {
-                        cell("Branches:")
-                        cell(it.branchesState)
-                    }
-                    row {
-                        cell("MRs:")
-                        cell(it.mrs.state)
-                    }
-                    it.mrs.visitActiveMRs { id, activeMr ->
-                        row {
-                            cell("MR: $id")
-                            cell("State: $activeMr")
-                        }
-                    }
-                }
+            value.projects.forEach { (id, project) ->
+                renderProject(id, value, project)
             }
         }.toString()
     }
 
-    private inline fun SyncInteractor.SyncResult.visitActiveProjects(visitor: (Long, SyncInteractor.SyncResult.ProjectSyncState) -> Unit) {
-        projects.forEach {
-            if (it.value.projectSyncState is SyncInteractor.SyncResult.State.InProgress) {
-                visitor(it.key, it.value)
+    private fun TableDsl.renderProject(
+        id: Long,
+        value: SyncInteractor.SyncResult,
+        project: SyncInteractor.SyncResult.ProjectSyncState
+    ) {
+        row {
+            cell("$id") {
+                paddingTop = 1
+            }
+            cell(value.state.asString()) {
+                paddingTop = 1
             }
         }
+        if (!project.projectSyncState.isPending()) {
+            row {
+                cell("Branches") {
+                    paddingLeft = 1
+                }
+                cell(project.branchesState.asString())
+            }
+            row {
+                cell("MRs") {
+                    paddingLeft = 1
+                }
+                cell(project.mrs.state.asString())
+            }
+            project.mrs.visitActiveMRs { id, state ->
+                row {
+                    cell("$id") {
+                        paddingLeft = 2
+                    }
+                    cell("State: ${state.asString()}")
+                }
+            }
+            project.mrs.state.onDone {
+                row {
+                    cell("Synced: ") {
+                        paddingLeft = 2
+                    }
+                    cell(project.mrs.doneItemsCount())
+                }
+                row {
+                    cell("Skipped: ") {
+                        paddingLeft = 2
+                    }
+                    cell(project.mrs.skippedItemsCount())
+                }
+            }
+        }
+    }
+
+    private fun SyncInteractor.SyncResult.State.asString() : String {
+        return when(this) {
+            is SyncInteractor.SyncResult.State.Done -> "Completed $itemsUpdated items"
+            is SyncInteractor.SyncResult.State.InProgress -> when(state) {
+                SyncInteractor.SyncResult.State.ProgressState.LOADING -> "Loading..."
+                SyncInteractor.SyncResult.State.ProgressState.SAVING -> "Saving..."
+                SyncInteractor.SyncResult.State.ProgressState.COMPLEX -> "Content syncing..."
+            }
+            SyncInteractor.SyncResult.State.Pending -> "Waiting..."
+            SyncInteractor.SyncResult.State.Skipped -> "Skipped"
+        }
+    }
+
+    private fun SyncInteractor.SyncResult.State.isPending() : Boolean {
+        return this is SyncInteractor.SyncResult.State.Pending
+    }
+
+    private inline fun SyncInteractor.SyncResult.State.onDone(block: (SyncInteractor.SyncResult.State.Done) -> Unit) {
+        if (this is SyncInteractor.SyncResult.State.Done) {
+            block(this)
+        }
+    }
+
+    private fun SyncInteractor.SyncResult.MrsSyncState.doneItemsCount() : Int {
+        return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Done }
+    }
+
+    private fun SyncInteractor.SyncResult.MrsSyncState.skippedItemsCount() : Int {
+        return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Skipped }
     }
 
     private inline fun SyncInteractor.SyncResult.MrsSyncState.visitActiveMRs(visitor: (Long, SyncInteractor.SyncResult.State) -> Unit) {
