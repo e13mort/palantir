@@ -329,7 +329,8 @@ class SyncInteractorTest {
             projectRepository = localComponent.projectRepository,
             remoteRepository = repositoryBuilder.build(),
             mergeRequestRepository = localComponent.mrRepository,
-            mergeRequestNotesRepository = localComponent.notesRepository
+            mergeRequestLocalNotesRepository = localComponent.notesRepository,
+            mergeRequestRemoteNotesRepository = repositoryBuilder.stubNotesRepository,
         )
     }
 

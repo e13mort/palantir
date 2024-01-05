@@ -8,6 +8,7 @@ import com.e13mort.palantir.model.User
 import com.e13mort.palantir.model.stub.StubBranch
 import com.e13mort.palantir.model.stub.StubBranches
 import com.e13mort.palantir.model.stub.StubMergeRequest
+import com.e13mort.palantir.model.stub.StubNoteRepository
 import com.e13mort.palantir.model.stub.StubProject
 import com.e13mort.palantir.model.stub.StubProjectRepository
 import com.e13mort.palantir.model.stub.StubUser
@@ -19,7 +20,6 @@ fun List<RemoteProjectRepositoryBuilder.StubProjectScope.StubMRScope>.asMrs(): L
             id = scope.id.toString(),
             state = scope.state,
             assignees = scope.assigneesScope.users.toList(),
-            events = scope.eventsScope.events.toList(),
             sourceBranch = scope.sourceBranch.asBranch(),
             targetBranch = scope.targetBranch.asBranch()
         )
@@ -36,6 +36,7 @@ fun String.asBranch(): Branch {
 
 class RemoteProjectRepositoryBuilder {
     private val projectScopes = mutableListOf<StubProjectScope>()
+    val stubNotesRepository = StubNoteRepository()
 
     fun project(id: Long? = null, config: StubProjectScope.() -> Unit) {
         if (id == null) {
@@ -64,6 +65,12 @@ class RemoteProjectRepositoryBuilder {
     fun build(): ProjectRepository {
         return StubProjectRepository(
             projectScopes.map {
+                it.mrs.forEach { mr ->
+                    stubNotesRepository.data[it.id] =
+                        mutableMapOf<Long, List<MergeRequestEvent>>().apply {
+                            this[mr.id] = mr.eventsScope.events
+                        }
+                }
                 StubProject(
                     id = it.id.toString(),
                     mergeRequests = it.mrs.asMrs(),

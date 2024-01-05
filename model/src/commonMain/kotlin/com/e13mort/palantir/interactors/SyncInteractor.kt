@@ -14,7 +14,8 @@ class SyncInteractor(
     private val projectRepository: SyncableProjectRepository,
     private val remoteRepository: ProjectRepository,
     private val mergeRequestRepository: MergeRequestRepository,
-    private val mergeRequestNotesRepository: NotesRepository
+    private val mergeRequestLocalNotesRepository: NotesRepository,
+    private val mergeRequestRemoteNotesRepository: NotesRepository,
 ) : Interactor<SyncInteractor.SyncStrategy, SyncInteractor.SyncResult> {
 
     sealed interface SyncStrategy {
@@ -113,7 +114,8 @@ class SyncInteractor(
                 projectId,
                 remoteProject,
                 mergeRequestRepository,
-                mergeRequestNotesRepository
+                mergeRequestLocalNotesRepository,
+                mergeRequestRemoteNotesRepository
             )
 
             val syncProjectPlan = SyncProjectPlan(syncBranchesPlan, syncMRsPlan)

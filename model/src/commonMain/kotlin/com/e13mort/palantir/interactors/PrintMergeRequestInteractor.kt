@@ -3,11 +3,13 @@ package com.e13mort.palantir.interactors
 import com.e13mort.palantir.model.MergeRequestEvent
 import com.e13mort.palantir.repository.MergeRequestRepository
 import com.e13mort.palantir.model.User
+import com.e13mort.palantir.repository.NotesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class PrintMergeRequestInteractor(
-    private val mrRepository: MergeRequestRepository
+    private val mrRepository: MergeRequestRepository,
+    private val mrNotesRepository: NotesRepository
 ) : Interactor<Long, PrintMergeRequestInteractor.MergeRequestsReport> {
 
     data class MergeRequestsReport(
@@ -33,7 +35,7 @@ class PrintMergeRequestInteractor(
                 mr.createdTime(),
                 mr.closedTime(),
                 mr.assignees(),
-                mr.events()
+                mrNotesRepository.events(arg, mr.id().toLong())
             ).apply {
                 emit(this)
             }

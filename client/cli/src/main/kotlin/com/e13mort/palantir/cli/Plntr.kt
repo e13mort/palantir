@@ -35,6 +35,7 @@ import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
+import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
@@ -58,11 +59,15 @@ fun main(args: Array<String>) {
 
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
-    val notesRepository = DBNotesRepository(model)
+    val localNotesRepository = DBNotesRepository(model)
     val gitlabProjectsRepository = GitlabProjectsRepository(
         properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
         properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY),
         properties.safeIntProperty(Properties.IntProperty.SYNC_PERIOD_MONTHS)
+    )
+    val remoteNotesRepository = GitlabNoteRepository(
+        properties.safeStringProperty(Properties.StringProperty.GITLAB_URL),
+        properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY)
     )
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
@@ -73,12 +78,13 @@ fun main(args: Array<String>) {
         localProjectsRepository,
         gitlabProjectsRepository,
         mrRepository,
-        notesRepository
+        localNotesRepository,
+        remoteNotesRepository
     )
     val projectSummaryInteractor = PrintProjectSummaryInteractor(localProjectsRepository)
     val printBranchesInteractor = PrintProjectBranchesInteractor(localProjectsRepository)
     val printMergeRequestsInteractor = PrintProjectMergeRequestsInteractor(localProjectsRepository)
-    val printMergeRequestInteractor = PrintMergeRequestInteractor(mrRepository)
+    val printMergeRequestInteractor = PrintMergeRequestInteractor(mrRepository, localNotesRepository)
     val printAllProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     val approveStatisticsInteractor = ApproveStatisticsInteractor(reportsRepository)
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)

@@ -42,9 +42,6 @@ interface MergeRequest {
 
     fun assignees(): List<User>
 
-    @Deprecated("Use dedicated repository")
-    fun events(): List<MergeRequestEvent>
-
     enum class State {
         OPEN, MERGED, CLOSED
     }

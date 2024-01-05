@@ -23,7 +23,12 @@ class GitlabProjectsRepository(
     override suspend fun projects(): Flow<Project> {
         return flow {
             gitLabApi.projectApi.projects.map {
-                GitlabProject(it, gitLabApi.repositoryApi, gitLabApi.mergeRequestApi, gitLabApi.notesApi, syncPeriodMonths)
+                GitlabProject(
+                    it,
+                    gitLabApi.repositoryApi,
+                    gitLabApi.mergeRequestApi,
+                    syncPeriodMonths
+                )
             }.forEach {
                 emit(it)
             }
@@ -35,7 +40,6 @@ class GitlabProjectsRepository(
             gitLabApi.projectApi.getProject(id),
             gitLabApi.repositoryApi,
             gitLabApi.mergeRequestApi,
-            gitLabApi.notesApi,
             syncPeriodMonths
         )
     }
@@ -56,7 +60,6 @@ internal class GitlabProject(
     private val project: org.gitlab4j.api.models.Project,
     private val repositoryApi: RepositoryApi,
     private val mergeRequestApi: MergeRequestApi,
-    private val notesApi: NotesApi,
     private val syncPeriodMonths: Int
 ) : Project {
     override fun id(): String {
@@ -79,7 +82,7 @@ internal class GitlabProject(
     }
 
     override fun mergeRequests(): MergeRequests {
-        return GitlabMergeRequests(mergeRequestApi, this, notesApi, syncPeriodMonths)
+        return GitlabMergeRequests(mergeRequestApi, this, syncPeriodMonths)
     }
 }
 
@@ -95,7 +98,6 @@ internal data class GitlabClonePaths(
 internal class GitlabMergeRequests(
     private val mergeRequestApi: MergeRequestApi,
     private val gitlabProject: GitlabProject,
-    private val notesApi: NotesApi,
     private val syncPeriodMonths: Int
 ) : MergeRequests {
     override suspend fun count(): Long {
@@ -105,7 +107,7 @@ internal class GitlabMergeRequests(
     override suspend fun values(): Flow<MergeRequest> {
         return flow {
             mergeRequestApi.getMergeRequests(createFilter()).forEach {
-                emit(GitlabMergeRequest(it, notesApi))
+                emit(GitlabMergeRequest(it))
             }
         }
     }
@@ -119,11 +121,10 @@ internal class GitlabMergeRequests(
     }.time
 
     internal class GitlabMergeRequest(
-        private val mergeRequest: org.gitlab4j.api.models.MergeRequest,
-        private val notesApi: NotesApi
+        private val mergeRequest: org.gitlab4j.api.models.MergeRequest
     ) : MergeRequest {
         override fun id(): String {
-            return mergeRequest.id.toString()
+            return mergeRequest.iid.toString()
         }
 
         override fun state(): MergeRequest.State {
@@ -158,13 +159,6 @@ internal class GitlabMergeRequests(
         override fun assignees(): List<User> {
             return mergeRequest.assignees.map {
                 GitlabUser(it)
-            }
-        }
-
-        @Deprecated("Use dedicated repository")
-        override fun events(): List<MergeRequestEvent> {
-            return notesApi.getMergeRequestNotes(mergeRequest.projectId, mergeRequest.iid).map {
-                GitlabEvent(it)
             }
         }
     }

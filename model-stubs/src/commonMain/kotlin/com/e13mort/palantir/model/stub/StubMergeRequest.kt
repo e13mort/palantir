@@ -2,7 +2,6 @@ package com.e13mort.palantir.model.stub
 
 import com.e13mort.palantir.model.Branch
 import com.e13mort.palantir.model.MergeRequest
-import com.e13mort.palantir.model.MergeRequestEvent
 import com.e13mort.palantir.model.User
 
 data class StubMergeRequest(
@@ -13,7 +12,6 @@ data class StubMergeRequest(
     val createdTime: Long = 0L,
     val closedTime: Long? = null,
     val assignees: List<User> = emptyList(),
-    val events: List<MergeRequestEvent> = emptyList()
 ) : MergeRequest {
     override fun id(): String = id
 
@@ -28,6 +26,4 @@ data class StubMergeRequest(
     override fun closedTime(): Long? = closedTime
 
     override fun assignees(): List<User> = assignees
-
-    override fun events(): List<MergeRequestEvent> = events
 }
