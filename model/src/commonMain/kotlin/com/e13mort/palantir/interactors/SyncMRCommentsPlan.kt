@@ -37,8 +37,11 @@ class SyncMRCommentsPlan(
                 )
                 updateMRState(id, SyncInteractor.SyncResult.State.Done(1), callback)
             }
+        val itemsUpdated = pendingMRsForSync.count {
+            it.value is SyncInteractor.SyncResult.State.Done
+        }.toLong()
         lastSyncState =
-            lastSyncState.copy(state = SyncInteractor.SyncResult.State.Done(pendingMRsForSync.size.toLong()))
+            lastSyncState.copy(state = SyncInteractor.SyncResult.State.Done(itemsUpdated))
         return lastSyncState
     }
 
