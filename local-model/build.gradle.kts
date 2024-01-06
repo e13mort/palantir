@@ -53,6 +53,7 @@ sqldelight {
     databases {
         create("LocalModel") {
             packageName.set("com.e13mort.palantir.model.local")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
         }
     }
 }
