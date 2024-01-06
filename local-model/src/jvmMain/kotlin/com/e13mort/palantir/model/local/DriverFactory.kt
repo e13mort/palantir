@@ -10,14 +10,15 @@ actual class DriverFactory(private val workDirectory: String) {
     }
 
     actual fun createDriver(type: DriverType): SqlDriver {
-        val url = when(type) {
+        val url = when (type) {
             DriverType.FILE -> "jdbc:sqlite:${workDirectory}/${DB_FILE_NAME}"
             DriverType.MEMORY -> JdbcSqliteDriver.IN_MEMORY
         }
-        val driver = JdbcSqliteDriver(
+
+        return JdbcSqliteDriver(
             url = url,
-            properties = Properties().apply { put("foreign_keys", "true") })
-        LocalModel.Schema.create(driver)
-        return driver
+            properties = Properties().apply { put("foreign_keys", "true") },
+            schema = LocalModel.Schema
+        )
     }
 }

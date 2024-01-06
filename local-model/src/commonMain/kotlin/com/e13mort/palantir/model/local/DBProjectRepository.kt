@@ -172,6 +172,8 @@ internal class DBMergeRequest(
 
     override fun id(): String = storedMR.id.toString()
 
+    override fun localId(): Long = storedMR.local_id
+
     override fun state(): MergeRequest.State = MergeRequest.State.values()[storedMR.state.toInt()]
 
     override fun sourceBranch(): Branch = DBBranch(storedMR.source_branch_name ?: UNSPECIFIED_BRANCH_NAME)

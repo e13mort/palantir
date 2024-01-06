@@ -36,6 +36,7 @@ class DBMergeRequestRepository(
                 mergeRequestsQueries.insert(
                     project_id = projectId,
                     id = request.id().toLong(),
+                    local_id = request.localId(),
                     state = request.state().ordinal.toLong(),
                     source_branch_name = request.sourceBranch().name(),
                     target_branch_name = request.targetBranch().name(),

@@ -124,7 +124,11 @@ internal class GitlabMergeRequests(
         private val mergeRequest: org.gitlab4j.api.models.MergeRequest
     ) : MergeRequest {
         override fun id(): String {
-            return mergeRequest.iid.toString()
+            return mergeRequest.id.toString()
+        }
+
+        override fun localId(): Long {
+            return mergeRequest.iid
         }
 
         override fun state(): MergeRequest.State {

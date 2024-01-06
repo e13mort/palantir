@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS mr_notes
+CREATE TABLE mr_notes
 (
 	id INTEGER NOT NULL
 		CONSTRAINT mr_notes_pk

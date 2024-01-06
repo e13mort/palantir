@@ -30,6 +30,8 @@ interface MergeRequests {
 interface MergeRequest {
     fun id(): String
 
+    fun localId(): Long
+
     fun state(): State
 
     fun sourceBranch(): Branch

@@ -6,6 +6,7 @@ import com.e13mort.palantir.model.User
 
 data class StubMergeRequest(
     val id: String,
+    val localId: Long = id.toLong(),
     val state: MergeRequest.State = MergeRequest.State.OPEN,
     val sourceBranch: Branch = StubBranch("test"),
     val targetBranch: Branch = StubBranch("test"),
@@ -14,6 +15,8 @@ data class StubMergeRequest(
     val assignees: List<User> = emptyList(),
 ) : MergeRequest {
     override fun id(): String = id
+
+    override fun localId(): Long = localId
 
     override fun state(): MergeRequest.State = state
 

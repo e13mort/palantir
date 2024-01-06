@@ -21,7 +21,8 @@ fun List<RemoteProjectRepositoryBuilder.StubProjectScope.StubMRScope>.asMrs(): L
             state = scope.state,
             assignees = scope.assigneesScope.users.toList(),
             sourceBranch = scope.sourceBranch.asBranch(),
-            targetBranch = scope.targetBranch.asBranch()
+            targetBranch = scope.targetBranch.asBranch(),
+            localId = scope.id
         )
     }
 }
