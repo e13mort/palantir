@@ -6,12 +6,6 @@ import com.e13mort.palantir.model.MergeRequest
 import com.e13mort.palantir.model.MergeRequestEvent
 import com.e13mort.palantir.model.SyncableProjectRepository
 import com.e13mort.palantir.model.User
-import com.e13mort.palantir.model.local.DBMergeRequestRepository
-import com.e13mort.palantir.model.local.DBNotesRepository
-import com.e13mort.palantir.model.local.DBProjectRepository
-import com.e13mort.palantir.model.local.DriverFactory
-import com.e13mort.palantir.model.local.DriverType
-import com.e13mort.palantir.model.local.LocalModel
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldMatchEach
@@ -48,6 +42,15 @@ class SyncInteractorTest {
     @Test
     fun `sync leads to correct local mr info`() = testSyncResult {
         localComponent.mrRepository.mergeRequest(1L) should {
+            assertNotNull(it) // keeps nullability info
+            it.assignees() shouldMatchEach listOf(matchUser(1L, "StubUser1", "StubUser1"))
+            it.state() shouldBe MergeRequest.State.OPEN
+        }
+    }
+
+    @Test
+    fun `sync leads to correct local mr info2`() = testSyncResult {
+        localComponent.mrRepository.mergeRequestsForProject(1L) shouldMatchEach listOf {
             assertNotNull(it) // keeps nullability info
             it.assignees() shouldMatchEach listOf(matchUser(1L, "StubUser1", "StubUser1"))
             it.state() shouldBe MergeRequest.State.OPEN
@@ -494,10 +497,7 @@ class SyncInteractorTest {
         { it.id() shouldBe id.toString() }
 
     private suspend fun SyncInteractor.prepareForTest() {
-        run(SyncInteractor.SyncStrategy.UpdateProjects).collect {  }
-        localComponent.projectRepository.projects().collect {
-            it.updateSynced(true)
-        }
+        prepareForTest(localComponent)
     }
 
     private suspend fun SyncInteractor.run(): SyncInteractor.SyncResult {
@@ -505,23 +505,7 @@ class SyncInteractorTest {
     }
 
     private fun createSyncInteractor(): SyncInteractor {
-        return SyncInteractor(
-            projectRepository = localComponent.projectRepository,
-            remoteRepository = repositoryBuilder.build(),
-            mergeRequestRepository = localComponent.mrRepository,
-            mergeRequestLocalNotesRepository = localComponent.notesRepository,
-            mergeRequestRemoteNotesRepository = repositoryBuilder.stubNotesRepository,
-        )
+        return localComponent.createSyncInteractor(repositoryBuilder)
     }
 
-    class LocalComponent(model: LocalModel) {
-        val projectRepository = DBProjectRepository(model)
-        val mrRepository = DBMergeRequestRepository(model)
-        val notesRepository = DBNotesRepository(model)
-    }
-
-    private fun inMemoryModel(): LocalModel {
-        val driver = DriverFactory("").createDriver(type = DriverType.MEMORY)
-        return LocalModel(driver)
-    }
 }

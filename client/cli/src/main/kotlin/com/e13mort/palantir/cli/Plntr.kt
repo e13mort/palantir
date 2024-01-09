@@ -2,6 +2,7 @@ package com.e13mort.palantir.cli
 
 import com.e13mort.palantir.cli.commands.LongWithRangesCommand
 import com.e13mort.palantir.cli.commands.PrintCommand
+import com.e13mort.palantir.cli.commands.RemoveCommand
 import com.e13mort.palantir.cli.commands.ReportCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.MR
@@ -35,6 +36,7 @@ import com.e13mort.palantir.interactors.PrintMergeRequestInteractor
 import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
+import com.e13mort.palantir.interactors.RemoveProjectInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
@@ -45,6 +47,7 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.subcommands
@@ -89,6 +92,7 @@ fun main(args: Array<String>) {
     val printAllProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     val approveStatisticsInteractor = ApproveStatisticsInteractor(reportsRepository)
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)
+    val removeProjectInteractor = RemoveProjectInteractor(localProjectsRepository)
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
@@ -147,6 +151,12 @@ fun main(args: Array<String>) {
             ).apply {
                 registerOption(option("-f", "--force", "Force sync all content").flag())
             }
+        ),
+        RemoveCommand().subcommands(
+            removeProjectInteractor.asLongCommand(
+                name = "project",
+                render = DoneOperationRenderer
+            ),
         ),
         ReportCommand().subcommands(
             ApprovesCommand().subcommands(

@@ -106,3 +106,11 @@ Commands to print reports for a synced project
 'Merge request' based reports 
 
 ``./plntr report mr start <project-id> --ranges 1-1-1970:1-2-2021:1-3-2021`` - print merge requests statistics by first approve or start discussion event
+
+### `remove`
+
+Remove items from local index
+
+#### `project`
+
+``./plntr remove project <project-id>`` - remove all project info from the index
