@@ -16,7 +16,7 @@ class PrintProjectMergeRequestsInteractor(
             val toList = mrs.values().toList()
             toList.forEach {
                 callBack(
-                    it.id(),
+                    it.localId().toString(),
                     it.sourceBranch().name(),
                     it.targetBranch().name(),
                     it.createdTime(),

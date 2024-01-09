@@ -9,6 +9,7 @@ import com.e13mort.palantir.cli.commands.RootCommand
 import com.e13mort.palantir.cli.commands.ScanCommand
 import com.e13mort.palantir.cli.commands.SyncCommand
 import com.e13mort.palantir.cli.commands.asLongCommand
+import com.e13mort.palantir.cli.commands.asUnitCommand
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitCommandParams
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitRenderParams
 import com.e13mort.palantir.cli.render.ASCIIApproveStatisticsRenderer
@@ -128,22 +129,31 @@ fun main(args: Array<String>) {
             syncInteractor.asLongCommand(
                 name = "project",
                 render = ASCIIFullSyncProjectsRender(),
-                commandParamMapper = { projectId ->
-                    SyncInteractor.SyncStrategy.FullSyncForProject(projectId)
+                commandParamMapper = { params, projectId ->
+                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    SyncInteractor.SyncStrategy.FullSyncForProject(projectId, forceSync)
                 }
-            ),
-            syncInteractor.asUnitCommandWithUnitRenderParams(
+            ).apply {
+                registerOption(option("-f", "--force", "Force sync all content").flag())
+            },
+            syncInteractor.asUnitCommand(
                 name = "active",
                 render = ASCIIFullSyncProjectsRender(),
-                commandParamsMapper = { SyncInteractor.SyncStrategy.FullSyncForActiveProjects },
-            )
+                renderParamsMapper = {},
+                commandParamsMapper = { params ->
+                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    SyncInteractor.SyncStrategy.FullSyncForActiveProjects(forceSync)
+                }
+            ).apply {
+                registerOption(option("-f", "--force", "Force sync all content").flag())
+            }
         ),
         ReportCommand().subcommands(
             ApprovesCommand().subcommands(
                 approveStatisticsInteractor.asLongCommand(
                     name = "total",
                     render = ASCIIApproveStatisticsRenderer(),
-                    commandParamMapper = { projectId ->
+                    commandParamMapper = { _, projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
                             StatisticsType.TOTAL_APPROVES
@@ -153,7 +163,7 @@ fun main(args: Array<String>) {
                 approveStatisticsInteractor.asLongCommand(
                     name = "first",
                     render = ASCIIApproveStatisticsRenderer(),
-                    commandParamMapper = { projectId ->
+                    commandParamMapper = { _, projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
                             StatisticsType.FIRST_APPROVES

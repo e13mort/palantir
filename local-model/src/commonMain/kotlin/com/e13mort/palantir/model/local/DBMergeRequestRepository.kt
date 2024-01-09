@@ -21,15 +21,24 @@ class DBMergeRequestRepository(
             }
     }
 
-    override suspend fun deleteMergeRequest(id: Long) {
-        localModel.mergeRequestsQueries.removeById(id)
+    override suspend fun deleteMergeRequests(projectId: Long, ids: Set<Long>) {
+        localModel.mergeRequestsQueries.transaction {
+            ids.forEach { id ->
+                localModel.mergeRequestsQueries.removeById(id, projectId)
+            }
+        }
     }
 
     override suspend fun deleteMergeRequestsForProject(projectId: Long) {
         localModel.mergeRequestsQueries.removeProjectsMergeRequests(projectId)
     }
 
-    override suspend fun saveMergeRequests(projectId: Long, mergeRequests: List<MergeRequest>) {
+    override suspend fun mergeRequestsForProject(projectId: Long): List<MergeRequest> {
+        return localModel.mergeRequestsQueries.selectAll(projectId).executeAsList()
+            .map { DBMergeRequest(it, localModel.mr_assigneesQueries) }
+    }
+
+    override suspend fun addMergeRequests(projectId: Long, mergeRequests: List<MergeRequest>) {
         val mergeRequestsQueries = localModel.mergeRequestsQueries
         mergeRequestsQueries.transaction {
             mergeRequests.forEach { request ->

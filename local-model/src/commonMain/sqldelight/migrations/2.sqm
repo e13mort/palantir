@@ -1,0 +1,5 @@
+DELETE FROM mr_notes;
+ALTER TABLE mr_notes ADD mr_project_id INTEGER NOT NULL
+                         		CONSTRAINT mr_notes_merge_requests_project_id_fk
+                         			REFERENCES DBProject
+                         				ON UPDATE CASCADE ON DELETE CASCADE;

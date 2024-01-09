@@ -28,14 +28,14 @@ class PrintMergeRequestInteractor(
             val mr = mrRepository.mergeRequest(arg)
                 ?: throw Exception("MR with id $arg not found")
             MergeRequestsReport(
-                mr.id(),
+                mr.localId().toString(),
                 mr.state().name,
                 mr.sourceBranch().name(),
                 mr.targetBranch().name(),
                 mr.createdTime(),
                 mr.closedTime(),
                 mr.assignees(),
-                mrNotesRepository.events(arg, mr.id().toLong())
+                mrNotesRepository.events(arg, mr.localId())
             ).apply {
                 emit(this)
             }

@@ -20,7 +20,7 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `invalid project leads to failed save operation`() = runTest {
         assertFailsWith<Exception> {
-            repository.saveMergeRequests(
+            repository.addMergeRequests(
                 TEST_PROJECT_ID, listOf(
                 StubMergeRequest("1")
             ))
@@ -30,20 +30,20 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `insert with valid project id`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
     }
 
     @Test
     fun `inserted MR returns not null value`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
         assertNotNull(repository.mergeRequest(1L))
     }
 
     @Test
     fun `created MR deletes after host project removal`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
         testModel.model.projectQueries.clear()
         assertNull(repository.mergeRequest(TEST_PROJECT_ID))
     }
@@ -51,7 +51,7 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `created MRs deletes after remove operation`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(
+        repository.addMergeRequests(
             TEST_PROJECT_ID, listOf(
                 StubMergeRequest("1"),
                 StubMergeRequest("2")
@@ -64,13 +64,13 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `assignees are empty`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
         assertEquals(0, repository.assignees(1L).size)
     }
     @Test
     fun `assignees are saved`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(
             StubMergeRequest(
                 id = "1",
                 assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
@@ -82,13 +82,13 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `assignees are removed after MR removal`() = runTest {
         testModel.prepareTestProject()
-        repository.saveMergeRequests(TEST_PROJECT_ID, listOf(
+        repository.addMergeRequests(TEST_PROJECT_ID, listOf(
             StubMergeRequest(
                 id = "1",
                 assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
             ))
         )
-        repository.deleteMergeRequest(1)
+        repository.deleteMergeRequests(TEST_PROJECT_ID, setOf(1))
         assertEquals(0, repository.assignees(1L).size)
     }
 }

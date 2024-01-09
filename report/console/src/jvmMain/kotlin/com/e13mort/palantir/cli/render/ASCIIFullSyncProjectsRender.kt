@@ -69,6 +69,12 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
                     }
                     cell(project.mrs.skippedItemsCount())
                 }
+                row {
+                    cell("Removed: ") {
+                        paddingLeft = 2
+                    }
+                    cell(project.mrs.removedItemsCount())
+                }
             }
         }
     }
@@ -83,6 +89,7 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
             }
             SyncInteractor.SyncResult.State.Pending -> "Waiting..."
             SyncInteractor.SyncResult.State.Skipped -> "Skipped"
+            SyncInteractor.SyncResult.State.Removed -> "Removed"
         }
     }
 
@@ -102,6 +109,9 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
 
     private fun SyncInteractor.SyncResult.MrsSyncState.skippedItemsCount() : Int {
         return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Skipped }
+    }
+    private fun SyncInteractor.SyncResult.MrsSyncState.removedItemsCount() : Int {
+        return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Removed }
     }
 
     private inline fun SyncInteractor.SyncResult.MrsSyncState.visitActiveMRs(visitor: (Long, SyncInteractor.SyncResult.State) -> Unit) {

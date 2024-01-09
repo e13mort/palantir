@@ -13,6 +13,10 @@ CREATE TABLE merge_requests
 selectAll:
 SELECT * FROM merge_requests WHERE project_id = ?;
 
+id:
+SELECT id FROM merge_requests WHERE project_id = ? AND local_id = ?;
+
+
 mergeRequestCount:
 SELECT COUNT(*) FROM merge_requests WHERE project_id = ?;
 
@@ -29,4 +33,4 @@ selectById:
 SELECT * FROM merge_requests WHERE id = ?;
 
 removeById:
-DELETE FROM merge_requests WHERE id = ?;
+DELETE FROM merge_requests WHERE local_id = ? AND project_id = ?;

@@ -20,8 +20,8 @@ class SyncInteractor(
 
     sealed interface SyncStrategy {
         data object UpdateProjects : SyncStrategy
-        data object FullSyncForActiveProjects : SyncStrategy
-        data class FullSyncForProject(val projectId: Long) : SyncStrategy
+        data class FullSyncForActiveProjects(val force: Boolean = false) : SyncStrategy
+        data class FullSyncForProject(val projectId: Long, val force: Boolean = false) : SyncStrategy
     }
 
     interface SyncPlan<T> {
@@ -50,14 +50,15 @@ class SyncInteractor(
             data class InProgress(val state: ProgressState) : State()
             data class Done(val itemsUpdated: Long) : State()
             data object Skipped : State()
+            data object Removed : State()
         }
     }
 
     override fun run(arg: SyncStrategy): Flow<SyncResult> {
         return flow {
             when (arg) {
-                SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(this)
-                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(this, arg.projectId)
+                is SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(this, arg.force)
+                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(this, arg.projectId, arg.force)
                 SyncStrategy.UpdateProjects -> updateLocalProjects(this)
             }
         }
@@ -72,25 +73,30 @@ class SyncInteractor(
         flowCollector.emit(SyncResult(result))
     }
 
-    private suspend fun runFullSyncForSelectedProjects(flowCollector: FlowCollector<SyncResult>) {
-        syncProjects(projectRepository.syncedProjects(), flowCollector)
+    private suspend fun runFullSyncForSelectedProjects(
+        flowCollector: FlowCollector<SyncResult>,
+        force: Boolean
+    ) {
+        syncProjects(projectRepository.syncedProjects(), flowCollector, force)
     }
 
     private suspend fun runFullSyncForProject(
         flowCollector: FlowCollector<SyncResult>,
-        projectId: Long
+        projectId: Long,
+        force: Boolean
     ) {
         val localProject =
             projectRepository.projects().filter { it.id().toLong() == projectId }.firstOrNull()
                 ?: throw IllegalArgumentException("Local project with id $projectId doesn't exists")
 
         val localProjects = listOf(localProject)
-        syncProjects(localProjects, flowCollector)
+        syncProjects(localProjects, flowCollector, force)
     }
 
     private suspend fun syncProjects(
         localProjects: List<SyncableProjectRepository.SyncableProject>,
-        flowCollector: FlowCollector<SyncResult>
+        flowCollector: FlowCollector<SyncResult>,
+        force: Boolean
     ) {
 
         var syncResult = SyncResult(state = SyncResult.State.Pending)
@@ -115,7 +121,8 @@ class SyncInteractor(
                 remoteProject,
                 mergeRequestRepository,
                 mergeRequestLocalNotesRepository,
-                mergeRequestRemoteNotesRepository
+                mergeRequestRemoteNotesRepository,
+                if (force) SyncMRsPlan.SyncType.Forced else SyncMRsPlan.SyncType.Incremental
             )
 
             val syncProjectPlan = SyncProjectPlan(syncBranchesPlan, syncMRsPlan)

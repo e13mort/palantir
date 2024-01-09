@@ -18,11 +18,11 @@ fun List<RemoteProjectRepositoryBuilder.StubProjectScope.StubMRScope>.asMrs(): L
     return map { scope ->
         StubMergeRequest(
             id = scope.id.toString(),
+            localId = scope.localId,
             state = scope.state,
             assignees = scope.assigneesScope.users.toList(),
             sourceBranch = scope.sourceBranch.asBranch(),
-            targetBranch = scope.targetBranch.asBranch(),
-            localId = scope.id
+            targetBranch = scope.targetBranch.asBranch()
         )
     }
 }
@@ -35,7 +35,10 @@ fun String.asBranch(): Branch {
     return StubBranch(this)
 }
 
-class RemoteProjectRepositoryBuilder {
+class RemoteProjectRepositoryBuilder(
+    private val mrIdGenerator: IdGenerator = IdGenerator(),
+    private val mrNotesIdGenerator: IdGenerator = IdGenerator()
+) {
     private val projectScopes = mutableListOf<StubProjectScope>()
     val stubNotesRepository = StubNoteRepository()
 
@@ -54,7 +57,7 @@ class RemoteProjectRepositoryBuilder {
     private fun createProject(config: StubProjectScope.() -> Unit) {
         val newId = (projectScopes.lastOrNull()?.id?.inc()) ?: 1L
         projectScopes.add(
-            StubProjectScope(id = newId).also(config)
+            StubProjectScope(id = newId, mrIdGenerator = mrIdGenerator, mrEventsIdGenerator = mrNotesIdGenerator).also(config)
         )
     }
 
@@ -65,17 +68,18 @@ class RemoteProjectRepositoryBuilder {
 
     fun build(): ProjectRepository {
         return StubProjectRepository(
-            projectScopes.map {
-                it.mrs.forEach { mr ->
-                    stubNotesRepository.data[it.id] =
-                        mutableMapOf<Long, List<MergeRequestEvent>>().apply {
-                            this[mr.id] = mr.eventsScope.events
+            projectScopes.map { project ->
+                stubNotesRepository.data[project.id] = mutableMapOf<Long, MutableList<MergeRequestEvent>>().also { notesMap ->
+                    project.mrs.forEach { mr ->
+                        notesMap[mr.localId] = mutableListOf<MergeRequestEvent>().also {
+                            it.addAll(mr.eventsScope.events)
                         }
+                    }
                 }
                 StubProject(
-                    id = it.id.toString(),
-                    mergeRequests = it.mrs.asMrs(),
-                    branches = it.branchesScope.asBranches()
+                    id = project.id.toString(),
+                    mergeRequests = project.mrs.asMrs(),
+                    branches = project.branchesScope.asBranches()
                 )
             }.toMutableList()
         )
@@ -84,7 +88,9 @@ class RemoteProjectRepositoryBuilder {
     class StubProjectScope(
         var id: Long,
         val mrs: MutableList<StubMRScope> = mutableListOf(),
-        var branchesScope: BranchesScope = BranchesScope()
+        var branchesScope: BranchesScope = BranchesScope(),
+        val mrIdGenerator: IdGenerator,
+        private val mrEventsIdGenerator: IdGenerator
     ) {
 
         class UserListScope {
@@ -95,7 +101,7 @@ class RemoteProjectRepositoryBuilder {
             }
         }
 
-        class MREventsScope {
+        class MREventsScope(private val idGenerator: IdGenerator) {
             class MREventScope(private val id: Long) : MergeRequestEvent {
                 var type: MergeRequestEvent.Type = MergeRequestEvent.Type.GENERAL_NOTE
                 private var user: StubUser = StubUser(1L)
@@ -119,7 +125,7 @@ class RemoteProjectRepositoryBuilder {
             internal val events = mutableListOf<MREventScope>()
             fun event(id: Long? = null, config: MREventScope.() -> Unit) {
                 if (id == null) {
-                    val newId = events.maxByOrNull { it.id() }?.id()?.inc() ?: 1L
+                    val newId = idGenerator.nextId()
                     events += MREventScope(newId).also(config)
                 } else {
                     events.first { it.id() == id }.also(config)
@@ -135,11 +141,13 @@ class RemoteProjectRepositoryBuilder {
         }
 
         class StubMRScope(
-            var id: Long,
+            val id: Long,
+            val localId: Long,
             var state: MergeRequest.State = MergeRequest.State.OPEN,
+            mrEventsIdGenerator: IdGenerator
         ) {
             internal val assigneesScope = UserListScope()
-            internal val eventsScope = MREventsScope()
+            internal val eventsScope = MREventsScope(mrEventsIdGenerator)
             var sourceBranch = "dev"
             var targetBranch = "master"
             fun assignees(config: UserListScope.() -> Unit) {
@@ -161,8 +169,8 @@ class RemoteProjectRepositoryBuilder {
         }
 
         private fun createMr(config: StubMRScope.() -> Unit) {
-            val newId = mrs.lastOrNull()?.id?.inc() ?: 1L
-            val mrScope = StubMRScope(id = newId)
+            val newLocalId = mrs.lastOrNull()?.localId?.inc() ?: 1L
+            val mrScope = StubMRScope(id = mrIdGenerator.nextId(), localId = newLocalId, mrEventsIdGenerator = mrEventsIdGenerator)
             config(mrScope)
             mrs += mrScope
         }

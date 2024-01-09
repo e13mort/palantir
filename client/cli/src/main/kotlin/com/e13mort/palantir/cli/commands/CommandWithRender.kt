@@ -53,7 +53,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
         }
     }
 
-    private fun flags(): Set<String> {
+    protected fun flags(): Set<String> {
         val allFlags = mutableSetOf<String>().apply {
             registeredOptions().map { option ->
                 if (option is FlagOption<*>) {

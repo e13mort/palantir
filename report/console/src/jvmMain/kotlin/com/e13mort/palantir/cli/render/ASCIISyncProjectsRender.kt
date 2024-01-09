@@ -32,6 +32,10 @@ class ASCIISyncProjectsRender : ReportRender<SyncResult, String, Unit> {
                 SyncResult.State.Skipped -> {
                     row("Project sync skipped...")
                 }
+
+                SyncResult.State.Removed -> {
+                    row("Project removed")
+                }
             }
         }.toString()
     }

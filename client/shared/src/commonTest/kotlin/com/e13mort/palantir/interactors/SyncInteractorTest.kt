@@ -12,11 +12,15 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.DriverType
 import com.e13mort.palantir.model.local.LocalModel
+import io.kotest.matchers.collections.shouldContainAll
+import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.collections.shouldMatchEach
 import io.kotest.matchers.collections.shouldMatchInOrderSubset
 import io.kotest.matchers.maps.shouldContainKey
+import io.kotest.matchers.maps.shouldMatchAll
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
@@ -234,11 +238,176 @@ class SyncInteractorTest {
     fun `sync process emits correct MR notes sync states`() = runTestWithResultList { syncEvents ->
         syncEvents shouldMatchInOrderSubset listOf(
             projectsSyncResultsExists(1),
-            mrSyncResultsExists(1, 1),
+            mrSyncResultsPending(1, 1),
             matchMRNotesState(1, 1, State.InProgress(State.ProgressState.LOADING)),
             matchMRNotesState(1, 1, State.InProgress(State.ProgressState.SAVING)),
             matchMRNotesState(1, 1, State.Done(1)),
         )
+    }
+
+    @Test
+    fun `sync process emits correct MR notes sync states for incremental sync with new merged mr`() = runTest {
+        repositoryBuilder.project(1) {
+            mr {
+                events {
+                    event {
+                        type = MergeRequestEvent.Type.APPROVE
+                        content = "approved"
+                    }
+                }
+                state = MergeRequest.State.MERGED
+            }
+        }
+        val interactor = createSyncInteractor()
+        interactor.prepareForTest()
+        val firstSyncEvents = interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1)).toList()
+        firstSyncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            mrSyncResultsPending(1, 1),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.LOADING)),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.SAVING)),
+            matchMRNotesState(1, 1, State.Done(1)),
+            matchMRNotesState(1, 2, State.InProgress(State.ProgressState.LOADING)),
+            matchMRNotesState(1, 2, State.InProgress(State.ProgressState.SAVING)),
+            matchMRNotesState(1, 2, State.Done(1)),
+        )
+        val incrementalSyncEvents = interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1)).toList()
+        incrementalSyncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            mrSyncResultsPending(1, 1),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.LOADING)),
+            matchMRNotesState(1, 1, State.InProgress(State.ProgressState.SAVING)),
+            matchMRNotesState(1, 1, State.Done(1)),
+            matchMRNotesState(1, 2, State.Skipped),
+        )
+    }
+
+    @Test
+    fun `sync process emits correct MR notes sync states for incremental sync with skipped state`() = runTest {
+        repositoryBuilder.project(1) {
+            mr(1) {
+                state = MergeRequest.State.MERGED
+            }
+            mr {
+                state = MergeRequest.State.MERGED
+                events {
+                    event {
+                        type = MergeRequestEvent.Type.APPROVE
+                        content = "approved"
+                    }
+                }
+            }
+            mr {
+                state = MergeRequest.State.MERGED
+            }
+        }
+        val interactor = createSyncInteractor()
+        interactor.prepareForTest()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1, true)).collect()
+
+        val incrementalSyncEvents = interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1, false)).toList()
+        incrementalSyncEvents shouldMatchInOrderSubset listOf(
+            projectsSyncResultsExists(1),
+            mrSyncResultsSkipped(1, setOf(1, 2, 3)),
+        )
+    }
+
+    @Test
+    fun `incremental sync process success for two projects with mrs`() = runTest {
+        repositoryBuilder.project {
+            mr { }
+        }
+        val interactor = createSyncInteractor()
+        interactor.prepareForTest()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects(true)).collect()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects()).collect()
+    }
+
+    @Test
+    fun `force sync process success for two projects with mrs and events`() = runTest {
+        repositoryBuilder.removeProject(1)
+        repositoryBuilder.project {
+            mr {
+                state = MergeRequest.State.MERGED
+            }
+            mr {
+                state = MergeRequest.State.MERGED
+            }
+            mr {
+                state = MergeRequest.State.MERGED
+            }
+        }
+        val interactor = createSyncInteractor()
+        interactor.prepareForTest()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1,true)).collect()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1,false)).collect()
+    }
+
+    @Test
+    fun `force sync process success for two projects with mrs and events2`() = runTest {
+        repositoryBuilder.project(1) {
+            mr {
+                events {
+                    event { }
+                }
+            }
+            mr {
+                events {
+                    event { }
+                    event { }
+                    event { }
+                }
+            }
+        }
+        val interactor = createSyncInteractor()
+        interactor.run(SyncInteractor.SyncStrategy.UpdateProjects).collect()
+        interactor.run(SyncInteractor.SyncStrategy.FullSyncForProject(1, true)).collect()
+        val mrsForTestProject = localComponent.mrRepository.mergeRequestsForProject(1)
+        mrsForTestProject shouldHaveSize 3
+        localComponent.notesRepository.events(1, 1) shouldHaveSize 2
+        localComponent.notesRepository.events(1, 2) shouldHaveSize 1
+        localComponent.notesRepository.events(1, 3) shouldHaveSize 3
+    }
+
+    @Test
+    fun `next incremental sync removes mr`() = runTest {
+        createSyncInteractor().also { it.prepareForTest() }.run()
+        repositoryBuilder.project(1L) {
+            removeMr(1L)
+        }
+        createSyncInteractor().also { it.prepareForTest() }.run()
+        localComponent.mrRepository.mergeRequestsForProject(1) shouldHaveSize 0
+    }
+
+    @Test
+    fun `next incremental sync adds mr with correct states`() = runTest {
+        createSyncInteractor().also { it.prepareForTest() }.run()
+        repositoryBuilder.project(1L) {
+             mr {
+                 state = MergeRequest.State.MERGED
+             }
+        }
+        repositoryBuilder.project {
+            mr { state = MergeRequest.State.CLOSED }
+        }
+        createSyncInteractor().also { it.prepareForTest() }.run()
+        localComponent.mrRepository.mergeRequestsForProject(1) shouldMatchEach listOf(
+            { mr ->
+                mr.id().toLong() shouldBe 1
+                mr.localId() shouldBe 1
+                mr.state() shouldBe MergeRequest.State.OPEN
+            },
+            { mr ->
+                mr.id().toLong() shouldBe 2
+                mr.localId() shouldBe 2
+                mr.state() shouldBe MergeRequest.State.MERGED
+            },
+        )
+        localComponent.mrRepository.mergeRequestsForProject(2) shouldMatchEach listOf { mr ->
+            mr.id().toLong() shouldBe 3
+            mr.localId() shouldBe 1
+            mr.state() shouldBe MergeRequest.State.CLOSED
+        }
     }
 
     private fun runTestWithResultList(block: (List<SyncInteractor.SyncResult>) -> Unit) = runTest {
@@ -251,12 +420,23 @@ class SyncInteractorTest {
     private fun projectsSyncResultsExists(projectId: Long): (SyncInteractor.SyncResult) -> Unit =
         { it.projects shouldContainKey projectId }
 
-    private fun mrSyncResultsExists(projectId: Long, mrId: Long): (SyncInteractor.SyncResult) -> Unit =
+    private fun mrSyncResultsPending(projectId: Long, mrId: Long): (SyncInteractor.SyncResult) -> Unit =
         {
             it.projects shouldContainKey projectId
             it.projects[projectId]!!.mrs.mergeRequests shouldContainKey mrId
             it.projects[projectId]!!.mrs.mergeRequests[mrId]!! should matchState(State.Pending)
         }
+
+    private fun mrSyncResultsSkipped(
+        projectId: Long,
+        mrId: Set<Long>
+    ): (SyncInteractor.SyncResult) -> Unit =
+        { syncResult ->
+            syncResult.projects shouldContainKey projectId
+            syncResult.projects[projectId]!!.mrs.mergeRequests.keys shouldContainAll mrId
+            syncResult.projects[projectId]!!.mrs.mergeRequests shouldMatchAll mrId.associateWith { { it shouldBe State.Skipped } }
+        }
+
 
     private fun matchBranchesState(projectId: Long, state: State): (SyncInteractor.SyncResult) -> Unit {
         return { syncResult ->
@@ -280,7 +460,7 @@ class SyncInteractorTest {
         val syncInteractor = createSyncInteractor()
         if (prepare)
             syncInteractor.prepareForTest()
-        val syncResultFlow = syncInteractor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects)
+        val syncResultFlow = syncInteractor.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects())
         val results = syncResultFlow.toList()
         block(results.last())
     }
@@ -321,7 +501,7 @@ class SyncInteractorTest {
     }
 
     private suspend fun SyncInteractor.run(): SyncInteractor.SyncResult {
-        return this.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects).toList()[1]
+        return this.run(SyncInteractor.SyncStrategy.FullSyncForActiveProjects()).toList()[1]
     }
 
     private fun createSyncInteractor(): SyncInteractor {

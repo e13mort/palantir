@@ -13,7 +13,11 @@ CREATE TABLE mr_notes
 			REFERENCES users
 				ON UPDATE CASCADE ON DELETE CASCADE,
 	content TEXT,
-	created_time_millis INTEGER
+	created_time_millis INTEGER,
+    mr_project_id INTEGER NOT NULL
+		CONSTRAINT mr_notes_merge_requests_project_id_fk
+			REFERENCES DBProject
+				ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE VIEW IF NOT EXISTS mr_notes_view AS
@@ -26,7 +30,7 @@ clearForMR:
 DELETE FROM mr_notes WHERE mr_id = ?;
 
 add:
-INSERT INTO mr_notes VALUES(?,?,?,?,?,?);
+INSERT INTO mr_notes VALUES(?,?,?,?,?,?,?);
 
 notes:
 SELECT * FROM mr_notes_view WHERE mr_id = ?;

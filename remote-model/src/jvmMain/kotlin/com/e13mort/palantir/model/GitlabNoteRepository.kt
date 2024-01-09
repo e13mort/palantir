@@ -9,12 +9,16 @@ class GitlabNoteRepository(
 ) : NotesRepository {
 
     private val gitLabApi = GitLabApi(url, key)
-    override suspend fun saveMergeRequestEvents(mrId: Long, events: List<MergeRequestEvent>) {
+    override suspend fun saveMergeRequestEvents(
+        projectId: Long,
+        localMrId: Long,
+        events: List<MergeRequestEvent>
+    ) {
         throw UnsupportedRepositoryOperationException("save")
     }
 
-    override suspend fun events(projectId: Long, mrId: Long): List<MergeRequestEvent> {
-        return gitLabApi.notesApi.getMergeRequestNotes(projectId, mrId).map {
+    override suspend fun events(projectId: Long, localMrId: Long): List<MergeRequestEvent> {
+        return gitLabApi.notesApi.getMergeRequestNotes(projectId, localMrId).map {
             GitlabEvent(it)
         }
     }

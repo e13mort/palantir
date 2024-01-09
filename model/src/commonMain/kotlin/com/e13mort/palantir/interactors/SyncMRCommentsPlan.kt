@@ -19,23 +19,24 @@ class SyncMRCommentsPlan(
         pendingMRsForSync
             .filter { it.value == SyncInteractor.SyncResult.State.Pending }
             .map { it.key }
-            .forEach { id ->
+            .forEach { mrId ->
                 updateMRState(
-                    id,
+                    mrId,
                     SyncInteractor.SyncResult.State.InProgress(SyncInteractor.SyncResult.State.ProgressState.LOADING),
                     callback
                 )
-                val events = sourceNotesRepository.events(projectId, id)
+                val events = sourceNotesRepository.events(projectId, mrId)
                 updateMRState(
-                    id,
+                    mrId,
                     SyncInteractor.SyncResult.State.InProgress(SyncInteractor.SyncResult.State.ProgressState.SAVING),
                     callback
                 )
                 mergeRequestNotesRepository.saveMergeRequestEvents(
-                    id,
+                    projectId,
+                    mrId,
                     events
                 )
-                updateMRState(id, SyncInteractor.SyncResult.State.Done(1), callback)
+                updateMRState(mrId, SyncInteractor.SyncResult.State.Done(1), callback)
             }
         val itemsUpdated = pendingMRsForSync.count {
             it.value is SyncInteractor.SyncResult.State.Done

@@ -11,7 +11,7 @@ class LongCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT,
     renderParamsMapper: (CommandParams) -> RENDER_PARAMS,
-    private val commandParamMapper: (Long) -> INTERACTOR_INPUT
+    private val commandParamMapper: (CommandParams, Long) -> INTERACTOR_INPUT
 ) : CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name,
     interactor,
@@ -20,7 +20,7 @@ class LongCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     renderParamsMapper
 ) {
     private val id by argument("id").long()
-    override fun calculateArgs() = commandParamMapper(id)
+    override fun calculateArgs() = commandParamMapper(CommandParams(flags()), id)
 }
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asLongCommand(
@@ -28,7 +28,7 @@ fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTO
     render: ReportRender<INTERACTOR_OUTPUT, String, Unit>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> Unit = {},
-    commandParamMapper: (Long) -> INTERACTOR_INPUT,
+    commandParamMapper: (CommandWithRender.CommandParams, Long) -> INTERACTOR_INPUT,
     config: CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit>.() -> Unit = { },
 ): CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit> {
     return LongCommand(
@@ -45,5 +45,5 @@ fun <INTERACTOR_OUTPUT> Interactor<Long, INTERACTOR_OUTPUT>.asLongCommand(
 ): CommandWithRender<Long, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit> {
     return LongCommand(
         name, this, render, renderValueMapper, renderParamsMapper
-    ) { it }.also(config)
+    ) { _, it -> it }.also(config)
 }

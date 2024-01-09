@@ -39,7 +39,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
-                implementation(libs.org.xerial.sqlite.jdbc)
+                implementation(libs.org.slf4j.nop) // for sqldelight which depends on slf4j-api
             }
         }
     }
