@@ -1,5 +1,5 @@
 [versions]
-sqldelight = "2.0.0"
+sqldelight = "2.0.1"
 org-junit-jupiter = "5.9.2"
 kotlin = "1.9.20"
 kotlinx-coroutines = "1.7.3"
@@ -12,11 +12,12 @@ com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
 com-jakewharton-picnic = "com.jakewharton.picnic:picnic:0.6.0"
 sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
-org-apache-logging-log4j-log4j-core = "org.apache.logging.log4j:log4j-core:2.17.1"
+org-slf4j-nop = "org.slf4j:slf4j-nop:2.0.0"
 org-gitlab4j-gitlab4j-api = "org.gitlab4j:gitlab4j-api:5.0.1"
 org-jetbrains-annotations = "org.jetbrains:annotations:13.0"
 kotlin-test-annotations-common = { module = "org.jetbrains.kotlin:kotlin-test-annotations-common", version.ref = "kotlin" }
 kotlinx-coroutines-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlin-stdlib = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -27,11 +28,12 @@ org-jsoup = "org.jsoup:jsoup:1.15.4"
 org-junit-jupiter-junit-jupiter-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "org-junit-jupiter" }
 org-junit-jupiter-junit-jupiter-engine = { module = "org.junit.jupiter:junit-jupiter-engine", version.ref = "org-junit-jupiter" }
 org-junit-jupiter-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "org-junit-jupiter" }
-org-xerial-sqlite-jdbc = "org.xerial:sqlite-jdbc:3.41.0.0"
 premo-main = { module = "me.dmdev.premo:premo", version.ref = "premo" }
 premo-navigation = { module = "me.dmdev.premo:premo-navigation", version.ref = "premo" }
 kotlinx-coroutines-swing = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 io-github-chozzle-composemacostheme = "io.github.chozzle:compose-macos-theme:0.4.2"
+io-kotest-assertions = "io.kotest:kotest-assertions-core:5.8.0"
+turbine = "app.cash.turbine:turbine:1.0.0"
 
 [plugins]
 com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"

@@ -2,13 +2,13 @@ package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.User
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 class ApproveStatisticsInteractor(
-    private val reportsRepository: ReportsRepository,
-    private val projectId: Long,
-    private val type: StatisticsType
+    private val reportsRepository: ReportsRepository
 ) :
-    Interactor<ApproveStatisticsInteractor.Report> {
+    Interactor<ApproveStatisticsInteractor.Params, ApproveStatisticsInteractor.Report> {
 
     interface Report {
         fun users(): List<User>
@@ -20,46 +20,52 @@ class ApproveStatisticsInteractor(
         fun totalCount(user: User): Int
     }
 
-    override suspend fun run(): Report {
-        val approversByPeriod = readDataFromRepository()
-        val periodSet = mutableSetOf<String>()
-        val approvesMap = mutableMapOf<User, MutableMap<String, Int>>()
-        val totalCountMap = mutableMapOf<User, Int>()
-        for (item in approversByPeriod) {
-            periodSet.add(item.period())
-            val approvesCount = item.approvesCount()
-            val user = item.user()
-            approvesMap.getOrPut(user) {
-                mutableMapOf()
-            }[item.period()] = approvesCount
-            totalCountMap[user] = totalCountMap.getOrElse(user, { 0 }) + approvesCount
-        }
+    data class Params(val projectId: Long, val type: StatisticsType)
 
-
-        return object : Report {
-            override fun users(): List<User> {
-                return approvesMap.keys.toList().sortedByDescending {
-                    totalCount(it)
+    override fun run(arg: Params): Flow<Report> {
+        return flow {
+            val approversByPeriod = readDataFromRepository(arg.projectId, arg.type)
+            val periodSet = mutableSetOf<String>()
+            val approvesMap = mutableMapOf<User, MutableMap<String, Int>>()
+            val totalCountMap = mutableMapOf<User, Int>()
+            for (item in approversByPeriod) {
+                periodSet.add(item.period())
+                val approvesCount = item.approvesCount()
+                val user = item.user()
+                approvesMap.getOrPut(user) {
+                    mutableMapOf()
+                }[item.period()] = approvesCount
+                totalCountMap[user] = totalCountMap.getOrElse(user, { 0 }) + approvesCount
+            }
+            object : Report {
+                override fun users(): List<User> {
+                    return approvesMap.keys.toList().sortedByDescending {
+                        totalCount(it)
+                    }
                 }
-            }
 
-            override fun periods(): List<String> {
-                return periodSet.toList()
-            }
+                override fun periods(): List<String> {
+                    return periodSet.toList()
+                }
 
-            override fun approvesBy(user: User, period: String): Int {
-                return approvesMap[user]?.get(period) ?: 0
-            }
+                override fun approvesBy(user: User, period: String): Int {
+                    return approvesMap[user]?.get(period) ?: 0
+                }
 
-            override fun totalCount(user: User): Int {
-                return totalCountMap[user] ?: 0
-            }
+                override fun totalCount(user: User): Int {
+                    return totalCountMap[user] ?: 0
+                }
 
+            }.apply {
+                emit(this)
+            }
         }
     }
 
-    private suspend fun readDataFromRepository(): List<ReportsRepository.ApproveStatisticsItem> {
-        val approversByPeriod = when (type) {
+    private suspend fun readDataFromRepository(
+        projectId: Long, statisticsType: StatisticsType
+    ): List<ReportsRepository.ApproveStatisticsItem> {
+        val approversByPeriod = when (statisticsType) {
             StatisticsType.TOTAL_APPROVES -> reportsRepository.findApproversByPeriod(projectId)
             StatisticsType.FIRST_APPROVES -> reportsRepository.findFirstApproversByPeriod(projectId)
         }

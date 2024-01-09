@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS mr_assignees
+CREATE TABLE mr_assignees
 (
 	mr_id INTEGER NOT NULL
 		CONSTRAINT mr_assignees_merge_requests_id_fk

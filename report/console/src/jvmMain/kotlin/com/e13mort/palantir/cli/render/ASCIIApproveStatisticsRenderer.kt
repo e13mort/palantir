@@ -1,12 +1,13 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor
-import com.e13mort.palantir.interactors.ReportRender
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.model.User
 import com.jakewharton.picnic.table
 
-class ASCIIApproveStatisticsRenderer : ReportRender<ApproveStatisticsInteractor.Report, String> {
-    override fun render(value: ApproveStatisticsInteractor.Report): String {
+class ASCIIApproveStatisticsRenderer :
+    ReportRender<ApproveStatisticsInteractor.Report, String, Unit> {
+    override fun render(value: ApproveStatisticsInteractor.Report, params: Unit): String {
         return table {
             cellStyle {
                 border = true

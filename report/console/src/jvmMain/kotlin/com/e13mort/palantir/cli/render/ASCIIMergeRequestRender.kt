@@ -1,7 +1,7 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.PrintMergeRequestInteractor
-import com.e13mort.palantir.interactors.ReportRender
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.model.MergeRequestEvent
 import com.e13mort.palantir.model.User
 import com.jakewharton.picnic.table
@@ -12,8 +12,12 @@ const val MAX_MR_CONTENT_LENGTH = 80
 const val APPROVE_MARK = "\uD83D\uDC4D"
 const val COMMENT_MARK = "\uD83D\uDCAC"
 
-class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String> {
-    override fun render(value: PrintMergeRequestInteractor.MergeRequestsReport): String {
+class ASCIIMergeRequestRender :
+    ReportRender<PrintMergeRequestInteractor.MergeRequestsReport, String, Unit> {
+    override fun render(
+        value: PrintMergeRequestInteractor.MergeRequestsReport,
+        params: Unit
+    ): String {
         return table {
             cellStyle {
                 border = true
@@ -83,9 +87,11 @@ class ASCIIMergeRequestRender : ReportRender<PrintMergeRequestInteractor.MergeRe
                 }
     }
 
-    internal class FormattedMREvent(private val event: MergeRequestEvent) : MergeRequestEvent by event {
+    internal class FormattedMREvent(private val event: MergeRequestEvent) :
+        MergeRequestEvent by event {
         override fun content(): String {
-            val chunked: List<String> = Jsoup.parse(event.content()).text().chunked(MAX_MR_CONTENT_LENGTH)
+            val chunked: List<String> =
+                Jsoup.parse(event.content()).text().chunked(MAX_MR_CONTENT_LENGTH)
             return chunked.joinToString(separator = "\n")
         }
     }

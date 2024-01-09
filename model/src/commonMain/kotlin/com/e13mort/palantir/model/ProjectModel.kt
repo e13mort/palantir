@@ -1,5 +1,6 @@
 package com.e13mort.palantir.model
 
+import com.e13mort.palantir.repository.ProjectRepository
 import kotlinx.coroutines.flow.Flow
 
 interface Project {
@@ -21,8 +22,6 @@ interface Branches {
 }
 
 interface MergeRequests {
-    suspend fun project(): Project
-
     suspend fun count(): Long
 
     suspend fun values(): Flow<MergeRequest>
@@ -30,6 +29,8 @@ interface MergeRequests {
 
 interface MergeRequest {
     fun id(): String
+
+    fun localId(): Long
 
     fun state(): State
 
@@ -42,8 +43,6 @@ interface MergeRequest {
     fun closedTime(): Long?
 
     fun assignees(): List<User>
-
-    fun events(): List<MergeRequestEvent>
 
     enum class State {
         OPEN, MERGED, CLOSED
@@ -84,58 +83,20 @@ interface ClonePaths {
     fun http(): String
 }
 
-interface ProjectRepository {
-    suspend fun projects(): Flow<Project>
-
-    suspend fun findProject(id: Long): Project?
-
-    suspend fun addProject(project: Project)
-
-    suspend fun projectsCount(): Long
-
-    suspend fun clear()
-}
-
-interface MergeRequestRepository {
-    suspend fun mergeRequest(id: Long): MergeRequest?
-}
-
 interface SyncableProjectRepository : ProjectRepository {
     override suspend fun projects(): Flow<SyncableProject>
 
     override suspend fun findProject(id: Long): SyncableProject?
 
-    suspend fun syncedProjects(): Flow<SyncableProject>
+    suspend fun syncedProjects(): List<SyncableProject>
 
     interface SyncableProject : Project {
         fun synced(): Boolean
 
         fun updateSynced(synced: Boolean)
 
-        suspend fun updateBranches(branches: Branches, callback: UpdateBranchesCallback = UpdateBranchesCallback {})
+        @Deprecated("this logic should be moved to interactor")
+        suspend fun updateBranches(branches: List<Branch>)
 
-        suspend fun updateMergeRequests(mergeRequests: MergeRequests, callback: UpdateMRCallback = UpdateMRCallback {})
-
-        fun interface UpdateMRCallback {
-            fun onMREvent(event: MREvent)
-
-            sealed class MREvent {
-                object RemoteLoadingStarted : MREvent()
-
-                data class LoadMR(val mrDescription: String, val index: Int, val totalSize: Int) : MREvent()
-            }
-        }
-
-        fun interface UpdateBranchesCallback {
-            sealed class BranchEvent {
-                object RemoteLoadingStarted : BranchEvent()
-
-                data class BranchAdded(val branchName: String) : BranchEvent()
-            }
-
-            fun onBranchEvent(branchEvent: BranchEvent)
-        }
-
-        interface SyncCallback: UpdateBranchesCallback, UpdateMRCallback
     }
 }

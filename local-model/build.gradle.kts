@@ -29,7 +29,9 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
+                implementation(project(":model-stubs"))
                 implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
                 implementation(libs.kotlin.test.annotations.common)
             }
         }
@@ -37,7 +39,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.sqldelight.driver.jvm)
-                implementation(libs.org.xerial.sqlite.jdbc)
+                implementation(libs.org.slf4j.nop) // for sqldelight which depends on slf4j-api
             }
         }
     }
@@ -51,6 +53,7 @@ sqldelight {
     databases {
         create("LocalModel") {
             packageName.set("com.e13mort.palantir.model.local")
+            schemaOutputDirectory.set(file("src/commonMain/sqldelight/databases"))
         }
     }
 }

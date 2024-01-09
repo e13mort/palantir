@@ -6,10 +6,8 @@ import com.e13mort.palantir.client.properties.safeIntProperty
 import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.interactors.PercentileInteractor
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
-import com.e13mort.palantir.interactors.ScanProjectInteractor
 import com.e13mort.palantir.model.GitlabProjectsRepository
 import com.e13mort.palantir.model.ReportsRepository
-import com.e13mort.palantir.model.SyncableProjectRepository
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
@@ -44,6 +42,7 @@ class PlntrPMFactory(
     private val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     private val requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
+    private val percentileInteractor = PercentileInteractor(reportsRepository)
     private val backgroundDispatcher = Dispatchers.IO
 
     override fun createPm(params: PmParams): PresentationModel {
@@ -59,14 +58,12 @@ class PlntrPMFactory(
                 dateToStringConverter,
                 stringToDateConverter,
                 requestedPercentiles,
-            ) { projectId, ranges ->
-                PercentileInteractor(reportsRepository, projectId, ranges)
-            }
+                percentileInteractor
+            )
 
             is ActiveProjectsPM.Description -> ActiveProjectsPM(
                 params,
                 allProjectsInteractor,
-                mainScope,
                 backgroundDispatcher
             )
 
@@ -79,23 +76,6 @@ class PlntrPMFactory(
         return ConfigureActiveProjectsPM(
             pmParams = params,
             PrintAllProjectsInteractor(localProjectsRepository),
-            projectSyncInteractorFactory = { projectId -> //todo: refactor
-                ScanProjectInteractor(
-                    projectId,
-                    localProjectsRepository,
-                    gitlabProjectsRepository,
-                    object : SyncableProjectRepository.SyncableProject.SyncCallback {
-                        override fun onBranchEvent(branchEvent: SyncableProjectRepository.SyncableProject.UpdateBranchesCallback.BranchEvent) {
-
-                        }
-
-                        override fun onMREvent(event: SyncableProjectRepository.SyncableProject.UpdateMRCallback.MREvent) {
-
-                        }
-
-                    }).run()
-            },
-            main = mainScope,
             backgroundDispatcher = backgroundDispatcher
         )
     }
