@@ -1,6 +1,7 @@
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 version = "unspecified"
@@ -13,6 +14,7 @@ kotlin {
             dependencies {
                 api(libs.org.jetbrains.kotlinx.kotlinx.coroutines.core)
                 implementation(project(":model"))
+                implementation(libs.kotlinx.serialization.json)
             }
         }
         val jvmMain by getting {
