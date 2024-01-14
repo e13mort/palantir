@@ -8,6 +8,7 @@ import com.e13mort.palantir.cli.commands.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.MR
 import com.e13mort.palantir.cli.commands.RootCommand
 import com.e13mort.palantir.cli.commands.ScanCommand
+import com.e13mort.palantir.cli.commands.StringWithRangesCommand
 import com.e13mort.palantir.cli.commands.SyncCommand
 import com.e13mort.palantir.cli.commands.asLongCommand
 import com.e13mort.palantir.cli.commands.asUnitCommand
@@ -19,6 +20,7 @@ import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestsRender
 import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
+import com.e13mort.palantir.cli.render.ASCIIRepositoryCommitCountReportRender
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
@@ -37,6 +39,7 @@ import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
+import com.e13mort.palantir.interactors.RepositoryCommitCountInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
@@ -47,7 +50,6 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
-import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.subcommands
@@ -75,6 +77,7 @@ fun main(args: Array<String>) {
     )
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
+    val dateToStringConverter = createDateConverter(dateFormat)
     val requestedPercentilesProperty = properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
 
     val reportsRepository = DBReportsRepository(model)
@@ -185,14 +188,21 @@ fun main(args: Array<String>) {
                 LongWithRangesCommand(
                     name = "start",
                     interactor = projectStatisticsInteractor,
-                    render = ASCIIPercentileReportRenderer(
-                        createDateConverter(dateFormat)
-                    ),
+                    render = ASCIIPercentileReportRenderer(dateToStringConverter),
                     renderValueMapper = { it },
                     renderParamsMapper = { ReportsRepository.Percentile.fromString(requestedPercentilesProperty) },
                     commandParamMapper = { a, b -> a to b },
                     dateFormat = stringToDateConverter
                 )
+            ),
+            StringWithRangesCommand(
+                name = "commits",
+                interactor = RepositoryCommitCountInteractor(),
+                render = ASCIIRepositoryCommitCountReportRender(dateToStringConverter),
+                renderValueMapper = { it },
+                commandParamMapper = { _, b -> b },
+                renderParamsMapper = {},
+                dateFormat = stringToDateConverter
             )
         )
     ).main(args)
