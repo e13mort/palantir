@@ -53,6 +53,14 @@ class RepositoryCommitCountInteractor :
             projects.forEach { projectSpec ->
                 val rangesReports = mutableListOf<RepositoryCommitsReport.RangeReportItem>()
                 val git: Git = Git.open(File(projectSpec.localPath))
+                projectSpec.targetBranch?.let {
+                    git
+                        .checkout()
+                        .setName(it)
+                        .setCreateBranch(false)
+                        .setForced(true)
+                        .call()
+                }
                 ranges.forEach {
                     val rangeReportItem = calculateReport(git, it)
                     rangesReports += rangeReportItem
