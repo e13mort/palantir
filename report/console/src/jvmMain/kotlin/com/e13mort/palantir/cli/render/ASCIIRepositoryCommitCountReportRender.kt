@@ -1,6 +1,8 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.RepositoryCommitsReport
+import com.e13mort.palantir.interactors.totalCommitsCount
+import com.e13mort.palantir.interactors.uniqueAuthors
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
@@ -14,23 +16,35 @@ class ASCIIRepositoryCommitCountReportRender(
             cellStyle {
                 border = true
             }
-            value.result.forEach { (repo, reports: List<RepositoryCommitsReport.RangeReportItem>) ->
-                row {
-                    cell(repo) {
-                        columnSpan = 3
-                    }
-                }
-                row {
-                    cell("Range")
-                    cell("Commits count")
-                    cell("Authors count")
-                }
-                reports.forEach { report ->
+            value.result.forEach { groupedResult ->
+                groupedResult.result.forEach { (repo, reports: List<RepositoryCommitsReport.RangeReportItem>) ->
                     row {
-                        cell(report.range.asString(formatter))
-                        cell(report.commitsCount)
-                        cell(report.uniqueAuthorsEmailsCount)
+                        cell(repo) {
+                            columnSpan = 3
+                        }
                     }
+                    row {
+                        cell("Range")
+                        cell("Commits count")
+                        cell("Authors count")
+                    }
+                    reports.forEach { report ->
+                        row {
+                            cell(report.range.asString(formatter))
+                            cell(report.commitsCount)
+                            cell(report.uniqueAuthorsEmails.size)
+                        }
+                    }
+                    row {
+                        cell("Total")
+                        cell(reports.totalCommitsCount())
+                        cell(reports.uniqueAuthors().size)
+                    }
+                }
+                row {
+                    cell("Group: ${groupedResult.groupName}")
+                    cell(groupedResult.totalCommitsCount())
+                    cell(groupedResult.totalAuthors().size)
                 }
             }
         }.toString()

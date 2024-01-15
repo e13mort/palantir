@@ -19,7 +19,7 @@ class RepositoryCommitCountInteractor :
             val specification =
                 tryReadSpecFromFile(argPath)
 
-            val result = mutableMapOf<String, List<RepositoryCommitsReport.RangeReportItem>>()
+            val result = mutableListOf<RepositoryCommitsReport.GroupedResults>()
             if (specification != null) {
                 createReportsForSpecification(specification, ranges, result)
             } else {
@@ -33,23 +33,26 @@ class RepositoryCommitCountInteractor :
     private fun createReportsForSingleGitRepo(
         repoPath: String,
         ranges: List<Range>,
-        result: MutableMap<String, List<RepositoryCommitsReport.RangeReportItem>>
+        fullResult: MutableList<RepositoryCommitsReport.GroupedResults>
     ) {
         val git: Git = Git.open(File(repoPath))
         val rangesReports = mutableListOf<RepositoryCommitsReport.RangeReportItem>()
+        val result = mutableMapOf<String, List<RepositoryCommitsReport.RangeReportItem>>()
         ranges.forEach {
             val rangeReportItem = calculateReport(git, it)
             rangesReports += rangeReportItem
         }
         result[git.firstRemoteUri()] = rangesReports
+        fullResult += RepositoryCommitsReport.GroupedResults("single", result)
     }
 
     private fun createReportsForSpecification(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
-        result: MutableMap<String, List<RepositoryCommitsReport.RangeReportItem>>
+        fullResults: MutableList<RepositoryCommitsReport.GroupedResults>
     ) {
-        specification.projects.forEach { (_, projects) ->
+        specification.projects.forEach { (groupName, projects) ->
+            val result = mutableMapOf<String, List<RepositoryCommitsReport.RangeReportItem>>()
             projects.forEach { projectSpec ->
                 val rangesReports = mutableListOf<RepositoryCommitsReport.RangeReportItem>()
                 val git: Git = Git.open(File(projectSpec.localPath))
@@ -67,6 +70,7 @@ class RepositoryCommitCountInteractor :
                 }
                 result[git.firstRemoteUri()] = rangesReports
             }
+            fullResults += RepositoryCommitsReport.GroupedResults(groupName, result)
         }
     }
 
@@ -97,11 +101,11 @@ class RepositoryCommitCountInteractor :
             commitsCount++
             authors += it.authorIdent.emailAddress
         }
-        return RepositoryCommitsReport.RangeReportItem(range, commitsCount, authors.size)
+        return RepositoryCommitsReport.RangeReportItem(range, commitsCount, authors)
     }
 
     data class RepositoryCommitsReportImpl(
-        override val result: Map<String, List<RepositoryCommitsReport.RangeReportItem>> = emptyMap()
+        override val result: List<RepositoryCommitsReport.GroupedResults> = emptyList()
     ) : RepositoryCommitsReport
 
 }
