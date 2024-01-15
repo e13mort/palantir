@@ -8,11 +8,14 @@ import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.render.ReportRender
 import com.github.ajalt.clikt.core.CliktCommand
 import com.github.ajalt.clikt.parameters.options.FlagOption
+import com.github.ajalt.clikt.parameters.options.flag
+import com.github.ajalt.clikt.parameters.options.option
 import com.jakewharton.mosaic.runMosaicBlocking
 import com.jakewharton.mosaic.ui.Text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.last
 
 abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INPUT, RENDER_PARAMS>(
     name: String,
@@ -26,19 +29,33 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
         val flags: Set<String>
     )
 
+    init {
+        this.registerOption(option("--blocking").flag())
+    }
+
     abstract fun calculateArgs(): INTERACTOR_INPUT
 
     override fun run() {
         runMosaicBlocking {
             val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
-            var state by mutableStateOf<INTERACTOR_OUTPUT?>(null)
-            setContent {
-                RenderContent(state)
-            }
-            interactorOutputFlow.flowOn(Dispatchers.Default).collect {
-                state = it
+            if (shouldRunBlocking()) {
+                interactorOutputFlow.last()?.also {
+                    println(renderState(it))
+                }
+            } else {
+                var state by mutableStateOf<INTERACTOR_OUTPUT?>(null)
+                setContent {
+                    RenderContent(state)
+                }
+                interactorOutputFlow.flowOn(Dispatchers.Default).collect {
+                    state = it
+                }
             }
         }
+    }
+
+    private fun shouldRunBlocking() : Boolean {
+        return flags().contains("--blocking")
     }
 
     @Composable
@@ -46,11 +63,15 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
         if (state == null) {
             Text("Waiting...")
         } else {
-            val commandParams = CommandParams(flags())
             val result =
-                render.render(renderValueMapper(state), renderParamsMapper(commandParams))
+                renderState(state)
             Text(result)
         }
+    }
+
+    private fun renderState(state: INTERACTOR_OUTPUT): String {
+        val commandParams = CommandParams(flags())
+        return render.render(renderValueMapper(state), renderParamsMapper(commandParams))
     }
 
     protected fun flags(): Set<String> {
