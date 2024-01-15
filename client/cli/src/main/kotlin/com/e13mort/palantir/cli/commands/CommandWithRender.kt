@@ -41,16 +41,14 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
         calculateAvailableRenderOptions()
     ).default(RenderType.Table)
 
-    init {
-        this.registerOption(option("--blocking").flag())
-    }
+    private val blocking by option("--blocking").flag(default = false)
 
     abstract fun calculateArgs(): INTERACTOR_INPUT
 
     override fun run() {
         runMosaicBlocking {
             val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
-            if (shouldRunBlocking()) {
+            if (blocking) {
                 interactorOutputFlow.last()?.also {
                     println(renderState(it))
                 }
@@ -64,10 +62,6 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
                 }
             }
         }
-    }
-
-    private fun shouldRunBlocking() : Boolean {
-        return flags().contains("--blocking")
     }
 
     @Composable
