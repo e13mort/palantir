@@ -13,7 +13,7 @@ import com.github.ajalt.clikt.parameters.options.option
 class StringWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name: String,
     interactor: Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>,
-    render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
+    renders: Map<RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT,
     renderParamsMapper: (CommandParams) -> RENDER_PARAMS,
     private val commandParamMapper: (CommandParams, Pair<String, List<Range>>) -> INTERACTOR_INPUT,
@@ -21,7 +21,7 @@ class StringWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS
 ) : CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name,
     interactor,
-    render,
+    renders,
     renderValueMapper,
     renderParamsMapper
 ) {

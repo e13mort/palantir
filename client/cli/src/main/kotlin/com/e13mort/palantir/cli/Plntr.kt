@@ -1,5 +1,6 @@
 package com.e13mort.palantir.cli
 
+import com.e13mort.palantir.cli.commands.CommandWithRender
 import com.e13mort.palantir.cli.commands.LongWithRangesCommand
 import com.e13mort.palantir.cli.commands.PrintCommand
 import com.e13mort.palantir.cli.commands.RemoveCommand
@@ -24,6 +25,7 @@ import com.e13mort.palantir.cli.render.ASCIIRepositoryCommitCountReportRender
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
+import com.e13mort.palantir.cli.render.CSVRepositoryCommitCountReportRender
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
 import com.e13mort.palantir.client.properties.Properties
@@ -50,6 +52,7 @@ import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
+import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.subcommands
@@ -101,7 +104,7 @@ fun main(args: Array<String>) {
         PrintCommand().subcommands(
             printAllProjectsInteractor.asUnitCommandWithUnitCommandParams(
                 name = "projects",
-                render = ASCIITableProjectsListRender(),
+                renders = ASCIITableProjectsListRender().asTableRender(),
                 renderParamsMapper = { params ->
                     params.flags.contains("-a")
                 },
@@ -110,32 +113,32 @@ fun main(args: Array<String>) {
             },
             projectSummaryInteractor.asLongCommand(
                 "project",
-                ASCIITableProjectRender(),
+                ASCIITableProjectRender().asTableRender(),
             ),
             printBranchesInteractor.asLongCommand(
                 name = "branches",
-                render = ASCIIBranchesRender()
+                renders = ASCIIBranchesRender().asTableRender()
             ),
             printMergeRequestsInteractor.asLongCommand(
                 name = "mrs",
-                render = ASCIIMergeRequestsRender()
+                renders = ASCIIMergeRequestsRender().asTableRender()
             ),
             printMergeRequestInteractor.asLongCommand(
                 name = "mr",
-                render = ASCIIMergeRequestRender(),
+                renders = ASCIIMergeRequestRender().asTableRender(),
             )
         ),
         ScanCommand().subcommands(
             syncInteractor.asUnitCommandWithUnitRenderParams(
                 name = "projects",
-                render = ASCIISyncProjectsRender(),
+                renders = ASCIISyncProjectsRender().asTableRender(),
                 commandParamsMapper = { SyncInteractor.SyncStrategy.UpdateProjects },
             ),
         ),
         SyncCommand().subcommands(
             syncInteractor.asLongCommand(
                 name = "project",
-                render = ASCIIFullSyncProjectsRender(),
+                renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 commandParamMapper = { params, projectId ->
                     val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId, forceSync)
@@ -145,7 +148,7 @@ fun main(args: Array<String>) {
             },
             syncInteractor.asUnitCommand(
                 name = "active",
-                render = ASCIIFullSyncProjectsRender(),
+                renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 renderParamsMapper = {},
                 commandParamsMapper = { params ->
                     val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
@@ -158,14 +161,14 @@ fun main(args: Array<String>) {
         RemoveCommand().subcommands(
             removeProjectInteractor.asLongCommand(
                 name = "project",
-                render = DoneOperationRenderer
+                renders = DoneOperationRenderer.asTableRender()
             ),
         ),
         ReportCommand().subcommands(
             ApprovesCommand().subcommands(
                 approveStatisticsInteractor.asLongCommand(
                     name = "total",
-                    render = ASCIIApproveStatisticsRenderer(),
+                    renders = ASCIIApproveStatisticsRenderer().asTableRender(),
                     commandParamMapper = { _, projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
@@ -175,7 +178,7 @@ fun main(args: Array<String>) {
                 ),
                 approveStatisticsInteractor.asLongCommand(
                     name = "first",
-                    render = ASCIIApproveStatisticsRenderer(),
+                    renders = ASCIIApproveStatisticsRenderer().asTableRender(),
                     commandParamMapper = { _, projectId ->
                         ApproveStatisticsInteractor.Params(
                             projectId,
@@ -188,7 +191,7 @@ fun main(args: Array<String>) {
                 LongWithRangesCommand(
                     name = "start",
                     interactor = projectStatisticsInteractor,
-                    render = ASCIIPercentileReportRenderer(dateToStringConverter),
+                    renders = ASCIIPercentileReportRenderer(dateToStringConverter).asTableRender(),
                     renderValueMapper = { it },
                     renderParamsMapper = { ReportsRepository.Percentile.fromString(requestedPercentilesProperty) },
                     commandParamMapper = { a, b -> a to b },
@@ -198,7 +201,10 @@ fun main(args: Array<String>) {
             StringWithRangesCommand(
                 name = "commits",
                 interactor = RepositoryCommitCountInteractor(),
-                render = ASCIIRepositoryCommitCountReportRender(dateToStringConverter),
+                renders = mapOf(
+                    CommandWithRender.RenderType.Table to ASCIIRepositoryCommitCountReportRender(dateToStringConverter),
+                    CommandWithRender.RenderType.CSV to CSVRepositoryCommitCountReportRender(dateToStringConverter)
+                ),
                 renderValueMapper = { it },
                 commandParamMapper = { _, b -> b },
                 renderParamsMapper = {},
@@ -210,4 +216,8 @@ fun main(args: Array<String>) {
 
 private fun createDateConverter(dateFormat: String) : DateStringConverter {
     return DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
+}
+
+private fun <A, B, C>ReportRender<A, B, C>.asTableRender() : Map<CommandWithRender.RenderType, ReportRender<A, B, C>> {
+    return mapOf(CommandWithRender.RenderType.Table to this)
 }
