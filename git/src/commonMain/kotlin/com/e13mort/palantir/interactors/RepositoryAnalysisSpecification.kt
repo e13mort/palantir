@@ -21,6 +21,13 @@ data class RepositoryAnalysisSpecification(
     @Serializable
     data class ProjectSpecification(
         val localPath: String,
-        val targetBranch: String? = null
+        val targetBranch: String? = null,
+        val linesSpec: LinesSpec? = null
+    )
+
+    @Serializable
+    data class LinesSpec(
+        val languages: List<String> = emptyList(),
+        val excludedPaths: List<String> = emptyList()
     )
 }

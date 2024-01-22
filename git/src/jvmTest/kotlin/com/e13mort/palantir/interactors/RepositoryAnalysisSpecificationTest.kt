@@ -1,6 +1,7 @@
 package com.e13mort.palantir.interactors
 
 import io.kotest.matchers.collections.shouldMatchEach
+import io.kotest.matchers.collections.shouldMatchInOrder
 import io.kotest.matchers.maps.shouldContainKey
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
@@ -33,12 +34,38 @@ class RepositoryAnalysisSpecificationTest {
                     {
                         it.localPath shouldBe "/local/path1"
                         it.targetBranch shouldBe null
+                        it.linesSpec shouldBe null
                     },
                     {
                         it.localPath shouldBe "/local/path2"
                         it.targetBranch shouldBe "master"
+                        it.linesSpec shouldBe null
                     }
                 )
+            }
+        }
+    }
+
+    @Test
+    fun `spec2 should be correct`() {
+        val specification = RepositoryAnalysisSpecification.fromString(spec1Content)
+        specification!! should { spec ->
+            spec.projects shouldContainKey "group2"
+            spec.projects["group2"]!! should { projects ->
+                projects shouldMatchEach listOf {
+                    it.localPath shouldBe "/local/path1"
+                    it.targetBranch shouldBe "master"
+                    it.linesSpec!! should {
+                        it.languages shouldMatchInOrder listOf(
+                            { it shouldBe "java" },
+                            { it shouldBe "kotlin" }
+                        )
+                        it.excludedPaths shouldMatchInOrder listOf(
+                            { it shouldBe "/build" },
+                            { it shouldBe "/module/build" }
+                        )
+                    }
+                }
             }
         }
     }
