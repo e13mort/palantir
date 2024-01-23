@@ -17,6 +17,7 @@ import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitCommandParams
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitRenderParams
 import com.e13mort.palantir.cli.render.ASCIIApproveStatisticsRenderer
 import com.e13mort.palantir.cli.render.ASCIIBranchesRender
+import com.e13mort.palantir.cli.render.ASCIICodeChangesReportRender
 import com.e13mort.palantir.cli.render.ASCIICodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestRender
@@ -26,6 +27,7 @@ import com.e13mort.palantir.cli.render.ASCIIRepositoryCommitCountReportRender
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
+import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.CSVRepositoryCommitCountReportRender
 import com.e13mort.palantir.client.properties.EnvironmentProperties
@@ -44,6 +46,7 @@ import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
+import com.e13mort.palantir.interactors.RepositoryCodeIncrementInteractor
 import com.e13mort.palantir.interactors.RepositoryCodeLinesCountInteractor
 import com.e13mort.palantir.interactors.RepositoryCommitCountInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
@@ -104,6 +107,7 @@ fun main(args: Array<String>) {
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)
     val removeProjectInteractor = RemoveProjectInteractor(localProjectsRepository)
     val codeLinesInteractor = RepositoryCodeLinesCountInteractor(ClocAdapter.create())
+    val codeIncrementInteractor = RepositoryCodeIncrementInteractor()
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
@@ -221,6 +225,18 @@ fun main(args: Array<String>) {
                 renders = mapOf(
                     CommandWithRender.RenderType.Table to ASCIICodeLinesCountReportRender(dateToStringConverter),
                     CommandWithRender.RenderType.CSV to CSVCodeLinesCountReportRender(dateToStringConverter)
+                ),
+                renderValueMapper = { it },
+                commandParamMapper = { _, b -> b },
+                renderParamsMapper = {},
+                dateFormat = stringToDateConverter
+            ),
+            StringWithRangesCommand(
+                name = "codeincrement",
+                interactor = codeIncrementInteractor,
+                renders = mapOf(
+                    CommandWithRender.RenderType.Table to ASCIICodeChangesReportRender(dateToStringConverter),
+                    CommandWithRender.RenderType.CSV to CSVCodeChangesReportRender(dateToStringConverter)
                 ),
                 renderValueMapper = { it },
                 commandParamMapper = { _, b -> b },
