@@ -23,7 +23,7 @@ class ASCIICodeChangesReportRender(
                 groupedResult.result.commitDiffs.forEach { diff ->
                     row {
                         cell(diff.key) {
-                            columnSpan = 5
+                            columnSpan = 7
                         }
                     }
                     row {
@@ -44,21 +44,25 @@ class ASCIICodeChangesReportRender(
                         if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
                             row {
                                 cell("Details") {
-                                    columnSpan = 5
+                                    columnSpan = 7
                                 }
                             }
                             row {
                                 cell("Commit")
                                 cell("Added")
                                 cell("Removed")
-                                cell("Code increment")
-                                cell("Total")
+                                cell("Added(Ignored)")
+                                cell("Removed(Ignored)")
+                                cell("Effective code increment")
+                                cell("Effective total changes")
                             }
                             it.diffs.forEach { commitDiff ->
                                 row {
                                     cell(commitDiff.targetCommitSHA1)
                                     cell(commitDiff.linesAdded)
                                     cell(commitDiff.linesRemoved)
+                                    cell(commitDiff.ignoredLinesAdd)
+                                    cell(commitDiff.ignoredLinesRemove)
                                     cell(commitDiff.codeIncrement())
                                     cell(commitDiff.totalChanges())
                                 }

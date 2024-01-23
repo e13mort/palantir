@@ -66,13 +66,13 @@ class RepositoryCodeIncrementInteractor :
         }
     }
 
-    @Suppress("UNUSED_PARAMETER")
     private fun calculateReport(
         repoPath: String,
         ranges: List<Range>,
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null
     ): Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> {
 
+        val regex = createRegexForFilesExclusions(linesSpec)
         val git: Git = Git.open(File(repoPath))
         val projectPath = git.firstRemoteUri()
         val commitsWithRanges = mapAllRangesToCommits(git, ranges)
@@ -84,7 +84,7 @@ class RepositoryCodeIncrementInteractor :
             commits.forEach { commit ->
                 if (commit.parents.isNotEmpty()) {
                     val prevCommit = commit.parents[0]
-                    val commitDiff = calculateDiff(formatter, prevCommit, commit)
+                    val commitDiff = calculateDiff(formatter, prevCommit, commit, regex)
                     resultCommits += commitDiff
                 } else {
                     // TODO: track such commits
@@ -97,27 +97,49 @@ class RepositoryCodeIncrementInteractor :
         }
     }
 
+    private fun createRegexForFilesExclusions(linesSpec: RepositoryAnalysisSpecification.LinesSpec?): Regex? {
+        return if (linesSpec?.excludedPaths?.isNotEmpty() == true) {
+            linesSpec
+                .excludedPaths
+                .joinTo(StringBuilder(), "|", "(", ")")
+                .toString()
+                .toRegex()
+        } else null
+    }
+
     private fun calculateDiff(
         formatter: DiffFormatter,
         prevCommit: RevCommit,
-        currentCommit: RevCommit
+        currentCommit: RevCommit,
+        regex: Regex?
     ): RepositoryCodeChangesReport.CommitDiff {
         val diffEntries = formatter.scan(prevCommit, currentCommit)
         var localAdd = 0
         var localRemove = 0
+        var ignoredAdd = 0
+        var ignoredRemove = 0
         diffEntries.forEach { diffEntry ->
             val header = formatter.toFileHeader(diffEntry)
+            val fileNewPath = header.newPath
+            val isFileIgnored = regex?.find(fileNewPath) != null
             val editList = header.toEditList()
             editList.forEach { edit ->
-                localRemove += edit.lengthA
-                localAdd += edit.lengthB
+                if (isFileIgnored) {
+                    ignoredRemove += edit.lengthA
+                    ignoredAdd += edit.lengthB
+                } else {
+                    localRemove += edit.lengthA
+                    localAdd += edit.lengthB
+                }
             }
         }
         return RepositoryCodeChangesReport.CommitDiff(
             prevCommit.name,
             currentCommit.name,
             localAdd,
-            localRemove
+            localRemove,
+            ignoredAdd,
+            ignoredRemove
         )
     }
 

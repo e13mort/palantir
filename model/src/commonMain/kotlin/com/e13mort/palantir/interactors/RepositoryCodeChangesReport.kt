@@ -29,6 +29,8 @@ interface RepositoryCodeChangesReport {
         val targetCommitSHA1: String,
         val linesAdded: Int,
         val linesRemoved: Int,
+        val ignoredLinesAdd: Int,
+        val ignoredLinesRemove: Int
     ) {
         fun totalChanges() = linesAdded + linesRemoved
 
