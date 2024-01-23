@@ -8,8 +8,8 @@ import com.jakewharton.picnic.table
 
 class ASCIICodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryCodeChangesReport, String, Unit> {
-    override fun render(value: RepositoryCodeChangesReport, params: Unit): String {
+) : ReportRender<RepositoryCodeChangesReport, String, Set<CodeChangesReportParams>> {
+    override fun render(value: RepositoryCodeChangesReport, params: Set<CodeChangesReportParams>): String {
         return table {
             cellStyle {
                 border = true
@@ -40,6 +40,29 @@ class ASCIICodeChangesReportRender(
                             cell(it.totalRemoved())
                             cell(it.codeIncrement())
                             cell(it.totalChanged())
+                        }
+                        if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
+                            row {
+                                cell("Details") {
+                                    columnSpan = 5
+                                }
+                            }
+                            row {
+                                cell("Commit")
+                                cell("Added")
+                                cell("Removed")
+                                cell("Code increment")
+                                cell("Total")
+                            }
+                            it.diffs.forEach { commitDiff ->
+                                row {
+                                    cell(commitDiff.targetCommitSHA1)
+                                    cell(commitDiff.linesAdded)
+                                    cell(commitDiff.linesRemoved)
+                                    cell(commitDiff.codeIncrement())
+                                    cell(commitDiff.totalChanges())
+                                }
+                            }
                         }
                     }
                 }

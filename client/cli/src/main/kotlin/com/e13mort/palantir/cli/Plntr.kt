@@ -30,6 +30,7 @@ import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.CSVRepositoryCommitCountReportRender
+import com.e13mort.palantir.cli.render.CodeChangesReportParams
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
 import com.e13mort.palantir.client.properties.Properties
@@ -240,9 +241,18 @@ fun main(args: Array<String>) {
                 ),
                 renderValueMapper = { it },
                 commandParamMapper = { _, b -> b },
-                renderParamsMapper = {},
+                renderParamsMapper = { commandParams ->
+                    commandParams.flags.mapNotNull {
+                        when (it) {
+                            "--full-commits" -> CodeChangesReportParams.ShowFullCommitsList
+                            else -> null
+                        }
+                    }.toSet()
+                },
                 dateFormat = stringToDateConverter
-            )
+            ).apply {
+                registerOption(option("--full-commits").flag())
+            }
         )
     ).main(args)
 }

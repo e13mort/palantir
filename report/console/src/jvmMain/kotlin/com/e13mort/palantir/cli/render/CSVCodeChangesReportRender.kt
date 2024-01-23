@@ -7,8 +7,8 @@ import com.e13mort.palantir.utils.asString
 
 class CSVCodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryCodeChangesReport, String, Unit> {
-    override fun render(value: RepositoryCodeChangesReport, params: Unit): String {
+) : ReportRender<RepositoryCodeChangesReport, String, Set<CodeChangesReportParams>> {
+    override fun render(value: RepositoryCodeChangesReport, params: Set<CodeChangesReportParams>): String {
         return StringBuilder().apply {
             value.result.forEach { groupedResult ->
                 append(groupedResult.groupName)
@@ -27,20 +27,42 @@ class CSVCodeChangesReportRender(
                     append("Code increment")
                     append(",")
                     append("Total")
-                    append(",")
                     append("\n")
-                    diff.value.forEach {
-                        append(it.range.asString(formatter))
+                    diff.value.forEach { diffWithRanges ->
+                        append(diffWithRanges.range.asString(formatter))
                         append(",")
-                        append(it.totalAdded())
+                        append(diffWithRanges.totalAdded())
                         append(",")
-                        append(it.totalRemoved())
+                        append(diffWithRanges.totalRemoved())
                         append(",")
-                        append(it.codeIncrement())
+                        append(diffWithRanges.codeIncrement())
                         append(",")
-                        append(it.totalChanged())
-                        append(",")
+                        append(diffWithRanges.totalChanged())
                         append("\n")
+                        if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
+                            append("Commit")
+                            append(",")
+                            append("Added")
+                            append(",")
+                            append("Removed")
+                            append(",")
+                            append("Code increment")
+                            append(",")
+                            append("Total")
+                            append("\n")
+                            diffWithRanges.diffs.forEach {
+                                append(it.targetCommitSHA1)
+                                append(",")
+                                append(it.linesAdded)
+                                append(",")
+                                append(it.linesRemoved)
+                                append(",")
+                                append(it.codeIncrement())
+                                append(",")
+                                append(it.totalChanges())
+                                append("\n")
+                            }
+                        }
                     }
                 }
 

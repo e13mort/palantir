@@ -76,9 +76,6 @@ class RepositoryCodeIncrementInteractor :
         val git: Git = Git.open(File(repoPath))
         val projectPath = git.firstRemoteUri()
         val commitsWithRanges = mapAllRangesToCommits(git, ranges)
-        if (commitsWithRanges.size <= 1) {
-            return projectPath to emptyList()
-        }
         val formatter = DiffFormatter(NullOutputStream.INSTANCE)
         formatter.setRepository(git.repository)
         val resultMap = mutableMapOf<Range, List<RepositoryCodeChangesReport.CommitDiff>>()
@@ -137,12 +134,8 @@ class RepositoryCodeIncrementInteractor :
     }
 
     private fun mapAllRangesToCommits(git: Git, ranges: List<Range>): Map<Range, List<RevCommit>> {
-        if (ranges.size <= 1) {
-            throw IllegalArgumentException("Ranges $ranges should contain more than 1 value")
-        }
         val result = mutableMapOf<Range, List<RevCommit>>()
         ranges.forEach { range ->
-
             val commits = git.log()
                 .add(git.repository.findRef("HEAD").objectId)
                 .setRevFilter(
