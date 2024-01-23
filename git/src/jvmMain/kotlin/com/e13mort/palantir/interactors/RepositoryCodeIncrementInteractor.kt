@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffFormatter
+import org.eclipse.jgit.diff.RawTextComparator
 import org.eclipse.jgit.revwalk.RevCommit
 import org.eclipse.jgit.revwalk.filter.AndRevFilter
 import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter
@@ -78,6 +79,7 @@ class RepositoryCodeIncrementInteractor :
         val commitsWithRanges = mapAllRangesToCommits(git, ranges)
         val formatter = DiffFormatter(NullOutputStream.INSTANCE)
         formatter.setRepository(git.repository)
+        formatter.setDiffComparator(RawTextComparator.WS_IGNORE_ALL)
         val resultMap = mutableMapOf<Range, List<RepositoryCodeChangesReport.CommitDiff>>()
         commitsWithRanges.forEach { (range, commits) ->
             val resultCommits = mutableListOf<RepositoryCodeChangesReport.CommitDiff>()
