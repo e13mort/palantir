@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.diff.DiffEntry
 import org.eclipse.jgit.diff.DiffFormatter
 import org.eclipse.jgit.diff.RawTextComparator
 import org.eclipse.jgit.revwalk.RevCommit
@@ -80,6 +81,7 @@ class RepositoryCodeIncrementInteractor :
         val formatter = DiffFormatter(NullOutputStream.INSTANCE)
         formatter.setRepository(git.repository)
         formatter.setDiffComparator(RawTextComparator.WS_IGNORE_ALL)
+        formatter.isDetectRenames = true
         val resultMap = mutableMapOf<Range, List<RepositoryCodeChangesReport.CommitDiff>>()
         commitsWithRanges.forEach { (range, commits) ->
             val resultCommits = mutableListOf<RepositoryCodeChangesReport.CommitDiff>()
@@ -122,7 +124,10 @@ class RepositoryCodeIncrementInteractor :
         var ignoredRemove = 0
         diffEntries.forEach { diffEntry ->
             val header = formatter.toFileHeader(diffEntry)
-            val fileNewPath = header.newPath
+            val fileNewPath = when(header.changeType){
+                DiffEntry.ChangeType.DELETE -> header.oldPath
+                else -> header.newPath
+            }
             val isFileIgnored = regex?.find(fileNewPath) != null
             val editList = header.toEditList()
             editList.forEach { edit ->
