@@ -146,7 +146,8 @@ class RepositoryCodeIncrementInteractor :
             localAdd,
             localRemove,
             ignoredAdd,
-            ignoredRemove
+            ignoredRemove,
+            currentCommit.authorIdent.emailAddress
         )
     }
 

@@ -17,13 +17,13 @@ class ASCIICodeChangesReportRender(
             value.result.forEach { groupedResult ->
                 row {
                     cell(groupedResult.groupName) {
-                        columnSpan = 5
+                        columnSpan = 6
                     }
                 }
                 groupedResult.result.commitDiffs.forEach { diff ->
                     row {
                         cell(diff.key) {
-                            columnSpan = 7
+                            columnSpan = 6
                         }
                     }
                     row {
@@ -32,6 +32,7 @@ class ASCIICodeChangesReportRender(
                         cell("Removed")
                         cell("Code increment")
                         cell("Total")
+                        cell("Authors count")
                     }
                     diff.value.forEach {
                         row {
@@ -40,6 +41,7 @@ class ASCIICodeChangesReportRender(
                             cell(it.totalRemoved())
                             cell(it.codeIncrement())
                             cell(it.totalChanged())
+                            cell(it.uniqueAuthors().size)
                         }
                         if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
                             row {
@@ -55,6 +57,7 @@ class ASCIICodeChangesReportRender(
                                 cell("Removed(Ignored)")
                                 cell("Effective code increment")
                                 cell("Effective total changes")
+                                cell("Author email")
                             }
                             it.diffs.forEach { commitDiff ->
                                 row {
@@ -65,6 +68,7 @@ class ASCIICodeChangesReportRender(
                                     cell(commitDiff.ignoredLinesRemove)
                                     cell(commitDiff.codeIncrement())
                                     cell(commitDiff.totalChanges())
+                                    cell(commitDiff.authorEmailAddress)
                                 }
                             }
                         }

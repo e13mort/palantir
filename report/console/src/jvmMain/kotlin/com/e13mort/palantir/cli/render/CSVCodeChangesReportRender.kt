@@ -13,9 +13,17 @@ class CSVCodeChangesReportRender(
             value.result.forEach { groupedResult ->
                 append(groupedResult.groupName)
                 append(",")
+                append(",")
+                append(",")
+                append(",")
+                append(",")
                 append("\n")
                 groupedResult.result.commitDiffs.forEach { diff ->
                     append(diff.key)
+                    append(",")
+                    append(",")
+                    append(",")
+                    append(",")
                     append(",")
                     append("\n")
                     append("Range")
@@ -24,9 +32,11 @@ class CSVCodeChangesReportRender(
                     append(",")
                     append("Removed")
                     append(",")
-                    append("Code increment")
+                    append("Code Increment")
                     append(",")
                     append("Total")
+                    append(",")
+                    append("Authors Count")
                     append("\n")
                     diff.value.forEach { diffWithRanges ->
                         append(diffWithRanges.range.asString(formatter))
@@ -38,6 +48,8 @@ class CSVCodeChangesReportRender(
                         append(diffWithRanges.codeIncrement())
                         append(",")
                         append(diffWithRanges.totalChanged())
+                        append(",")
+                        append(diffWithRanges.uniqueAuthors().size)
                         append("\n")
                         if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
                             append("Commit")
@@ -53,6 +65,8 @@ class CSVCodeChangesReportRender(
                             append("Effective code increment")
                             append(",")
                             append("Effective total changes")
+                            append(",")
+                            append("Author Email")
                             append("\n")
                             diffWithRanges.diffs.forEach {
                                 append(it.targetCommitSHA1)
@@ -68,6 +82,8 @@ class CSVCodeChangesReportRender(
                                 append(it.codeIncrement())
                                 append(",")
                                 append(it.totalChanges())
+                                append(",")
+                                append(it.authorEmailAddress)
                                 append("\n")
                             }
                         }

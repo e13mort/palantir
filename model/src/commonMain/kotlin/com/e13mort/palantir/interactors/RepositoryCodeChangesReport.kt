@@ -22,6 +22,10 @@ interface RepositoryCodeChangesReport {
         fun codeIncrement() = diffs.sumOf {
             it.codeIncrement()
         }
+
+        fun uniqueAuthors() = diffs.map {
+            it.authorEmailAddress
+        }.toSet()
     }
 
     data class CommitDiff(
@@ -30,7 +34,8 @@ interface RepositoryCodeChangesReport {
         val linesAdded: Int,
         val linesRemoved: Int,
         val ignoredLinesAdd: Int,
-        val ignoredLinesRemove: Int
+        val ignoredLinesRemove: Int,
+        val authorEmailAddress: String
     ) {
         fun totalChanges() = linesAdded + linesRemoved
 
