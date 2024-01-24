@@ -124,20 +124,20 @@ class RepositoryCodeIncrementInteractor :
         var ignoredRemove = 0
         diffEntries.forEach { diffEntry ->
             val header = formatter.toFileHeader(diffEntry)
-            val fileNewPath = when(header.changeType){
-                DiffEntry.ChangeType.DELETE -> header.oldPath
-                else -> header.newPath
-            }
-            val isFileIgnored = regex?.find(fileNewPath) != null
-            val editList = header.toEditList()
-            editList.forEach { edit ->
-                if (isFileIgnored) {
-                    ignoredRemove += edit.lengthA
-                    ignoredAdd += edit.lengthB
-                } else {
-                    localRemove += edit.lengthA
-                    localAdd += edit.lengthB
+            if (header.changeType != DiffEntry.ChangeType.DELETE) {
+                val fileNewPath = header.newPath
+                val isFileIgnored = regex?.find(fileNewPath) != null
+                val editList = header.toEditList()
+                editList.forEach { edit ->
+                    if (isFileIgnored) {
+                        ignoredRemove += edit.lengthA
+                        ignoredAdd += edit.lengthB
+                    } else {
+                        localRemove += edit.lengthA
+                        localAdd += edit.lengthB
+                    }
                 }
+
             }
         }
         return RepositoryCodeChangesReport.CommitDiff(
