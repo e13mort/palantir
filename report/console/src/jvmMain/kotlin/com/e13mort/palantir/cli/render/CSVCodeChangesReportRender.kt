@@ -1,6 +1,7 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.RepositoryCodeChangesReport
+import com.e13mort.palantir.interactors.firstItemPercentile
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
@@ -17,9 +18,16 @@ class CSVCodeChangesReportRender(
                 append(",")
                 append(",")
                 append(",")
+                append(",")
+                append(",")
+                append(",")
                 append("\n")
                 groupedResult.result.commitDiffs.forEach { diff ->
+                    val percentileTitle = diff.value.firstItemPercentile()?.name ?: "invalid"
                     append(diff.key)
+                    append(",")
+                    append(",")
+                    append(",")
                     append(",")
                     append(",")
                     append(",")
@@ -27,6 +35,8 @@ class CSVCodeChangesReportRender(
                     append(",")
                     append("\n")
                     append("Range")
+                    append(",")
+                    append("Commits Count")
                     append(",")
                     append("Added")
                     append(",")
@@ -36,10 +46,16 @@ class CSVCodeChangesReportRender(
                     append(",")
                     append("Total")
                     append(",")
+                    append("Added ($percentileTitle)")
+                    append(",")
+                    append("Added (avg)")
+                    append(",")
                     append("Authors Count")
                     append("\n")
                     diff.value.forEach { diffWithRanges ->
                         append(diffWithRanges.range.asString(formatter))
+                        append(",")
+                        append(diffWithRanges.diffs.size)
                         append(",")
                         append(diffWithRanges.totalAdded())
                         append(",")
@@ -48,6 +64,12 @@ class CSVCodeChangesReportRender(
                         append(diffWithRanges.codeIncrement())
                         append(",")
                         append(diffWithRanges.totalChanged())
+                        diffWithRanges.percentileData.let { percentileData ->
+                            append(",")
+                            append(percentileData.linesAdded)
+                            append(",")
+                            append(percentileData.addedAvg)
+                        }
                         append(",")
                         append(diffWithRanges.uniqueAuthors().size)
                         append("\n")
@@ -67,6 +89,8 @@ class CSVCodeChangesReportRender(
                             append("Effective total changes")
                             append(",")
                             append("Author Email")
+                            append(",")
+                            append(",")
                             append("\n")
                             diffWithRanges.diffs.forEach {
                                 append(it.targetCommitSHA1)
@@ -84,6 +108,7 @@ class CSVCodeChangesReportRender(
                                 append(it.totalChanges())
                                 append(",")
                                 append(it.authorEmailAddress)
+                                append(",")
                                 append("\n")
                             }
                         }

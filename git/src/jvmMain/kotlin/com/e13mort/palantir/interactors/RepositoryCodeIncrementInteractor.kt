@@ -1,5 +1,6 @@
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.model.Percentile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -15,6 +16,7 @@ import org.eclipse.jgit.revwalk.filter.RevFilter
 import org.eclipse.jgit.util.io.NullOutputStream
 import java.io.File
 import java.io.FileReader
+import kotlin.math.ceil
 
 class RepositoryCodeIncrementInteractor :
     Interactor<Pair<String, List<Range>>, RepositoryCodeChangesReport> {
@@ -42,7 +44,7 @@ class RepositoryCodeIncrementInteractor :
         fullResult: MutableList<RepositoryCodeChangesReport.GroupedResults>
     ) {
 
-        val reportResultPair = calculateReport(repoPath, ranges)
+        val reportResultPair = calculateReport(repoPath, ranges, percentile = Percentile.P100)
         val changesReportItem = RepositoryCodeChangesReport.CodeChangesReportItem(
             mapOf(reportResultPair)
         )
@@ -61,7 +63,12 @@ class RepositoryCodeIncrementInteractor :
             val commitDiffs = mutableMapOf<String, List<RepositoryCodeChangesReport.DiffWithRanges>>()
             projects.forEach { projectSpec ->
                 val localPath = projectSpec.localPath
-                val report: Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> = calculateReport(localPath, ranges, projectSpec.linesSpec)
+                val report: Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> = calculateReport(
+                    localPath,
+                    ranges,
+                    projectSpec.linesSpec,
+                    projectSpec.percentile
+                )
                 commitDiffs[report.first] = report.second
             }
             fullResults += RepositoryCodeChangesReport.GroupedResults(groupName, RepositoryCodeChangesReport.CodeChangesReportItem(commitDiffs))
@@ -71,7 +78,8 @@ class RepositoryCodeIncrementInteractor :
     private fun calculateReport(
         repoPath: String,
         ranges: List<Range>,
-        linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null
+        linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null,
+        percentile: Percentile
     ): Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> {
 
         val regex = createRegexForFilesExclusions(linesSpec)
@@ -97,7 +105,70 @@ class RepositoryCodeIncrementInteractor :
             resultMap[range] = resultCommits
         }
         return projectPath to resultMap.flatMap {
-            listOf(RepositoryCodeChangesReport.DiffWithRanges(it.key, it.value))
+            listOf(RepositoryCodeChangesReport.DiffWithRanges(it.key, it.value, percentileData = calculatePercentileData(
+                it.value,
+                percentile
+            )))
+        }
+    }
+
+    enum class PercentileColumn {
+        TotalChanges, TotalIncrement, LinesAdded
+    }
+
+
+    private fun calculatePercentileData(
+        diffs: List<RepositoryCodeChangesReport.CommitDiff>, percentile: Percentile
+    ): RepositoryCodeChangesReport.DiffWithRanges.PercentileData {
+        return RepositoryCodeChangesReport.DiffWithRanges.PercentileData(
+            percentile = percentile,
+            linesAdded = calculatePercentileByColumn(PercentileColumn.LinesAdded, diffs, percentile),
+            totalChanged = calculatePercentileByColumn(PercentileColumn.TotalChanges, diffs,
+                percentile
+            ),
+            codeIncrement = calculatePercentileByColumn(PercentileColumn.TotalIncrement, diffs,
+                percentile
+            ),
+            addedAvg = calculateAvgByColumn(PercentileColumn.LinesAdded, diffs)
+        )
+    }
+
+    private fun calculateAvgByColumn(
+        column: PercentileColumn,
+        diffs: List<RepositoryCodeChangesReport.CommitDiff>
+    ): Int {
+        return targetValues(column, diffs).average().toInt()
+    }
+
+    private fun calculatePercentileByColumn(
+        column: PercentileColumn,
+        diffs: List<RepositoryCodeChangesReport.CommitDiff>,
+        percentile: Percentile
+    ): Int {
+        if (diffs.isEmpty()) return 0
+        val targetList = targetValues(column, diffs)
+        val sortedList = targetList.sorted()
+        val index = ceil(percentile.factor * (sortedList.size)).toInt()
+        return sortedList[index - 1]
+    }
+
+    private fun targetValues(
+        column: PercentileColumn,
+        diffs: List<RepositoryCodeChangesReport.CommitDiff>
+    ): List<Int> {
+        return when (column) {
+            PercentileColumn.TotalChanges -> diffs.map {
+                it.totalChanges()
+            }
+
+            PercentileColumn.TotalIncrement -> diffs.map {
+                it.codeIncrement()
+            }
+
+            PercentileColumn.LinesAdded -> diffs.map {
+                it.linesAdded
+            }
+
         }
     }
 

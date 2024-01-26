@@ -7,7 +7,7 @@ import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.interactors.PercentileInteractor
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.model.GitlabProjectsRepository
-import com.e13mort.palantir.model.ReportsRepository
+import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
@@ -40,7 +40,7 @@ class PlntrPMFactory(
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
     private val dateToStringConverter = DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
     private val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
-    private val requestedPercentiles = ReportsRepository.Percentile.fromString(requestedPercentilesProperty)
+    private val requestedPercentiles = Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val percentileInteractor = PercentileInteractor(reportsRepository)
     private val backgroundDispatcher = Dispatchers.IO

@@ -1,6 +1,7 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.RepositoryCodeChangesReport
+import com.e13mort.palantir.interactors.firstItemPercentile
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
@@ -17,36 +18,45 @@ class ASCIICodeChangesReportRender(
             value.result.forEach { groupedResult ->
                 row {
                     cell(groupedResult.groupName) {
-                        columnSpan = 6
+                        columnSpan = 9
                     }
                 }
                 groupedResult.result.commitDiffs.forEach { diff ->
                     row {
                         cell(diff.key) {
-                            columnSpan = 6
+                            columnSpan = 9
                         }
                     }
+                    val percentileTitle = diff.value.firstItemPercentile()?.name ?: "invalid"
                     row {
                         cell("Range")
+                        cell("Commits Count")
                         cell("Added")
                         cell("Removed")
                         cell("Code increment")
                         cell("Total")
+                        cell("Added ($percentileTitle)")
+                        cell("Added (avg)")
                         cell("Authors count")
                     }
                     diff.value.forEach {
                         row {
                             cell(it.range.asString(formatter))
+                            cell(it.diffs.size)
                             cell(it.totalAdded())
                             cell(it.totalRemoved())
                             cell(it.codeIncrement())
                             cell(it.totalChanged())
+                            it.percentileData.let { percentileData ->
+                                cell(percentileData.linesAdded)
+                                cell(percentileData.addedAvg)
+                            }
                             cell(it.uniqueAuthors().size)
                         }
                         if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
                             row {
                                 cell("Details") {
-                                    columnSpan = 7
+                                    columnSpan = 9
                                 }
                             }
                             row {

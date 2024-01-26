@@ -1,5 +1,6 @@
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.model.Percentile
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -22,7 +23,8 @@ data class RepositoryAnalysisSpecification(
     data class ProjectSpecification(
         val localPath: String,
         val targetBranch: String? = null,
-        val linesSpec: LinesSpec? = null
+        val linesSpec: LinesSpec? = null,
+        val percentile: Percentile = Percentile.P100
     )
 
     @Serializable

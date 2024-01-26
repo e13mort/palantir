@@ -1,5 +1,6 @@
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.model.Percentile
 import io.kotest.matchers.collections.shouldMatchEach
 import io.kotest.matchers.collections.shouldMatchInOrder
 import io.kotest.matchers.maps.shouldContainKey
@@ -65,6 +66,7 @@ class RepositoryAnalysisSpecificationTest {
                             { it shouldBe "/module/build" }
                         )
                     }
+                    it.percentile shouldBe Percentile.P95
                 }
             }
         }

@@ -53,7 +53,7 @@ import com.e13mort.palantir.interactors.RepositoryCommitCountInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
-import com.e13mort.palantir.model.ReportsRepository
+import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBNotesRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
@@ -203,7 +203,7 @@ fun main(args: Array<String>) {
                     interactor = projectStatisticsInteractor,
                     renders = ASCIIPercentileReportRenderer(dateToStringConverter).asTableRender(),
                     renderValueMapper = { it },
-                    renderParamsMapper = { ReportsRepository.Percentile.fromString(requestedPercentilesProperty) },
+                    renderParamsMapper = { Percentile.fromString(requestedPercentilesProperty) },
                     commandParamMapper = { a, b -> a to b },
                     dateFormat = stringToDateConverter
                 )

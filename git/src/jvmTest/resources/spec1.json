@@ -22,7 +22,8 @@
             "/build",
             "/module/build"
           ]
-        }
+        },
+        "percentile": "P95"
       }
     ]
   }
