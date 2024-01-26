@@ -58,8 +58,14 @@ interface RepositoryCodeChangesReport {
 
     data class GroupedResults(
         val groupName: String,
-        val result: CodeChangesReportItem
-    )
+        val result: CodeChangesReportItem,
+        val summary: Summary
+    ) {
+        data class Summary(
+            val rangedData: Map<Range, DiffWithRanges>,
+            val total: DiffWithRanges
+        )
+    }
 }
 
 fun List<RepositoryCodeChangesReport.DiffWithRanges>.firstItemPercentile(): Percentile? {

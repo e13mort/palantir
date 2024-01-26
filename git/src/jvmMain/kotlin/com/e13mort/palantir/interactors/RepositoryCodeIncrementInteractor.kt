@@ -43,14 +43,15 @@ class RepositoryCodeIncrementInteractor :
         ranges: List<Range>,
         fullResult: MutableList<RepositoryCodeChangesReport.GroupedResults>
     ) {
-
-        val reportResultPair = calculateReport(repoPath, ranges, percentile = Percentile.P100)
+        val defaultPercentile = Percentile.P100
+        val reportResultPair = calculateReport(repoPath, ranges, percentile = defaultPercentile)
         val changesReportItem = RepositoryCodeChangesReport.CodeChangesReportItem(
             mapOf(reportResultPair)
         )
         fullResult += RepositoryCodeChangesReport.GroupedResults(
             "single",
-            changesReportItem
+            changesReportItem,
+            calculateSummary(changesReportItem.commitDiffs, defaultPercentile)
         )
     }
 
@@ -71,8 +72,56 @@ class RepositoryCodeIncrementInteractor :
                 )
                 commitDiffs[report.first] = report.second
             }
-            fullResults += RepositoryCodeChangesReport.GroupedResults(groupName, RepositoryCodeChangesReport.CodeChangesReportItem(commitDiffs))
+            val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
+            fullResults += RepositoryCodeChangesReport.GroupedResults(
+                groupName,
+                RepositoryCodeChangesReport.CodeChangesReportItem(commitDiffs),
+                calculateSummary(commitDiffs, percentileForSummary)
+            )
         }
+    }
+
+    private fun calculateSummary(
+        data: Map<String, List<RepositoryCodeChangesReport.DiffWithRanges>>,
+        percentile: Percentile
+    ): RepositoryCodeChangesReport.GroupedResults.Summary {
+        val map: List<Map<Range, RepositoryCodeChangesReport.DiffWithRanges>> = data.values.map { diffWithRanges ->
+            diffWithRanges.associateBy { it.range }
+        }
+        val resultMap = mutableMapOf<Range, MutableList<RepositoryCodeChangesReport.DiffWithRanges>>()
+        map.forEach { it: Map<Range, RepositoryCodeChangesReport.DiffWithRanges> ->
+            it.entries.forEach {
+                val currentList: MutableList<RepositoryCodeChangesReport.DiffWithRanges> = resultMap.getOrPut(it.key) {
+                    mutableListOf()
+                }
+                currentList += it.value
+            }
+        }
+        val result = mutableMapOf<Range, RepositoryCodeChangesReport.DiffWithRanges>()
+        resultMap.forEach { (range, list) ->
+            val diffs: List<RepositoryCodeChangesReport.CommitDiff> = list.map {
+                it.diffs
+            }.flatten()
+            result[range] = RepositoryCodeChangesReport.DiffWithRanges(
+                range,
+                diffs,
+                calculatePercentileData(diffs, percentile)
+            )
+        }
+
+
+        val totalDiffs: List<RepositoryCodeChangesReport.CommitDiff> = result.values.map { it.diffs }.flatten()
+        val totalPercentile = calculatePercentileData(totalDiffs, percentile)
+        val totalRange = Range(
+            result.values.first().range.start,
+            result.values.last().range.end,
+        )
+        val totalData = RepositoryCodeChangesReport.DiffWithRanges(
+            totalRange,
+            totalDiffs,
+            totalPercentile
+        )
+        return RepositoryCodeChangesReport.GroupedResults.Summary(result, totalData)
     }
 
     private fun calculateReport(
