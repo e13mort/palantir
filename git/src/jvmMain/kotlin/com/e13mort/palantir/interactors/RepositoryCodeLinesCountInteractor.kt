@@ -21,28 +21,10 @@ class RepositoryCodeLinesCountInteractor(
             val argPath = arg.first
             val ranges = arg.second
 
-            val specification =
-                tryReadSpecFromFile(argPath)
-
-            val result = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
-            if (specification != null) {
-                createReportsForSpecification(specification, ranges, result)
-            } else {
-                createReportsForSingleGitRepo(argPath, ranges, result)
-            }
-
+            val specification = createSpec(argPath)
+            val result = createReportsForSpecification(specification, ranges)
             emit(CodeLinesReportImpl(result))
         }
-    }
-
-    private fun createReportsForSingleGitRepo(
-        repoPath: String,
-        ranges: List<Range>,
-        fullResult: MutableList<RepositoryReport.GroupedResults<CodeLinesResult>>
-    ) {
-
-        val reportResultPair = calculateReport(repoPath, ranges)
-        fullResult += RepositoryReport.GroupedResults("single", mapOf(reportResultPair))
     }
 
     private fun calculateLinesCount(
@@ -60,9 +42,9 @@ class RepositoryCodeLinesCountInteractor(
 
     private fun createReportsForSpecification(
         specification: RepositoryAnalysisSpecification,
-        ranges: List<Range>,
-        fullResults: MutableList<RepositoryReport.GroupedResults<CodeLinesResult>>
-    ) {
+        ranges: List<Range>
+    ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
+        val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
         specification.projects.forEach { (groupName, projects) ->
             val result = mutableMapOf<String, List<RepositoryCodeLinesCountReport.LinesCountReportItem>>()
             projects.forEach { projectSpec ->
@@ -72,6 +54,7 @@ class RepositoryCodeLinesCountInteractor(
             }
             fullResults += RepositoryReport.GroupedResults(groupName, result)
         }
+        return fullResults
     }
 
     private fun calculateReport(
@@ -103,14 +86,20 @@ class RepositoryCodeLinesCountInteractor(
 
     private fun Git.firstRemoteUri() = remoteList().call()[0].urIs[0].toString()
 
-    private suspend fun tryReadSpecFromFile(filePath: String): RepositoryAnalysisSpecification? {
-        return try {
-            RepositoryAnalysisSpecification.fromString(withContext(Dispatchers.IO) {
-                FileReader(filePath).readText()
-            })
-        } catch (_: Exception) {
-            null
+    private suspend fun createSpec(filePath: String): RepositoryAnalysisSpecification {
+        val file = File(filePath)
+        return if (file.isDirectory) {
+            RepositoryAnalysisSpecification(mapOf("single" to listOf(RepositoryAnalysisSpecification.ProjectSpecification(filePath))))
+        } else {
+            readSpec(file)
         }
+    }
+
+    private suspend fun readSpec(file: File): RepositoryAnalysisSpecification {
+        val fileContent = withContext(Dispatchers.IO) {
+            FileReader(file).readText()
+        }
+        return RepositoryAnalysisSpecification.fromString(fileContent) ?: throw IllegalArgumentException("Failed to create spec from file ${file.absolutePath}")
     }
 
     private fun mapRangesToCommits(git: Git, ranges: List<Range>): Map<Range, RevCommit?> {
