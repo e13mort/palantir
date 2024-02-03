@@ -7,6 +7,7 @@ import com.e13mort.palantir.cli.commands.RemoveCommand
 import com.e13mort.palantir.cli.commands.ReportCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.ApprovesCommand
 import com.e13mort.palantir.cli.commands.ReportCommand.MR
+import com.e13mort.palantir.cli.commands.RepositoryCommand
 import com.e13mort.palantir.cli.commands.RootCommand
 import com.e13mort.palantir.cli.commands.ScanCommand
 import com.e13mort.palantir.cli.commands.StringWithRangesCommand
@@ -220,39 +221,50 @@ fun main(args: Array<String>) {
                 renderParamsMapper = {},
                 dateFormat = stringToDateConverter
             ),
-            StringWithRangesCommand(
-                name = "codelines",
-                interactor = codeLinesInteractor,
-                renders = mapOf(
-                    CommandWithRender.RenderType.Table to ASCIICodeLinesCountReportRender(dateToStringConverter),
-                    CommandWithRender.RenderType.CSV to CSVCodeLinesCountReportRender(dateToStringConverter)
+            RepositoryCommand().subcommands(
+                StringWithRangesCommand(
+                    name = "codelines",
+                    interactor = codeLinesInteractor,
+                    renders = mapOf(
+                        CommandWithRender.RenderType.Table to ASCIICodeLinesCountReportRender(
+                            dateToStringConverter
+                        ),
+                        CommandWithRender.RenderType.CSV to CSVCodeLinesCountReportRender(
+                            dateToStringConverter
+                        )
+                    ),
+                    renderValueMapper = { it },
+                    commandParamMapper = { _, b -> b },
+                    renderParamsMapper = {},
+                    dateFormat = stringToDateConverter
                 ),
-                renderValueMapper = { it },
-                commandParamMapper = { _, b -> b },
-                renderParamsMapper = {},
-                dateFormat = stringToDateConverter
+                StringWithRangesCommand(
+                    name = "codeincrement",
+                    interactor = codeIncrementInteractor,
+                    renders = mapOf(
+                        CommandWithRender.RenderType.Table to ASCIICodeChangesReportRender(
+                            dateToStringConverter
+                        ),
+                        CommandWithRender.RenderType.CSV to CSVCodeChangesReportRender(
+                            dateToStringConverter
+                        )
+                    ),
+                    renderValueMapper = { it },
+                    commandParamMapper = { _, b -> b },
+                    renderParamsMapper = { commandParams ->
+                        commandParams.flags.mapNotNull {
+                            when (it) {
+                                "--full-commits" -> CodeChangesReportParams.ShowFullCommitsList
+                                else -> null
+                            }
+                        }.toSet()
+                    },
+                    dateFormat = stringToDateConverter
+                ).apply {
+                    registerOption(option("--full-commits").flag())
+                }
+
             ),
-            StringWithRangesCommand(
-                name = "codeincrement",
-                interactor = codeIncrementInteractor,
-                renders = mapOf(
-                    CommandWithRender.RenderType.Table to ASCIICodeChangesReportRender(dateToStringConverter),
-                    CommandWithRender.RenderType.CSV to CSVCodeChangesReportRender(dateToStringConverter)
-                ),
-                renderValueMapper = { it },
-                commandParamMapper = { _, b -> b },
-                renderParamsMapper = { commandParams ->
-                    commandParams.flags.mapNotNull {
-                        when (it) {
-                            "--full-commits" -> CodeChangesReportParams.ShowFullCommitsList
-                            else -> null
-                        }
-                    }.toSet()
-                },
-                dateFormat = stringToDateConverter
-            ).apply {
-                registerOption(option("--full-commits").flag())
-            }
         )
     ).main(args)
 }
