@@ -23,6 +23,7 @@ class ClocAdapter(
                 append(" --fullpath")
                 val excludeArg = excludedPaths.joinTo(StringBuilder(), "|", "(", ")").toString()
                 append(" --not-match-d=$excludeArg")
+                append(" --not-match-f=$excludeArg")
             }
         }
     }

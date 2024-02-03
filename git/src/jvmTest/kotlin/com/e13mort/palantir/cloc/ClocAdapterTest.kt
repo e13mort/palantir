@@ -24,12 +24,12 @@ class ClocAdapterTest {
     @Test
     fun `correct cloc command with one arg`() {
         val adapter = ClocAdapter.create()
-        adapter.buildClocCommand(listOf("dirA")) shouldBe "cloc . --json --fullpath --not-match-d=(dirA)"
+        adapter.buildClocCommand(listOf("dirA")) shouldBe "cloc . --json --fullpath --not-match-d=(dirA) --not-match-f=(dirA)"
     }
 
     @Test
     fun `correct cloc command with two args`() {
         val adapter = ClocAdapter.create()
-        adapter.buildClocCommand(listOf("dirA", "dirB.*/")) shouldBe "cloc . --json --fullpath --not-match-d=(dirA|dirB.*/)"
+        adapter.buildClocCommand(listOf("dirA", "dirB.*/")) shouldBe "cloc . --json --fullpath --not-match-d=(dirA|dirB.*/) --not-match-f=(dirA|dirB.*/)"
     }
 }
