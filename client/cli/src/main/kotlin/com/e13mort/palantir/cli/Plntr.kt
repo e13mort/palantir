@@ -24,13 +24,11 @@ import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestRender
 import com.e13mort.palantir.cli.render.ASCIIMergeRequestsRender
 import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
-import com.e13mort.palantir.cli.render.ASCIIRepositoryCommitCountReportRender
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
-import com.e13mort.palantir.cli.render.CSVRepositoryCommitCountReportRender
 import com.e13mort.palantir.cli.render.CodeChangesReportParams
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
@@ -50,7 +48,6 @@ import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
 import com.e13mort.palantir.interactors.RepositoryCodeIncrementInteractor
 import com.e13mort.palantir.interactors.RepositoryCodeLinesCountInteractor
-import com.e13mort.palantir.interactors.RepositoryCommitCountInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
@@ -208,18 +205,6 @@ fun main(args: Array<String>) {
                     commandParamMapper = { a, b -> a to b },
                     dateFormat = stringToDateConverter
                 )
-            ),
-            StringWithRangesCommand(
-                name = "commits",
-                interactor = RepositoryCommitCountInteractor(),
-                renders = mapOf(
-                    CommandWithRender.RenderType.Table to ASCIIRepositoryCommitCountReportRender(dateToStringConverter),
-                    CommandWithRender.RenderType.CSV to CSVRepositoryCommitCountReportRender(dateToStringConverter)
-                ),
-                renderValueMapper = { it },
-                commandParamMapper = { _, b -> b },
-                renderParamsMapper = {},
-                dateFormat = stringToDateConverter
             ),
             RepositoryCommand().subcommands(
                 StringWithRangesCommand(
