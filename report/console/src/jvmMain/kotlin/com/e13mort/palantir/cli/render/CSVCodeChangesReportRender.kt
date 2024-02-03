@@ -1,6 +1,7 @@
 package com.e13mort.palantir.cli.render
 
-import com.e13mort.palantir.interactors.RepositoryCodeChangesReport
+import com.e13mort.palantir.interactors.CodeChangesReportItem
+import com.e13mort.palantir.interactors.RepositoryReport
 import com.e13mort.palantir.interactors.firstItemPercentile
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
@@ -8,8 +9,8 @@ import com.e13mort.palantir.utils.asString
 
 class CSVCodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryCodeChangesReport, String, Set<CodeChangesReportParams>> {
-    override fun render(value: RepositoryCodeChangesReport, params: Set<CodeChangesReportParams>): String {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
+    override fun render(value: RepositoryReport<CodeChangesReportItem>, params: Set<CodeChangesReportParams>): String {
         return StringBuilder().apply {
             value.result.forEach { groupedResult ->
                 appendGroupHeader(groupedResult.groupName)
@@ -48,7 +49,7 @@ class CSVCodeChangesReportRender(
 
     private fun StringBuilder.appendAdditionalInfo(
         params: Set<CodeChangesReportParams>,
-        diffWithRanges: RepositoryCodeChangesReport.DiffWithRanges
+        diffWithRanges: CodeChangesReportItem.DiffWithRanges
     ) {
         if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
             append("Commit")
@@ -91,7 +92,7 @@ class CSVCodeChangesReportRender(
         }
     }
 
-    private fun StringBuilder.appendTitle(diff: Map.Entry<String, List<RepositoryCodeChangesReport.DiffWithRanges>>) {
+    private fun StringBuilder.appendTitle(diff: Map.Entry<String, List<CodeChangesReportItem.DiffWithRanges>>) {
         val percentileTitle = diff.value.firstItemPercentile()?.name ?: "invalid"
         append(diff.key)
         append(",")
@@ -123,7 +124,7 @@ class CSVCodeChangesReportRender(
         append("\n")
     }
 
-    private fun StringBuilder.appendDiffChanges(diffWithRanges: RepositoryCodeChangesReport.DiffWithRanges) {
+    private fun StringBuilder.appendDiffChanges(diffWithRanges: CodeChangesReportItem.DiffWithRanges) {
         append(diffWithRanges.range.asString(formatter))
         append(",")
         append(diffWithRanges.diffs.size)

@@ -15,15 +15,15 @@ import java.io.FileReader
 class RepositoryCodeLinesCountInteractor(
     private val clocAdapter: ClocAdapter
 ) :
-    Interactor<Pair<String, List<Range>>, RepositoryCodeLinesCountReport> {
-    override fun run(arg: Pair<String, List<Range>>): Flow<RepositoryCodeLinesCountReport> {
+    Interactor<Pair<String, List<Range>>, RepositoryReport<CodeLinesResult>> {
+    override fun run(arg: Pair<String, List<Range>>): Flow<RepositoryReport<CodeLinesResult>> {
         return flow {
             val argPath = arg.first
             val ranges = arg.second
 
             val specification = createSpec(argPath)
             val result = createReportsForSpecification(specification, ranges)
-            emit(CodeLinesReportImpl(result))
+            emit(RepositoryReport(result))
         }
     }
 
@@ -46,7 +46,7 @@ class RepositoryCodeLinesCountInteractor(
     ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
         val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
         specification.projects.forEach { (groupName, projects) ->
-            val result = mutableMapOf<String, List<RepositoryCodeLinesCountReport.LinesCountReportItem>>()
+            val result = mutableMapOf<String, List<LinesCountReportItem>>()
             projects.forEach { projectSpec ->
                 val localPath = projectSpec.localPath
                 val report = calculateReport(localPath, ranges, projectSpec.linesSpec)
@@ -61,17 +61,17 @@ class RepositoryCodeLinesCountInteractor(
         repoPath: String,
         ranges: List<Range>,
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null
-    ): Pair<String, MutableList<RepositoryCodeLinesCountReport.LinesCountReportItem>> {
-        val result = mutableListOf<RepositoryCodeLinesCountReport.LinesCountReportItem>()
+    ): Pair<String, MutableList<LinesCountReportItem>> {
+        val result = mutableListOf<LinesCountReportItem>()
 
         val git: Git = Git.open(File(repoPath))
         val head = git.repository.findRef("HEAD").target.name
         val rangesToCommits = mapRangesToCommits(git, ranges)
         rangesToCommits.forEach { (range, rev) ->
             val calculateLinesCount = calculateLinesCount(git, rev, linesSpec).mapValues {
-                RepositoryCodeLinesCountReport.LinesCountItem(it.value.code)
+                LinesCountReportItem.LinesCountItem(it.value.code)
             }
-            result += RepositoryCodeLinesCountReport.LinesCountReportItem(
+            result += LinesCountReportItem(
                 range,
                 calculateLinesCount
             )
@@ -117,9 +117,4 @@ class RepositoryCodeLinesCountInteractor(
         }
         return result
     }
-
-    data class CodeLinesReportImpl(
-        override val result: List<RepositoryReport.GroupedResults<CodeLinesResult>> = emptyList()
-    ) : RepositoryCodeLinesCountReport
-
 }

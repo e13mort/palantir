@@ -1,6 +1,7 @@
 package com.e13mort.palantir.cli.render
 
-import com.e13mort.palantir.interactors.RepositoryCodeChangesReport
+import com.e13mort.palantir.interactors.CodeChangesReportItem
+import com.e13mort.palantir.interactors.RepositoryReport
 import com.e13mort.palantir.interactors.firstItemPercentile
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
@@ -10,8 +11,8 @@ import com.jakewharton.picnic.table
 
 class ASCIICodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryCodeChangesReport, String, Set<CodeChangesReportParams>> {
-    override fun render(value: RepositoryCodeChangesReport, params: Set<CodeChangesReportParams>): String {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
+    override fun render(value: RepositoryReport<CodeChangesReportItem>, params: Set<CodeChangesReportParams>): String {
         return table {
             cellStyle {
                 border = true
@@ -94,7 +95,7 @@ class ASCIICodeChangesReportRender(
         }.toString()
     }
 
-    private fun RowDsl.appendDiffCells(it: RepositoryCodeChangesReport.DiffWithRanges) {
+    private fun RowDsl.appendDiffCells(it: CodeChangesReportItem.DiffWithRanges) {
         cell(it.range.asString(formatter))
         cell(it.diffs.size)
         cell(it.totalAdded())

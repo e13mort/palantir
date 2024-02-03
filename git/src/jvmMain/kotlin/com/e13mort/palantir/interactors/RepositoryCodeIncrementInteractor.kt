@@ -19,8 +19,8 @@ import java.io.FileReader
 import kotlin.math.ceil
 
 class RepositoryCodeIncrementInteractor :
-    Interactor<Pair<String, List<Range>>, RepositoryCodeChangesReport> {
-    override fun run(arg: Pair<String, List<Range>>): Flow<RepositoryCodeChangesReport> {
+    Interactor<Pair<String, List<Range>>, RepositoryReport<CodeChangesReportItem>> {
+    override fun run(arg: Pair<String, List<Range>>): Flow<RepositoryReport<CodeChangesReportItem>> {
         return flow {
             val argPath = arg.first
             val ranges = arg.second
@@ -28,27 +28,27 @@ class RepositoryCodeIncrementInteractor :
             val specification =
                 tryReadSpecFromFile(argPath)
 
-            val result = mutableListOf<RepositoryReport.GroupedResults<RepositoryCodeChangesReport.CodeChangesResult>>()
+            val result = mutableListOf<RepositoryReport.GroupedResults<CodeChangesReportItem>>()
             if (specification != null) {
                 createReportsForSpecification(specification, ranges, result)
             } else {
                 createReportsForSingleGitRepo(argPath, ranges, result)
             }
-            emit(CodeChangesReportImpl(result))
+            emit(RepositoryReport(result))
         }
     }
 
     private fun createReportsForSingleGitRepo(
         repoPath: String,
         ranges: List<Range>,
-        fullResult: MutableList<RepositoryReport.GroupedResults<RepositoryCodeChangesReport.CodeChangesResult>>
+        fullResult: MutableList<RepositoryReport.GroupedResults<CodeChangesReportItem>>
     ) {
         val defaultPercentile = Percentile.P100
         val reportResultPair = calculateReport(repoPath, ranges, percentile = defaultPercentile)
         val commitDiffs = mapOf(reportResultPair)
         fullResult += RepositoryReport.GroupedResults(
             "single",
-            RepositoryCodeChangesReport.CodeChangesResult(
+            CodeChangesReportItem(
                 commitDiffs,
                 calculateSummary(commitDiffs, defaultPercentile)
             )
@@ -58,13 +58,13 @@ class RepositoryCodeIncrementInteractor :
     private fun createReportsForSpecification(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
-        fullResults: MutableList<RepositoryReport.GroupedResults<RepositoryCodeChangesReport.CodeChangesResult>>
+        fullResults: MutableList<RepositoryReport.GroupedResults<CodeChangesReportItem>>
     ) {
         specification.projects.forEach { (groupName, projects) ->
-            val commitDiffs = mutableMapOf<String, List<RepositoryCodeChangesReport.DiffWithRanges>>()
+            val commitDiffs = mutableMapOf<String, List<CodeChangesReportItem.DiffWithRanges>>()
             projects.forEach { projectSpec ->
                 val localPath = projectSpec.localPath
-                val report: Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> = calculateReport(
+                val report: Pair<String, List<CodeChangesReportItem.DiffWithRanges>> = calculateReport(
                     localPath,
                     ranges,
                     projectSpec.linesSpec,
@@ -75,7 +75,7 @@ class RepositoryCodeIncrementInteractor :
             val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
             fullResults += RepositoryReport.GroupedResults(
                 groupName,
-                RepositoryCodeChangesReport.CodeChangesResult(
+                CodeChangesReportItem(
                     commitDiffs,
                     calculateSummary(commitDiffs, percentileForSummary)
                 )
@@ -84,27 +84,27 @@ class RepositoryCodeIncrementInteractor :
     }
 
     private fun calculateSummary(
-        data: Map<String, List<RepositoryCodeChangesReport.DiffWithRanges>>,
+        data: Map<String, List<CodeChangesReportItem.DiffWithRanges>>,
         percentile: Percentile
-    ): RepositoryCodeChangesReport.Summary {
-        val map: List<Map<Range, RepositoryCodeChangesReport.DiffWithRanges>> = data.values.map { diffWithRanges ->
+    ): CodeChangesReportItem.Summary {
+        val map: List<Map<Range, CodeChangesReportItem.DiffWithRanges>> = data.values.map { diffWithRanges ->
             diffWithRanges.associateBy { it.range }
         }
-        val resultMap = mutableMapOf<Range, MutableList<RepositoryCodeChangesReport.DiffWithRanges>>()
-        map.forEach { it: Map<Range, RepositoryCodeChangesReport.DiffWithRanges> ->
+        val resultMap = mutableMapOf<Range, MutableList<CodeChangesReportItem.DiffWithRanges>>()
+        map.forEach { it: Map<Range, CodeChangesReportItem.DiffWithRanges> ->
             it.entries.forEach {
-                val currentList: MutableList<RepositoryCodeChangesReport.DiffWithRanges> = resultMap.getOrPut(it.key) {
+                val currentList: MutableList<CodeChangesReportItem.DiffWithRanges> = resultMap.getOrPut(it.key) {
                     mutableListOf()
                 }
                 currentList += it.value
             }
         }
-        val result = mutableMapOf<Range, RepositoryCodeChangesReport.DiffWithRanges>()
+        val result = mutableMapOf<Range, CodeChangesReportItem.DiffWithRanges>()
         resultMap.forEach { (range, list) ->
-            val diffs: List<RepositoryCodeChangesReport.CommitDiff> = list.map {
+            val diffs: List<CodeChangesReportItem.CommitDiff> = list.map {
                 it.diffs
             }.flatten()
-            result[range] = RepositoryCodeChangesReport.DiffWithRanges(
+            result[range] = CodeChangesReportItem.DiffWithRanges(
                 range,
                 diffs,
                 calculatePercentileData(diffs, percentile)
@@ -112,18 +112,18 @@ class RepositoryCodeIncrementInteractor :
         }
 
 
-        val totalDiffs: List<RepositoryCodeChangesReport.CommitDiff> = result.values.map { it.diffs }.flatten()
+        val totalDiffs: List<CodeChangesReportItem.CommitDiff> = result.values.map { it.diffs }.flatten()
         val totalPercentile = calculatePercentileData(totalDiffs, percentile)
         val totalRange = Range(
             result.values.first().range.start,
             result.values.last().range.end,
         )
-        val totalData = RepositoryCodeChangesReport.DiffWithRanges(
+        val totalData = CodeChangesReportItem.DiffWithRanges(
             totalRange,
             totalDiffs,
             totalPercentile
         )
-        return RepositoryCodeChangesReport.Summary(result, totalData)
+        return CodeChangesReportItem.Summary(result, totalData)
     }
 
     private fun calculateReport(
@@ -131,7 +131,7 @@ class RepositoryCodeIncrementInteractor :
         ranges: List<Range>,
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null,
         percentile: Percentile
-    ): Pair<String, List<RepositoryCodeChangesReport.DiffWithRanges>> {
+    ): Pair<String, List<CodeChangesReportItem.DiffWithRanges>> {
 
         val regex = createRegexForFilesExclusions(linesSpec)
         val git: Git = Git.open(File(repoPath))
@@ -141,9 +141,9 @@ class RepositoryCodeIncrementInteractor :
         formatter.setRepository(git.repository)
         formatter.setDiffComparator(RawTextComparator.WS_IGNORE_ALL)
         formatter.isDetectRenames = true
-        val resultMap = mutableMapOf<Range, List<RepositoryCodeChangesReport.CommitDiff>>()
+        val resultMap = mutableMapOf<Range, List<CodeChangesReportItem.CommitDiff>>()
         commitsWithRanges.forEach { (range, commits) ->
-            val resultCommits = mutableListOf<RepositoryCodeChangesReport.CommitDiff>()
+            val resultCommits = mutableListOf<CodeChangesReportItem.CommitDiff>()
             commits.forEach { commit ->
                 if (commit.parents.isNotEmpty()) {
                     val prevCommit = commit.parents[0]
@@ -156,10 +156,14 @@ class RepositoryCodeIncrementInteractor :
             resultMap[range] = resultCommits
         }
         return projectPath to resultMap.flatMap {
-            listOf(RepositoryCodeChangesReport.DiffWithRanges(it.key, it.value, statisticsData = calculatePercentileData(
-                it.value,
-                percentile
-            )))
+            listOf(
+                CodeChangesReportItem.DiffWithRanges(
+                    it.key, it.value, statisticsData = calculatePercentileData(
+                        it.value,
+                        percentile
+                    )
+                )
+            )
         }
     }
 
@@ -169,9 +173,9 @@ class RepositoryCodeIncrementInteractor :
 
 
     private fun calculatePercentileData(
-        diffs: List<RepositoryCodeChangesReport.CommitDiff>, percentile: Percentile
-    ): RepositoryCodeChangesReport.DiffWithRanges.StatisticsData {
-        return RepositoryCodeChangesReport.DiffWithRanges.StatisticsData(
+        diffs: List<CodeChangesReportItem.CommitDiff>, percentile: Percentile
+    ): CodeChangesReportItem.DiffWithRanges.StatisticsData {
+        return CodeChangesReportItem.DiffWithRanges.StatisticsData(
             percentile = percentile,
             linesAdded = calculatePercentileByColumn(PercentileColumn.LinesAdded, diffs, percentile),
             totalChanged = calculatePercentileByColumn(PercentileColumn.TotalChanges, diffs,
@@ -186,14 +190,14 @@ class RepositoryCodeIncrementInteractor :
 
     private fun calculateAvgByColumn(
         column: PercentileColumn,
-        diffs: List<RepositoryCodeChangesReport.CommitDiff>
+        diffs: List<CodeChangesReportItem.CommitDiff>
     ): Int {
         return targetValues(column, diffs).average().toInt()
     }
 
     private fun calculatePercentileByColumn(
         column: PercentileColumn,
-        diffs: List<RepositoryCodeChangesReport.CommitDiff>,
+        diffs: List<CodeChangesReportItem.CommitDiff>,
         percentile: Percentile
     ): Int {
         if (diffs.isEmpty()) return 0
@@ -205,7 +209,7 @@ class RepositoryCodeIncrementInteractor :
 
     private fun targetValues(
         column: PercentileColumn,
-        diffs: List<RepositoryCodeChangesReport.CommitDiff>
+        diffs: List<CodeChangesReportItem.CommitDiff>
     ): List<Int> {
         return when (column) {
             PercentileColumn.TotalChanges -> diffs.map {
@@ -238,7 +242,7 @@ class RepositoryCodeIncrementInteractor :
         prevCommit: RevCommit,
         currentCommit: RevCommit,
         regex: Regex?
-    ): RepositoryCodeChangesReport.CommitDiff {
+    ): CodeChangesReportItem.CommitDiff {
         val diffEntries = formatter.scan(prevCommit, currentCommit)
         var localAdd = 0
         var localRemove = 0
@@ -262,7 +266,7 @@ class RepositoryCodeIncrementInteractor :
 
             }
         }
-        return RepositoryCodeChangesReport.CommitDiff(
+        return CodeChangesReportItem.CommitDiff(
             prevCommit.name,
             currentCommit.name,
             localAdd,
@@ -303,9 +307,4 @@ class RepositoryCodeIncrementInteractor :
         }
         return result
     }
-
-    data class CodeChangesReportImpl(
-        override val result: List<RepositoryReport.GroupedResults<RepositoryCodeChangesReport.CodeChangesResult>> = emptyList()
-    ) : RepositoryCodeChangesReport
-
 }
