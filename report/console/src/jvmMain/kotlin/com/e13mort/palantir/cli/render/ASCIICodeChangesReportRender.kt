@@ -80,14 +80,14 @@ class ASCIICodeChangesReportRender(
                         columnSpan = 9
                     }
                 }
-                val summary = groupedResult.summary.rangedData.values
+                val summary = groupedResult.result.summary.rangedData.values
                 summary.forEach {
                     row {
                         appendDiffCells(it)
                     }
                 }
                 row {
-                    appendDiffCells(groupedResult.summary.total)
+                    appendDiffCells(groupedResult.result.summary.total)
                 }
 
             }
@@ -101,7 +101,7 @@ class ASCIICodeChangesReportRender(
         cell(it.totalRemoved())
         cell(it.codeIncrement())
         cell(it.totalChanged())
-        it.percentileData.let { percentileData ->
+        it.statisticsData.let { percentileData ->
             cell(percentileData.linesAdded)
             cell(percentileData.addedAvg)
         }

@@ -24,7 +24,7 @@ class RepositoryCodeLinesCountInteractor(
             val specification =
                 tryReadSpecFromFile(argPath)
 
-            val result = mutableListOf<RepositoryCodeLinesCountReport.GroupedResults>()
+            val result = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
             if (specification != null) {
                 createReportsForSpecification(specification, ranges, result)
             } else {
@@ -38,11 +38,11 @@ class RepositoryCodeLinesCountInteractor(
     private fun createReportsForSingleGitRepo(
         repoPath: String,
         ranges: List<Range>,
-        fullResult: MutableList<RepositoryCodeLinesCountReport.GroupedResults>
+        fullResult: MutableList<RepositoryReport.GroupedResults<CodeLinesResult>>
     ) {
 
         val reportResultPair = calculateReport(repoPath, ranges)
-        fullResult += RepositoryCodeLinesCountReport.GroupedResults("single", mapOf(reportResultPair))
+        fullResult += RepositoryReport.GroupedResults("single", mapOf(reportResultPair))
     }
 
     private fun calculateLinesCount(
@@ -61,7 +61,7 @@ class RepositoryCodeLinesCountInteractor(
     private fun createReportsForSpecification(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
-        fullResults: MutableList<RepositoryCodeLinesCountReport.GroupedResults>
+        fullResults: MutableList<RepositoryReport.GroupedResults<CodeLinesResult>>
     ) {
         specification.projects.forEach { (groupName, projects) ->
             val result = mutableMapOf<String, List<RepositoryCodeLinesCountReport.LinesCountReportItem>>()
@@ -70,7 +70,7 @@ class RepositoryCodeLinesCountInteractor(
                 val report = calculateReport(localPath, ranges, projectSpec.linesSpec)
                 result[report.first] = report.second
             }
-            fullResults += RepositoryCodeLinesCountReport.GroupedResults(groupName, result)
+            fullResults += RepositoryReport.GroupedResults(groupName, result)
         }
     }
 
@@ -130,7 +130,7 @@ class RepositoryCodeLinesCountInteractor(
     }
 
     data class CodeLinesReportImpl(
-        override val result: List<RepositoryCodeLinesCountReport.GroupedResults> = emptyList()
+        override val result: List<RepositoryReport.GroupedResults<CodeLinesResult>> = emptyList()
     ) : RepositoryCodeLinesCountReport
 
 }

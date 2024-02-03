@@ -2,13 +2,12 @@ package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.model.Percentile
 
-interface RepositoryCodeChangesReport {
-    data class CodeChangesReportItem(val commitDiffs: Map<String, List<DiffWithRanges>>)
+interface RepositoryCodeChangesReport : RepositoryReport<RepositoryCodeChangesReport.CodeChangesResult> {
 
     data class DiffWithRanges(
         val range: Range,
         val diffs: List<CommitDiff>,
-        val percentileData: PercentileData
+        val statisticsData: StatisticsData
     ) {
         fun totalAdded() = diffs.sumOf {
             it.linesAdded
@@ -30,7 +29,7 @@ interface RepositoryCodeChangesReport {
             it.authorEmailAddress
         }.toSet()
 
-        data class PercentileData(
+        data class StatisticsData(
             val percentile: Percentile,
             val linesAdded: Int,
             val totalChanged: Int,
@@ -53,21 +52,17 @@ interface RepositoryCodeChangesReport {
         fun codeIncrement() = linesAdded - linesRemoved
     }
 
-
-    val result: List<GroupedResults>
-
-    data class GroupedResults(
-        val groupName: String,
-        val result: CodeChangesReportItem,
+    data class CodeChangesResult(
+        val commitDiffs: Map<String, List<DiffWithRanges>>,
         val summary: Summary
-    ) {
-        data class Summary(
-            val rangedData: Map<Range, DiffWithRanges>,
-            val total: DiffWithRanges
-        )
-    }
+    )
+
+    data class Summary(
+        val rangedData: Map<Range, DiffWithRanges>,
+        val total: DiffWithRanges
+    )
 }
 
 fun List<RepositoryCodeChangesReport.DiffWithRanges>.firstItemPercentile(): Percentile? {
-    return firstOrNull()?.percentileData?.percentile
+    return firstOrNull()?.statisticsData?.percentile
 }

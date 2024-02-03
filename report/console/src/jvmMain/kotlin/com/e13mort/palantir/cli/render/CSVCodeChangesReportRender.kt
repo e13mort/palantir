@@ -21,7 +21,7 @@ class CSVCodeChangesReportRender(
                     }
                 }
                 appendGroupHeader("Summary: ${groupedResult.groupName}")
-                groupedResult.summary.let {
+                groupedResult.result.summary.let {
                     it.rangedData.values.forEach { diffWithRanges ->
                         appendDiffChanges(diffWithRanges)
                     }
@@ -135,7 +135,7 @@ class CSVCodeChangesReportRender(
         append(diffWithRanges.codeIncrement())
         append(",")
         append(diffWithRanges.totalChanged())
-        diffWithRanges.percentileData.let { percentileData ->
+        diffWithRanges.statisticsData.let { percentileData ->
             append(",")
             append(percentileData.linesAdded)
             append(",")
