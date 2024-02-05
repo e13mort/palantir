@@ -39,6 +39,8 @@ import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.cloc.ClocAdapter
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
+import com.e13mort.palantir.interactors.CodeChangesReportCalculator
+import com.e13mort.palantir.interactors.CodeLinesReportCalculator
 import com.e13mort.palantir.interactors.PercentileInteractor
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.PrintMergeRequestInteractor
@@ -46,8 +48,7 @@ import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
-import com.e13mort.palantir.interactors.RepositoryCodeIncrementInteractor
-import com.e13mort.palantir.interactors.RepositoryCodeLinesCountInteractor
+import com.e13mort.palantir.interactors.RepositoryAnalyticsInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
 import com.e13mort.palantir.model.GitlabNoteRepository
 import com.e13mort.palantir.model.GitlabProjectsRepository
@@ -105,8 +106,8 @@ fun main(args: Array<String>) {
     val approveStatisticsInteractor = ApproveStatisticsInteractor(reportsRepository)
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)
     val removeProjectInteractor = RemoveProjectInteractor(localProjectsRepository)
-    val codeLinesInteractor = RepositoryCodeLinesCountInteractor(ClocAdapter.create())
-    val codeIncrementInteractor = RepositoryCodeIncrementInteractor()
+    val codeLinesInteractor = RepositoryAnalyticsInteractor(CodeLinesReportCalculator(ClocAdapter.create()))
+    val codeIncrementInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator())
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
