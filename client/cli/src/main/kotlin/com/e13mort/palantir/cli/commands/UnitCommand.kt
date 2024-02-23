@@ -6,14 +6,14 @@ import com.e13mort.palantir.render.ReportRender
 class UnitCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name: String,
     interactor: Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>,
-    render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
+    renders: Map<RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandParams) -> RENDER_PARAMS,
     private val commandParamMapper: (CommandParams) -> INTERACTOR_INPUT
 ) : CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name,
     interactor,
-    render,
+    renders,
     renderValueMapper,
     renderParamsMapper
 ) {
@@ -22,35 +22,35 @@ class UnitCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT>Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommandWithUnitRenderParams(
     name: String,
-    render: ReportRender<INTERACTOR_OUTPUT, String, Unit>,
+    renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, Unit>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> Unit = {},
     commandParamsMapper: (CommandWithRender.CommandParams) -> INTERACTOR_INPUT,
     config: CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit>.() -> Unit = {}
 ): CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit> {
-    return asUnitCommand(name, render, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
+    return asUnitCommand(name, renders, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
 }
 
 fun <INTERACTOR_OUTPUT, RENDER_PARAMS>Interactor<Unit, INTERACTOR_OUTPUT>.asUnitCommandWithUnitCommandParams(
     name: String,
-    render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
+    renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> RENDER_PARAMS,
     commandParamsMapper: (CommandWithRender.CommandParams) -> Unit = { },
     config: CommandWithRender<Unit, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>.() -> Unit = {}
 ): CommandWithRender<Unit, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS> {
-    return asUnitCommand(name, render, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
+    return asUnitCommand(name, renders, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
 }
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommand(
     name: String,
-    render: ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>,
+    renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
     renderParamsMapper: (CommandWithRender.CommandParams) -> RENDER_PARAMS,
     commandParamsMapper: (CommandWithRender.CommandParams) -> INTERACTOR_INPUT,
     config: CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>.() -> Unit = {}
 ): CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS> {
     return UnitCommand(
-        name, this, render, renderValueMapper, renderParamsMapper, commandParamsMapper
+        name, this, renders, renderValueMapper, renderParamsMapper, commandParamsMapper
     ).also(config)
 }

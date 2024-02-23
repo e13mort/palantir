@@ -4,7 +4,7 @@ import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.interactors.PercentileReport
 import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.Range
-import com.e13mort.palantir.model.ReportsRepository
+import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.e13mort.palantir.utils.asInputString
@@ -26,7 +26,7 @@ class MRReportsPM(
     private val projectsInteractor: PrintAllProjectsInteractor,
     private val dateStringConverter: DateStringConverter,
     private val stringDateConverter: StringDateConverter,
-    private val percentiles: List<ReportsRepository.Percentile>,
+    private val percentiles: List<Percentile>,
     private val reportsInteractor: Interactor<Pair<Long, List<Range>>, PercentileReport>,
 ) : PresentationModel(pmParams) {
     companion object Description : PmDescription
@@ -113,7 +113,7 @@ class MRReportsPM(
 
     private fun PercentileReport.convertDiffToPercents(
         i: Int,
-        percentile: ReportsRepository.Percentile
+        percentile: Percentile
     ): Int {
         val diff = compareTwoPeriods(i, (i - 1).coerceAtLeast(0), percentile)
         return (diff * 100 - 100).toInt()

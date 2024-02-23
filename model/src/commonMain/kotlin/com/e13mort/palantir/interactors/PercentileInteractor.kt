@@ -1,5 +1,6 @@
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.model.ReportsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -25,7 +26,7 @@ class PercentileInteractor(
 
                 override fun periodValue(
                     index: Int,
-                    percentile: ReportsRepository.Percentile
+                    percentile: Percentile
                 ): Long {
                     return reports[index].firstApproveTimeSeconds(percentile)
                 }
@@ -37,7 +38,7 @@ class PercentileInteractor(
                 override fun compareTwoPeriods(
                     firstIndex: Int,
                     secondIndex: Int,
-                    percentile: ReportsRepository.Percentile
+                    percentile: Percentile
                 ): Float {
                     if (firstIndex < 0 || secondIndex < 0) throw IllegalArgumentException("Wrong indexes: $firstIndex $secondIndex")
                     return (reports[firstIndex].firstApproveTimeSeconds(percentile)

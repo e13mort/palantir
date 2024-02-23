@@ -4,6 +4,7 @@ import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.model.User
 import com.e13mort.gitlabreport.model.local.reports.FirstApprovesStatistics
 import com.e13mort.gitlabreport.model.local.reports.SelectApproversStatisticsByWeek
+import com.e13mort.palantir.model.Percentile
 import kotlin.math.ceil
 
 class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
@@ -32,7 +33,7 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
         val results = mrsWithApproves.executeAsList()
 
         return object : ReportsRepository.FirstApproveStatistics {
-            override fun firstApproveTimeSeconds(percentile: ReportsRepository.Percentile): Long {
+            override fun firstApproveTimeSeconds(percentile: Percentile): Long {
                 if (results.isEmpty()) return 0
                 //nearest-rank method: https://en.wikipedia.org/wiki/Percentile
                 val index = ceil(percentile.factor * (results.size)).toInt()

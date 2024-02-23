@@ -1,8 +1,8 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.PercentileReport
+import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.render.ReportRender
-import com.e13mort.palantir.model.ReportsRepository
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
 import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
@@ -10,10 +10,10 @@ import com.jakewharton.picnic.table
 
 class ASCIIPercentileReportRenderer(
     private val dateToStringConverter: DateStringConverter
-) : ReportRender<PercentileReport, String, List<ReportsRepository.Percentile>> {
+) : ReportRender<PercentileReport, String, List<Percentile>> {
     override fun render(
         value: PercentileReport,
-        params: List<ReportsRepository.Percentile>
+        params: List<Percentile>
     ): String {
         return table {
             cellStyle {
@@ -45,7 +45,7 @@ class ASCIIPercentileReportRenderer(
 
 fun PercentileReport.formatPercentileString(
     index: Int,
-    percentile: ReportsRepository.Percentile
+    percentile: Percentile
 ): String {
     val content = StringBuilder(periodValue(index, percentile).secondsToFormattedTimeDiff())
     if (index != 0) {
