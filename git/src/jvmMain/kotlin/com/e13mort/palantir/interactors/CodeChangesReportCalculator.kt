@@ -13,8 +13,19 @@ import org.eclipse.jgit.util.io.NullOutputStream
 import java.io.File
 import kotlin.math.ceil
 
-class CodeChangesReportCalculator :
+class CodeChangesReportCalculator(
+    private val calculationType: CalculationType = CalculationType.FULL
+) :
     RepositoryAnalyticsInteractor.RepositoryReportCalculator<CodeChangesReportItem> {
+    enum class CalculationType {
+        FULL,
+        AUTHORS
+    }
+
+    enum class PercentileColumn {
+        TotalChanges, TotalIncrement, LinesAdded
+    }
+
     override suspend fun calculateReport(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>
@@ -45,6 +56,7 @@ class CodeChangesReportCalculator :
         }
         return fullResults
     }
+
     private fun calculateSummary(
         data: Map<String, List<CodeChangesReportItem.DiffWithRanges>>,
         percentile: Percentile
@@ -112,10 +124,22 @@ class CodeChangesReportCalculator :
             commits.forEach { commit ->
                 if (commit.parents.isNotEmpty()) {
                     val prevCommit = commit.parents[0]
-                    val commitDiff = calculateDiff(formatter, prevCommit, commit, regex)
-                    resultCommits += commitDiff
+                    resultCommits += when (calculationType) {
+                        CalculationType.FULL -> calculateFullDiff(
+                            formatter,
+                            prevCommit,
+                            commit,
+                            regex
+                        )
+
+                        CalculationType.AUTHORS -> calculateOnlyAuthor(commit, prevCommit)
+                    }
+
                 } else {
-                    // TODO: track such commits
+                    // this is either the initial commit or an orphan one
+                    // in both cases there's no need to track them
+                    // initial commit doesn't count because we track increments
+                    // orphans will be counted eventually when they are merged to target branch
                 }
             }
             resultMap[range] = resultCommits
@@ -132,10 +156,20 @@ class CodeChangesReportCalculator :
         }
     }
 
-    enum class PercentileColumn {
-        TotalChanges, TotalIncrement, LinesAdded
+    private fun calculateOnlyAuthor(
+        commit: RevCommit,
+        prevCommit: RevCommit
+    ): CodeChangesReportItem.CommitDiff {
+        return CodeChangesReportItem.CommitDiff(
+            prevCommit.name,
+            commit.name,
+            0,
+            0,
+            0,
+            0,
+            commit.authorIdent.emailAddress
+        )
     }
-
 
     private fun calculatePercentileData(
         diffs: List<CodeChangesReportItem.CommitDiff>, percentile: Percentile
@@ -208,7 +242,7 @@ class CodeChangesReportCalculator :
         } else null
     }
 
-    private fun calculateDiff(
+    private fun calculateFullDiff(
         formatter: DiffFormatter,
         prevCommit: RevCommit,
         currentCommit: RevCommit,

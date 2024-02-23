@@ -18,6 +18,7 @@ import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitCommandParams
 import com.e13mort.palantir.cli.commands.asUnitCommandWithUnitRenderParams
 import com.e13mort.palantir.cli.render.ASCIIApproveStatisticsRenderer
 import com.e13mort.palantir.cli.render.ASCIIBranchesRender
+import com.e13mort.palantir.cli.render.ASCIICodeAuthorsReportRender
 import com.e13mort.palantir.cli.render.ASCIICodeChangesReportRender
 import com.e13mort.palantir.cli.render.ASCIICodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.ASCIIFullSyncProjectsRender
@@ -27,6 +28,7 @@ import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
+import com.e13mort.palantir.cli.render.CSVCodeAuthorsReportRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.CodeChangesReportParams
@@ -107,7 +109,8 @@ fun main(args: Array<String>) {
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)
     val removeProjectInteractor = RemoveProjectInteractor(localProjectsRepository)
     val codeLinesInteractor = RepositoryAnalyticsInteractor(CodeLinesReportCalculator(ClocAdapter.create()))
-    val codeIncrementInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator())
+    val codeIncrementInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.FULL))
+    val codeAuthorsInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS))
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
@@ -248,7 +251,26 @@ fun main(args: Array<String>) {
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--full-commits").flag())
-                }
+                },
+                StringWithRangesCommand(
+                    name = "authors",
+                    interactor = codeIncrementInteractor,
+                    renders = mapOf(
+                        CommandWithRender.RenderType.Table to ASCIICodeAuthorsReportRender(
+                            dateToStringConverter
+                        ),
+                        CommandWithRender.RenderType.CSV to CSVCodeAuthorsReportRender(
+                            dateToStringConverter
+                        )
+                    ),
+                    renderValueMapper = { it },
+                    commandParamMapper = { _, b -> b },
+                    renderParamsMapper = {
+                        emptySet()
+                    },
+                    dateFormat = stringToDateConverter
+                )
+
 
             ),
         )
