@@ -77,7 +77,10 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 
     private fun renderState(state: INTERACTOR_OUTPUT): String {
         val commandParams = CommandParams(flags())
-        return renders[renderType]!!.render(renderValueMapper(state), renderParamsMapper(commandParams))
+        return renders[renderType]!!.render(
+            renderValueMapper(state),
+            renderParamsMapper(commandParams)
+        )
     }
 
     private fun calculateAvailableRenderOptions(): Map<String, RenderType> {

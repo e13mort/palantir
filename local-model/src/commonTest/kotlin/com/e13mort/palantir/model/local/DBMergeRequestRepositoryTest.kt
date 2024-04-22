@@ -12,6 +12,7 @@ class DBMergeRequestRepositoryTest {
 
     private val testModel = TestModel()
     private val repository = DBMergeRequestRepository(testModel.model)
+
     @Test
     fun `empty repository returns empty MR`() = runTest {
         assertNull(repository.mergeRequest(TEST_PROJECT_ID))
@@ -22,8 +23,9 @@ class DBMergeRequestRepositoryTest {
         assertFailsWith<Exception> {
             repository.addMergeRequests(
                 TEST_PROJECT_ID, listOf(
-                StubMergeRequest("1")
-            ))
+                    StubMergeRequest("1")
+                )
+            )
         }
     }
 
@@ -61,20 +63,24 @@ class DBMergeRequestRepositoryTest {
         assertNull(repository.mergeRequest(1))
         assertNull(repository.mergeRequest(2))
     }
+
     @Test
     fun `assignees are empty`() = runTest {
         testModel.prepareTestProject()
         repository.addMergeRequests(TEST_PROJECT_ID, listOf(StubMergeRequest("1")))
         assertEquals(0, repository.assignees(1L).size)
     }
+
     @Test
     fun `assignees are saved`() = runTest {
         testModel.prepareTestProject()
-        repository.addMergeRequests(TEST_PROJECT_ID, listOf(
-            StubMergeRequest(
-                id = "1",
-                assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
-            ))
+        repository.addMergeRequests(
+            TEST_PROJECT_ID, listOf(
+                StubMergeRequest(
+                    id = "1",
+                    assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
+                )
+            )
         )
         assertEquals(1, repository.assignees(1L).size)
     }
@@ -82,11 +88,13 @@ class DBMergeRequestRepositoryTest {
     @Test
     fun `assignees are removed after MR removal`() = runTest {
         testModel.prepareTestProject()
-        repository.addMergeRequests(TEST_PROJECT_ID, listOf(
-            StubMergeRequest(
-                id = "1",
-                assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
-            ))
+        repository.addMergeRequests(
+            TEST_PROJECT_ID, listOf(
+                StubMergeRequest(
+                    id = "1",
+                    assignees = listOf(DBReportsRepository.PlainUser(1, "test.user", "Test User"))
+                )
+            )
         )
         repository.deleteMergeRequests(TEST_PROJECT_ID, setOf(1))
         assertEquals(0, repository.assignees(1L).size)

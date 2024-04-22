@@ -12,7 +12,10 @@ import com.jakewharton.picnic.table
 class ASCIICodeChangesReportRender(
     private val formatter: DateStringConverter
 ) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
-    override fun render(value: RepositoryReport<CodeChangesReportItem>, params: Set<CodeChangesReportParams>): String {
+    override fun render(
+        value: RepositoryReport<CodeChangesReportItem>,
+        params: Set<CodeChangesReportParams>
+    ): String {
         return table {
             cellStyle {
                 border = true

@@ -3,7 +3,7 @@ package com.e13mort.palantir.client.properties
 internal class PropertyChainItem(
     private val activeHandler: Properties,
     private val nextHandler: Properties
-    ) : Properties {
+) : Properties {
     override fun stringProperty(property: Properties.StringProperty): String? {
         return activeHandler.stringProperty(property) ?: nextHandler.stringProperty(property)
     }

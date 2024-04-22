@@ -9,7 +9,10 @@ import com.e13mort.palantir.utils.asString
 class CSVCodeAuthorsReportRender(
     private val formatter: DateStringConverter
 ) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
-    override fun render(value: RepositoryReport<CodeChangesReportItem>, params: Set<CodeChangesReportParams>): String {
+    override fun render(
+        value: RepositoryReport<CodeChangesReportItem>,
+        params: Set<CodeChangesReportParams>
+    ): String {
         return StringBuilder().apply {
             value.result.forEach { groupedResult ->
                 appendGroupHeader(groupedResult.groupName)

@@ -53,7 +53,14 @@ class DBProjectRepository(localModel: LocalModel) : SyncableProjectRepository {
     }
 
     override suspend fun addProject(project: Project) {
-        projectQueries.insert(DBProject(project.id().toLong(), project.name(), project.clonePaths().ssh(), project.clonePaths().http()))
+        projectQueries.insert(
+            DBProject(
+                project.id().toLong(),
+                project.name(),
+                project.clonePaths().ssh(),
+                project.clonePaths().http()
+            )
+        )
     }
 
     override suspend fun clear() {
@@ -122,7 +129,9 @@ internal class SyncableProjectImpl(
         return object : MergeRequests {
 
             override suspend fun count(): Long {
-                return mergeRequestsQueries.mergeRequestCount(this@SyncableProjectImpl.id().toLong()).executeAsOne()
+                return mergeRequestsQueries.mergeRequestCount(
+                    this@SyncableProjectImpl.id().toLong()
+                ).executeAsOne()
             }
 
             override suspend fun values(): Flow<MergeRequest> {
@@ -176,9 +185,11 @@ internal class DBMergeRequest(
 
     override fun state(): MergeRequest.State = MergeRequest.State.values()[storedMR.state.toInt()]
 
-    override fun sourceBranch(): Branch = DBBranch(storedMR.source_branch_name ?: UNSPECIFIED_BRANCH_NAME)
+    override fun sourceBranch(): Branch =
+        DBBranch(storedMR.source_branch_name ?: UNSPECIFIED_BRANCH_NAME)
 
-    override fun targetBranch(): Branch = DBBranch(storedMR.target_branch_name ?: UNSPECIFIED_BRANCH_NAME)
+    override fun targetBranch(): Branch =
+        DBBranch(storedMR.target_branch_name ?: UNSPECIFIED_BRANCH_NAME)
 
     override fun createdTime(): Long = storedMR.created_time
 

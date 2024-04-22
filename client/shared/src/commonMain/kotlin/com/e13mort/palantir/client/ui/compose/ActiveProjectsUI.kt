@@ -49,8 +49,7 @@ private fun RenderScreen(
             Plntr.Button(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(horizontal = 16.dp)
-                ,
+                    .padding(horizontal = 16.dp),
                 onClick = { configureClickListener() }
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {

@@ -73,7 +73,8 @@ fun main(args: Array<String>) {
     val workDirectory = ProgramWorkDirectory().directory()
     val driver = DriverFactory(workDirectory.toString()).createDriver()
     val model = LocalModel(driver)
-    val properties = EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory(workDirectory)
+    val properties =
+        EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory(workDirectory)
 
     val localProjectsRepository = DBProjectRepository(model)
     val mrRepository = DBMergeRequestRepository(model)
@@ -88,9 +89,11 @@ fun main(args: Array<String>) {
         properties.safeStringProperty(Properties.StringProperty.GITLAB_KEY)
     )
     val dateFormat = properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
-    val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
+    val stringToDateConverter =
+        StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     val dateToStringConverter = createDateConverter(dateFormat)
-    val requestedPercentilesProperty = properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
+    val requestedPercentilesProperty =
+        properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
 
     val reportsRepository = DBReportsRepository(model)
     val syncInteractor = SyncInteractor(
@@ -103,14 +106,18 @@ fun main(args: Array<String>) {
     val projectSummaryInteractor = PrintProjectSummaryInteractor(localProjectsRepository)
     val printBranchesInteractor = PrintProjectBranchesInteractor(localProjectsRepository)
     val printMergeRequestsInteractor = PrintProjectMergeRequestsInteractor(localProjectsRepository)
-    val printMergeRequestInteractor = PrintMergeRequestInteractor(mrRepository, localNotesRepository)
+    val printMergeRequestInteractor =
+        PrintMergeRequestInteractor(mrRepository, localNotesRepository)
     val printAllProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     val approveStatisticsInteractor = ApproveStatisticsInteractor(reportsRepository)
     val projectStatisticsInteractor = PercentileInteractor(reportsRepository)
     val removeProjectInteractor = RemoveProjectInteractor(localProjectsRepository)
-    val codeLinesInteractor = RepositoryAnalyticsInteractor(CodeLinesReportCalculator(ClocAdapter.create()))
-    val codeIncrementInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.FULL))
-    val codeAuthorsInteractor = RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS))
+    val codeLinesInteractor =
+        RepositoryAnalyticsInteractor(CodeLinesReportCalculator(ClocAdapter.create()))
+    val codeIncrementInteractor =
+        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.FULL))
+    val codeAuthorsInteractor =
+        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS))
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
@@ -277,10 +284,10 @@ fun main(args: Array<String>) {
     ).main(args)
 }
 
-private fun createDateConverter(dateFormat: String) : DateStringConverter {
+private fun createDateConverter(dateFormat: String): DateStringConverter {
     return DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
 }
 
-private fun <A, B, C>ReportRender<A, B, C>.asTableRender() : Map<CommandWithRender.RenderType, ReportRender<A, B, C>> {
+private fun <A, B, C> ReportRender<A, B, C>.asTableRender(): Map<CommandWithRender.RenderType, ReportRender<A, B, C>> {
     return mapOf(CommandWithRender.RenderType.Table to this)
 }

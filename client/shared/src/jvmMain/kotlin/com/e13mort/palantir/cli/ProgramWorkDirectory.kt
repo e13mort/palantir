@@ -9,9 +9,10 @@ class ProgramWorkDirectory {
         private const val WORK_DIRECTORY_NAME = ".plntr"
     }
 
-    fun directory() : Path {
+    fun directory(): Path {
         val homeDirectoryStr =
-            System.getProperty("user.home") ?: throw IllegalStateException("Can't find home directory user.home")
+            System.getProperty("user.home")
+                ?: throw IllegalStateException("Can't find home directory user.home")
         val homeDirectoryPath = Paths.get(homeDirectoryStr)
         if (!Files.exists(homeDirectoryPath)) throw IllegalStateException("Home directory doesn't exists")
         val workDirectory = homeDirectoryPath.resolve(WORK_DIRECTORY_NAME)

@@ -38,8 +38,10 @@ class PlntrPMFactory(
         properties.safeStringProperty(Properties.StringProperty.PERIOD_DATE_FORMAT)
     private val requestedPercentilesProperty =
         properties.stringProperty(Properties.StringProperty.PERCENTILES_IN_REPORTS).orEmpty()
-    private val dateToStringConverter = DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
-    private val stringToDateConverter = StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
+    private val dateToStringConverter =
+        DateStringConverter { date -> SimpleDateFormat(dateFormat).format(date) }
+    private val stringToDateConverter =
+        StringDateConverter { string -> SimpleDateFormat(dateFormat).parse(string).time }
     private val requestedPercentiles = Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val percentileInteractor = PercentileInteractor(reportsRepository)

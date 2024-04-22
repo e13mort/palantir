@@ -53,7 +53,8 @@ class GitlabProjectsRepository(
 
     override suspend fun clear(): Unit = throw UnsupportedRepositoryOperationException("clear")
 
-    override suspend fun removeProjects(ids: Set<Long>): Unit = throw UnsupportedRepositoryOperationException("removeProjects")
+    override suspend fun removeProjects(ids: Set<Long>): Unit =
+        throw UnsupportedRepositoryOperationException("removeProjects")
 }
 
 internal class GitlabProject(
@@ -214,7 +215,8 @@ internal class GitlabUser(private val assignee: AbstractUser<*>) : User {
     }
 }
 
-internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Long) : Branches {
+internal class GitlabBranches(private val repositoryApi: RepositoryApi, private val id: Long) :
+    Branches {
     override suspend fun count(): Long {
         return repositoryApi.getBranches(id).size.toLong()
     }

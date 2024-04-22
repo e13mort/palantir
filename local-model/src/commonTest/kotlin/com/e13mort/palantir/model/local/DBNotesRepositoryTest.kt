@@ -47,7 +47,11 @@ class DBNotesRepositoryTest {
             1L,
             listOf(StubMergeRequestEvent(1L), StubMergeRequestEvent(2L))
         )
-        notesRepository.saveMergeRequestEvents(TEST_PROJECT_ID, 1L, listOf(StubMergeRequestEvent(1L)))
+        notesRepository.saveMergeRequestEvents(
+            TEST_PROJECT_ID,
+            1L,
+            listOf(StubMergeRequestEvent(1L))
+        )
         assertEquals(1, notesRepository.events(TEST_PROJECT_ID, 1L).size)
     }
 

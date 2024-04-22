@@ -40,7 +40,7 @@ class SyncMRsPlan(
                 state = SyncInteractor.SyncResult.State.InProgress(SyncInteractor.SyncResult.State.ProgressState.SAVING)
             )
         )
-        val prepareNotesForSync = when(type) {
+        val prepareNotesForSync = when (type) {
             SyncType.Forced -> performForceSync(mergeRequestList)
             SyncType.Incremental -> performIncrementalSync(mergeRequestList)
         }

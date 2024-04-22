@@ -79,21 +79,22 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
         }
     }
 
-    private fun SyncInteractor.SyncResult.State.asString() : String {
-        return when(this) {
+    private fun SyncInteractor.SyncResult.State.asString(): String {
+        return when (this) {
             is SyncInteractor.SyncResult.State.Done -> "Completed $itemsUpdated items"
-            is SyncInteractor.SyncResult.State.InProgress -> when(state) {
+            is SyncInteractor.SyncResult.State.InProgress -> when (state) {
                 SyncInteractor.SyncResult.State.ProgressState.LOADING -> "Loading..."
                 SyncInteractor.SyncResult.State.ProgressState.SAVING -> "Saving..."
                 SyncInteractor.SyncResult.State.ProgressState.COMPLEX -> "Content syncing..."
             }
+
             SyncInteractor.SyncResult.State.Pending -> "Waiting..."
             SyncInteractor.SyncResult.State.Skipped -> "Skipped"
             SyncInteractor.SyncResult.State.Removed -> "Removed"
         }
     }
 
-    private fun SyncInteractor.SyncResult.State.isPending() : Boolean {
+    private fun SyncInteractor.SyncResult.State.isPending(): Boolean {
         return this is SyncInteractor.SyncResult.State.Pending
     }
 
@@ -103,14 +104,15 @@ class ASCIIFullSyncProjectsRender : ReportRender<SyncInteractor.SyncResult, Stri
         }
     }
 
-    private fun SyncInteractor.SyncResult.MrsSyncState.doneItemsCount() : Int {
+    private fun SyncInteractor.SyncResult.MrsSyncState.doneItemsCount(): Int {
         return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Done }
     }
 
-    private fun SyncInteractor.SyncResult.MrsSyncState.skippedItemsCount() : Int {
+    private fun SyncInteractor.SyncResult.MrsSyncState.skippedItemsCount(): Int {
         return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Skipped }
     }
-    private fun SyncInteractor.SyncResult.MrsSyncState.removedItemsCount() : Int {
+
+    private fun SyncInteractor.SyncResult.MrsSyncState.removedItemsCount(): Int {
         return this.mergeRequests.count { it.value is SyncInteractor.SyncResult.State.Removed }
     }
 

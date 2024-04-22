@@ -85,7 +85,7 @@ fun RenderActionButtons(
 private fun RenderProjectList(
     listState: ConfigureActiveProjectsPM.ListState,
     callback: (String) -> Unit = { _ -> }
-    ) {
+) {
     val scrollbar = ScrollbarStyle(
         minimalHeight = 16.dp,
         thickness = 8.dp,

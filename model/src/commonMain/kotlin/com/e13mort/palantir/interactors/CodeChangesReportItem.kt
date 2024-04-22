@@ -59,6 +59,7 @@ data class CodeChangesReportItem(
         val total: DiffWithRanges
     )
 }
+
 fun List<CodeChangesReportItem.DiffWithRanges>.firstItemPercentile(): Percentile? {
     return firstOrNull()?.statisticsData?.percentile
 }

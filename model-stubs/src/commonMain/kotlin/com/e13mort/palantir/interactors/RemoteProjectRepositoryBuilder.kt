@@ -57,7 +57,11 @@ class RemoteProjectRepositoryBuilder(
     private fun createProject(config: StubProjectScope.() -> Unit) {
         val newId = (projectScopes.lastOrNull()?.id?.inc()) ?: 1L
         projectScopes.add(
-            StubProjectScope(id = newId, mrIdGenerator = mrIdGenerator, mrEventsIdGenerator = mrNotesIdGenerator).also(config)
+            StubProjectScope(
+                id = newId,
+                mrIdGenerator = mrIdGenerator,
+                mrEventsIdGenerator = mrNotesIdGenerator
+            ).also(config)
         )
     }
 
@@ -69,13 +73,14 @@ class RemoteProjectRepositoryBuilder(
     fun build(): ProjectRepository {
         return StubProjectRepository(
             projectScopes.map { project ->
-                stubNotesRepository.data[project.id] = mutableMapOf<Long, MutableList<MergeRequestEvent>>().also { notesMap ->
-                    project.mrs.forEach { mr ->
-                        notesMap[mr.localId] = mutableListOf<MergeRequestEvent>().also {
-                            it.addAll(mr.eventsScope.events)
+                stubNotesRepository.data[project.id] =
+                    mutableMapOf<Long, MutableList<MergeRequestEvent>>().also { notesMap ->
+                        project.mrs.forEach { mr ->
+                            notesMap[mr.localId] = mutableListOf<MergeRequestEvent>().also {
+                                it.addAll(mr.eventsScope.events)
+                            }
                         }
                     }
-                }
                 StubProject(
                     id = project.id.toString(),
                     mergeRequests = project.mrs.asMrs(),
@@ -170,7 +175,11 @@ class RemoteProjectRepositoryBuilder(
 
         private fun createMr(config: StubMRScope.() -> Unit) {
             val newLocalId = mrs.lastOrNull()?.localId?.inc() ?: 1L
-            val mrScope = StubMRScope(id = mrIdGenerator.nextId(), localId = newLocalId, mrEventsIdGenerator = mrEventsIdGenerator)
+            val mrScope = StubMRScope(
+                id = mrIdGenerator.nextId(),
+                localId = newLocalId,
+                mrEventsIdGenerator = mrEventsIdGenerator
+            )
             config(mrScope)
             mrs += mrScope
         }

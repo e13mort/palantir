@@ -97,6 +97,6 @@ class ASCIIMergeRequestRender :
     }
 }
 
-fun MergeRequestEvent.formatted() : MergeRequestEvent {
+fun MergeRequestEvent.formatted(): MergeRequestEvent {
     return ASCIIMergeRequestRender.FormattedMREvent(this)
 }

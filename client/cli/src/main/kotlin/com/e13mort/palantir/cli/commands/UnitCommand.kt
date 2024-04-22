@@ -20,7 +20,7 @@ class UnitCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     override fun calculateArgs() = commandParamMapper(CommandParams(flags()))
 }
 
-fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT>Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommandWithUnitRenderParams(
+fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommandWithUnitRenderParams(
     name: String,
     renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, Unit>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
@@ -28,10 +28,17 @@ fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT>Interactor<INTERACTOR_INPUT, INTERACTOR
     commandParamsMapper: (CommandWithRender.CommandParams) -> INTERACTOR_INPUT,
     config: CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit>.() -> Unit = {}
 ): CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, Unit> {
-    return asUnitCommand(name, renders, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
+    return asUnitCommand(
+        name,
+        renders,
+        renderValueMapper,
+        renderParamsMapper,
+        commandParamsMapper,
+        config
+    )
 }
 
-fun <INTERACTOR_OUTPUT, RENDER_PARAMS>Interactor<Unit, INTERACTOR_OUTPUT>.asUnitCommandWithUnitCommandParams(
+fun <INTERACTOR_OUTPUT, RENDER_PARAMS> Interactor<Unit, INTERACTOR_OUTPUT>.asUnitCommandWithUnitCommandParams(
     name: String,
     renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },
@@ -39,10 +46,17 @@ fun <INTERACTOR_OUTPUT, RENDER_PARAMS>Interactor<Unit, INTERACTOR_OUTPUT>.asUnit
     commandParamsMapper: (CommandWithRender.CommandParams) -> Unit = { },
     config: CommandWithRender<Unit, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>.() -> Unit = {}
 ): CommandWithRender<Unit, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS> {
-    return asUnitCommand(name, renders, renderValueMapper, renderParamsMapper, commandParamsMapper, config)
+    return asUnitCommand(
+        name,
+        renders,
+        renderValueMapper,
+        renderParamsMapper,
+        commandParamsMapper,
+        config
+    )
 }
 
-fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommand(
+fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommand(
     name: String,
     renders: Map<CommandWithRender.RenderType, ReportRender<INTERACTOR_OUTPUT, String, RENDER_PARAMS>>,
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT = { res -> res },

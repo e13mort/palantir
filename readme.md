@@ -1,6 +1,7 @@
 # Palantir
 
 ``./plntr`` - a CLI tool for GitLab. It allows to:
+
 * Get information from GitLab via CLI
 * Create reports about projects activities
 
@@ -31,22 +32,26 @@ There are two ways to configure the tool: via environment variables and via conf
 
 Available configuration properties:
 
-- `GITLAB_URL` Url to your Gitlab instance. E.g. `gitlab.com` 
+- `GITLAB_URL` Url to your Gitlab instance. E.g. `gitlab.com`
 - `GITLAB_KEY` Access token for api requests
 - `PERIOD_DATE_FORMAT` format for dates arguments. Default is `dd-MM-yyyy`
 - `SYNC_PERIOD_MONTHS` period for synchronization
-- `PERCENTILES_IN_REPORTS` target percentiles for reports. 
-  Values from the enum [ReportsRepository.Percentile](model/src/commonMain/kotlin/com/e13mort/palantir/model/ReportsModel.kt)
+- `PERCENTILES_IN_REPORTS` target percentiles for reports.
+  Values from the
+  enum [ReportsRepository.Percentile](model/src/commonMain/kotlin/com/e13mort/palantir/model/ReportsModel.kt)
   divided by `,` (e.g. `P50,P90`)
 
 ## Config file
 
-All properties are stored in file at `<plntr-work-dir>/settings.properties`. The file is created automatically with default values. 
+All properties are stored in file at `<plntr-work-dir>/settings.properties`. The file is created
+automatically with default values.
 
 ## Env
 
-Also you can specify properties via env vars. All property names should start with `PALANTIR_`, e.g. `PALANTIR_GITLAB_URL`.
-Properties specified via env vars has a higher priority over the same properties in `settings.properties` file.
+Also you can specify properties via env vars. All property names should start with `PALANTIR_`,
+e.g. `PALANTIR_GITLAB_URL`.
+Properties specified via env vars has a higher priority over the same properties
+in `settings.properties` file.
 
 # Usage
 
@@ -54,7 +59,7 @@ Properties specified via env vars has a higher priority over the same properties
 
 You might start with the following commands:
 
-1. Get all available remote projects: ``./plntr scan projects`` 
+1. Get all available remote projects: ``./plntr scan projects``
 2. Print local projects with ids ``./plntr print projects``
 3. Download a specific project to a local index ``./plntr scan project <project-id>``
 4. Work with local projects with `print`, `report` and `sync` commands
@@ -71,7 +76,7 @@ You might start with the following commands:
 
 ### `print`
 
-Commands to show some project related information 
+Commands to show some project related information
 
 ``./plntr print projects`` - print projects from local index
 
@@ -103,22 +108,25 @@ Commands to print reports for a synced project
 
 #### `mr`
 
-'Merge request' based reports 
+'Merge request' based reports
 
-``./plntr report mr start <project-id> --ranges 1-1-1970:1-2-2021:1-3-2021`` - print merge requests statistics by first approve or start discussion event
+``./plntr report mr start <project-id> --ranges 1-1-1970:1-2-2021:1-3-2021`` - print merge requests
+statistics by first approve or start discussion event
 
 #### `repository`
 
 'Local repository' based reports that are calculated based on a specified local git repository.
 
 Each command accepts direct path to:
+
 - local directory of a target repository
-- path to a json file that describes a bunch of target repositories with some options 
+- path to a json file that describes a bunch of target repositories with some options
 
 ##### `codelines`
 
 Show code lines statistics based on [cloc](https://github.com/AlDanial/cloc) output.
-Cloc tool should be [installed](https://github.com/AlDanial/cloc?tab=readme-ov-file#install-via-package-manager).
+Cloc tool should
+be [installed](https://github.com/AlDanial/cloc?tab=readme-ov-file#install-via-package-manager).
 
 ##### `codeincrement`
 

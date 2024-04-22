@@ -10,25 +10,30 @@ class ASCIISyncProjectsRender : ReportRender<SyncResult, String, Unit> {
             cellStyle {
                 border = true
             }
-            when(val state = value.state) {
+            when (val state = value.state) {
                 is SyncResult.State.Done -> {
                     row("Projects updated")
                     row(state.itemsUpdated)
                 }
+
                 is SyncResult.State.InProgress -> {
-                    when(state.state) {
+                    when (state.state) {
                         SyncResult.State.ProgressState.LOADING -> {
                             row("Loading remote projects...")
                         }
+
                         SyncResult.State.ProgressState.SAVING -> {
                             row("Saving remote projects...")
                         }
+
                         SyncResult.State.ProgressState.COMPLEX -> Unit
                     }
                 }
+
                 SyncResult.State.Pending -> {
                     row("Waiting for sync start...")
                 }
+
                 SyncResult.State.Skipped -> {
                     row("Project sync skipped...")
                 }

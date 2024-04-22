@@ -40,12 +40,13 @@ fun main() = singleWindowApplication(
 }
 
 object PlntrDesktop {
-    fun createPMDelegate(mainScope: CoroutineScope) : PmDelegate<MainAppPM> {
+    fun createPMDelegate(mainScope: CoroutineScope): PmDelegate<MainAppPM> {
 
         val workDirectory = ProgramWorkDirectory().directory()
         val driver = DriverFactory(workDirectory.toString()).createDriver()
         val model = LocalModel(driver)
-        val properties = EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory(workDirectory)
+        val properties =
+            EnvironmentProperties() + FileBasedProperties.defaultInHomeDirectory(workDirectory)
 
         return PmDelegate(
             pmParams = PmParams(

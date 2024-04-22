@@ -17,14 +17,15 @@ interface Properties {
     fun intProperty(property: IntProperty): Int?
 }
 
-fun Properties.safeStringProperty(property: Properties.StringProperty) : String {
-    return stringProperty(property) ?: throw IllegalStateException("Please provide property $property")
+fun Properties.safeStringProperty(property: Properties.StringProperty): String {
+    return stringProperty(property)
+        ?: throw IllegalStateException("Please provide property $property")
 }
 
-fun Properties.safeIntProperty(property: Properties.IntProperty) : Int {
+fun Properties.safeIntProperty(property: Properties.IntProperty): Int {
     return intProperty(property) ?: property.defaultValue
 }
 
-operator fun Properties.plus(nextHandler: Properties) : Properties {
+operator fun Properties.plus(nextHandler: Properties): Properties {
     return PropertyChainItem(this, nextHandler)
 }

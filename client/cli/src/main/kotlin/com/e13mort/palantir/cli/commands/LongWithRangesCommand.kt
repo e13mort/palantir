@@ -30,5 +30,6 @@ class LongWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     private val ranges: List<Range> by option("--ranges").convert {
         it.asRanges(dateFormat)
     }.default(mutableListOf(Range(0, System.currentTimeMillis())))
+
     override fun calculateArgs() = commandParamMapper(id, ranges)
 }

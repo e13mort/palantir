@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.toList
 
 class PrintAllProjectsInteractor(
     private val projectRepository: SyncableProjectRepository
-) : Interactor<Unit, AllProjectsResult>{
+) : Interactor<Unit, AllProjectsResult> {
     override fun run(arg: Unit): Flow<AllProjectsResult> {
         return flow {
             val result = projectRepository.projects().toList()

@@ -91,7 +91,10 @@ class MRReportsPM(
                     data = mutableListOf<State.ReportsReady.ReportDataRow.CellData>().also { dataContainer ->
                         percentiles.forEach { percentile ->
                             val cellData = State.ReportsReady.ReportDataRow.CellData(
-                                compactTimeDuration = periodValue(i, percentile).secondsToFormattedTimeDiff(),
+                                compactTimeDuration = periodValue(
+                                    i,
+                                    percentile
+                                ).secondsToFormattedTimeDiff(),
                                 relativeTimeDiff = convertDiffToPercents(i, percentile),
                             )
                             dataContainer += cellData

@@ -54,9 +54,10 @@ class ConfigureActiveProjectsPM(
     }
 
     fun handleButton(actionButton: ActionButton) {
-        when(actionButton) {
+        when (actionButton) {
             ActionButton.CANCEL -> back()
-            ActionButton.SAVE -> { /* save projects for sync */ }
+            ActionButton.SAVE -> { /* save projects for sync */
+            }
         }
     }
 

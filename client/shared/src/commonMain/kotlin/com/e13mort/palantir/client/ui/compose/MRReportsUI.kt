@@ -67,8 +67,9 @@ fun RenderStateData(
 fun ShowReports(
     reportsReadyState: MRReportsPM.State.ReportsReady
 ) {
-    Box(modifier = Modifier
-        .fillMaxWidth()
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             reportsReadyState.reports.forEach { (projectName, report) ->
@@ -83,9 +84,10 @@ fun ShowReports(
                         fontWeight = FontWeight.Bold
                     )
 
-                    Column(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp)
                     ) {
                         Row(
                             modifier = Modifier.background(MaterialTheme.colors.secondary)
@@ -124,9 +126,10 @@ private fun RenderRangesUI(
     rangesTextListener: (String) -> Unit = {},
     actionClickListener: () -> Unit = {}
 ) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .wrapContentHeight()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentHeight()
     ) {
         Plntr.TextField(
             value = textState.value,
@@ -174,7 +177,7 @@ fun ShowLoadingUI() {
 @Composable
 fun PreviewReady() {
     Plntr.Theme {
-        Box (
+        Box(
             modifier = Modifier
                 .background(Color.Gray)
                 .padding(8.dp)

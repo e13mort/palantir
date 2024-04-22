@@ -21,7 +21,8 @@ class SyncInteractor(
     sealed interface SyncStrategy {
         data object UpdateProjects : SyncStrategy
         data class FullSyncForActiveProjects(val force: Boolean = false) : SyncStrategy
-        data class FullSyncForProject(val projectId: Long, val force: Boolean = false) : SyncStrategy
+        data class FullSyncForProject(val projectId: Long, val force: Boolean = false) :
+            SyncStrategy
     }
 
     interface SyncPlan<T> {
@@ -57,8 +58,17 @@ class SyncInteractor(
     override fun run(arg: SyncStrategy): Flow<SyncResult> {
         return flow {
             when (arg) {
-                is SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(this, arg.force)
-                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(this, arg.projectId, arg.force)
+                is SyncStrategy.FullSyncForActiveProjects -> runFullSyncForSelectedProjects(
+                    this,
+                    arg.force
+                )
+
+                is SyncStrategy.FullSyncForProject -> runFullSyncForProject(
+                    this,
+                    arg.projectId,
+                    arg.force
+                )
+
                 SyncStrategy.UpdateProjects -> updateLocalProjects(this)
             }
         }
@@ -102,7 +112,11 @@ class SyncInteractor(
         var syncResult = SyncResult(state = SyncResult.State.Pending)
         flowCollector.emit(syncResult)
         val projectsSyncStates = localProjects.associate {
-            it.id().toLong() to SyncResult.ProjectSyncState(SyncResult.State.Pending, branchesState = SyncResult.State.Pending, mrs = SyncResult.MrsSyncState())
+            it.id().toLong() to SyncResult.ProjectSyncState(
+                SyncResult.State.Pending,
+                branchesState = SyncResult.State.Pending,
+                mrs = SyncResult.MrsSyncState()
+            )
         }.toMutableMap()
         syncResult = syncResult.copy(
             state = SyncResult.State.InProgress(SyncResult.State.ProgressState.COMPLEX),

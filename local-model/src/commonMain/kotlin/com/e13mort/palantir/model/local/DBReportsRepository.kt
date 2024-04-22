@@ -29,7 +29,8 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
         createFromMillis: Long,
         createBeforeMillis: Long
     ): ReportsRepository.FirstApproveStatistics {
-        val mrsWithApproves = mrInteractionsQueries.mrsWithApproves(projectId, createBeforeMillis, createFromMillis)
+        val mrsWithApproves =
+            mrInteractionsQueries.mrsWithApproves(projectId, createBeforeMillis, createFromMillis)
         val results = mrsWithApproves.executeAsList()
 
         return object : ReportsRepository.FirstApproveStatistics {
@@ -50,7 +51,8 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
         private val dbObject: SelectApproversStatisticsByWeek
     ) : ReportsRepository.ApproveStatisticsItem {
 
-        override fun user(): User = PlainUser(dbObject.user_id, dbObject.user_userName!!, dbObject.user_name!!)
+        override fun user(): User =
+            PlainUser(dbObject.user_id, dbObject.user_userName!!, dbObject.user_name!!)
 
         override fun approvesCount(): Int {
             return dbObject.aproves_count.toInt()
@@ -62,7 +64,8 @@ class DBReportsRepository(localModel: LocalModel) : ReportsRepository {
     internal data class FirstApprovesStatItem(
         private val dbItem: FirstApprovesStatistics
     ) : ReportsRepository.ApproveStatisticsItem {
-        override fun user(): User = PlainUser(dbItem.user_id!!.toLong(), dbItem.username!!, dbItem.name!!)
+        override fun user(): User =
+            PlainUser(dbItem.user_id!!.toLong(), dbItem.username!!, dbItem.name!!)
 
         override fun approvesCount(): Int = dbItem.count.toInt()
 

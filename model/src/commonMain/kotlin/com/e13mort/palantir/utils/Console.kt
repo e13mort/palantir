@@ -13,4 +13,5 @@ interface Console {
     fun write(message: String, writeStyle: WriteStyle = WriteStyle.ADD)
 }
 
-fun String.writeTo(console: Console, writeStyle: Console.WriteStyle = Console.WriteStyle.ADD) = console.write(this, writeStyle)
+fun String.writeTo(console: Console, writeStyle: Console.WriteStyle = Console.WriteStyle.ADD) =
+    console.write(this, writeStyle)

@@ -114,8 +114,8 @@ fun MainAppPM.RenderMenu() {
     }
 }
 
-fun MainAppPM.TopLevelItems.name() : String {
-    return when(this) {
+fun MainAppPM.TopLevelItems.name(): String {
+    return when (this) {
         MainAppPM.TopLevelItems.PROJECTS -> "Projects"
         MainAppPM.TopLevelItems.SETTINGS -> "Settings"
         MainAppPM.TopLevelItems.REPORTS -> "Reports"
@@ -123,7 +123,7 @@ fun MainAppPM.TopLevelItems.name() : String {
 }
 
 fun MainAppPM.TopLevelItems.icon(): ImageVector {
-    return when(this) {
+    return when (this) {
         MainAppPM.TopLevelItems.PROJECTS -> Icons.Default.List
         MainAppPM.TopLevelItems.SETTINGS -> Icons.Default.Settings
         MainAppPM.TopLevelItems.REPORTS -> Icons.Default.Report
@@ -134,7 +134,10 @@ fun MainAppPM.TopLevelItems.icon(): ImageVector {
 private fun MainAppPM.RenderMainContent() {
     when (val currentState = this.states.collectAsState().value) {
         is ProjectsScreenPM -> currentState.Render()
-        is SettingsPM -> { Text("Settings") }
+        is SettingsPM -> {
+            Text("Settings")
+        }
+
         is MRReportsPM -> currentState.Render()
         else -> {
             Text("Not supported yet")
