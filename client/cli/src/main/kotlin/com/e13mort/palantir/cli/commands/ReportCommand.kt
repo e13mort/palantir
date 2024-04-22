@@ -2,14 +2,14 @@ package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
 
-class ReportCommand : CliktCommand("report") {
+class ReportCommand : CliktCommand(name = "report", help = "Reports for synced projects and repositories") {
     override fun run() = Unit
 
-    class ApprovesCommand : CliktCommand("approves") {
+    class ApprovesCommand : CliktCommand(name = "approves", help = "MR approves based reports") {
         override fun run() = Unit
     }
 
-    class MR : CliktCommand("mr") {
+    class MR : CliktCommand(name = "mr", help = "Merge Request based reports") {
         override fun run() = Unit
     }
 }

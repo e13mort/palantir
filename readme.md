@@ -107,6 +107,31 @@ Commands to print reports for a synced project
 
 ``./plntr report mr start <project-id> --ranges 1-1-1970:1-2-2021:1-3-2021`` - print merge requests statistics by first approve or start discussion event
 
+#### `repository`
+
+'Local repository' based reports that are calculated based on a specified local git repository.
+
+Each command accepts direct path to:
+- local directory of a target repository
+- path to a json file that describes a bunch of target repositories with some options 
+
+##### `codelines`
+
+Show code lines statistics based on [cloc](https://github.com/AlDanial/cloc) output.
+Cloc tool should be [installed](https://github.com/AlDanial/cloc?tab=readme-ov-file#install-via-package-manager).
+
+##### `codeincrement`
+
+Show statistics about code increment over specified time period.
+
+##### `authors`
+
+Show statistics about code authors over specified time period.
+
+##### Report specification
+
+Sample specification: [spec1.json](git/src/jvmTest/resources/spec1.json)
+
 ### `remove`
 
 Remove items from local index
