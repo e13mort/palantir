@@ -22,6 +22,7 @@ kotlin {
                 api(project(":model"))
                 api(project(":local-model"))
                 api(project(":remote-model"))
+                api(project(":git"))
                 api(libs.io.github.chozzle.composemacostheme)
             }
         }

@@ -1,0 +1,30 @@
+{
+  "projects": {
+    "group1": [
+      {
+        "localPath": "/local/path1"
+      },
+      {
+        "localPath": "/local/path2",
+        "targetBranch": "master"
+      }
+    ],
+    "group2": [
+      {
+        "localPath": "/local/path1",
+        "targetBranch": "master",
+        "linesSpec": {
+          "languages": [
+            "java",
+            "kotlin"
+          ],
+          "excludedPaths": [
+            "/build",
+            "/module/build"
+          ]
+        },
+        "percentile": "P95"
+      }
+    ]
+  }
+}
