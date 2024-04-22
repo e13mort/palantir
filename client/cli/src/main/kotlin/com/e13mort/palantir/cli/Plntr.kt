@@ -254,7 +254,7 @@ fun main(args: Array<String>) {
                 },
                 StringWithRangesCommand(
                     name = "authors",
-                    interactor = codeIncrementInteractor,
+                    interactor = codeAuthorsInteractor,
                     renders = mapOf(
                         CommandWithRender.RenderType.Table to ASCIICodeAuthorsReportRender(
                             dateToStringConverter
