@@ -8,8 +8,7 @@ package com.e13mort.palantir.cli.commands
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.render.ReportRender
-import com.e13mort.palantir.utils.StringDateConverter
-import com.e13mort.palantir.utils.asRanges
+import com.e13mort.palantir.utils.RangeParser
 import com.github.ajalt.clikt.parameters.arguments.argument
 import com.github.ajalt.clikt.parameters.options.convert
 import com.github.ajalt.clikt.parameters.options.default
@@ -22,7 +21,7 @@ class StringWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS
     renderValueMapper: (INTERACTOR_OUTPUT) -> INTERACTOR_OUTPUT,
     renderParamsMapper: (CommandParams) -> RENDER_PARAMS,
     private val commandParamMapper: (CommandParams, Pair<String, List<Range>>) -> INTERACTOR_INPUT,
-    private val dateFormat: StringDateConverter
+    private val rangeParser: RangeParser
 ) : CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     name,
     interactor,
@@ -32,7 +31,7 @@ class StringWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS
 ) {
     private val path by argument("path")
     private val ranges: List<Range> by option("--ranges").convert {
-        it.asRanges(dateFormat)
+        rangeParser.convert(it)
     }.default(mutableListOf(Range(0, System.currentTimeMillis())))
 
     override fun calculateArgs() = commandParamMapper(CommandParams(flags()), path to ranges)

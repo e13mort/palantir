@@ -17,6 +17,7 @@ import com.e13mort.palantir.model.local.DBMergeRequestRepository
 import com.e13mort.palantir.model.local.DBProjectRepository
 import com.e13mort.palantir.model.local.DBReportsRepository
 import com.e13mort.palantir.model.local.LocalModel
+import com.e13mort.palantir.utils.RangeParser
 import com.e13mort.palantir.utils.StringDateConverter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +51,7 @@ class PlntrPMFactory(
     private val requestedPercentiles = Percentile.fromString(requestedPercentilesProperty)
     private val allProjectsInteractor = PrintAllProjectsInteractor(localProjectsRepository)
     private val percentileInteractor = PercentileInteractor(reportsRepository)
+    private val rangeParser = RangeParser(stringToDateConverter)
     private val backgroundDispatcher = Dispatchers.IO
 
     override fun createPm(params: PmParams): PresentationModel {
@@ -58,15 +60,17 @@ class PlntrPMFactory(
             is SettingsPM.Description -> SettingsPM(params)
             is MainAppPM.Description -> MainAppPM(params)
             is ProjectsScreenPM.Description -> ProjectsScreenPM(params)
-            is MRReportsPM.Description -> MRReportsPM(
-                params,
-                backgroundDispatcher,
-                allProjectsInteractor,
-                dateToStringConverter,
-                stringToDateConverter,
-                requestedPercentiles,
-                percentileInteractor
-            )
+            is MRReportsPM.Description -> {
+                MRReportsPM(
+                    params,
+                    backgroundDispatcher,
+                    allProjectsInteractor,
+                    dateToStringConverter,
+                    rangeParser,
+                    requestedPercentiles,
+                    percentileInteractor
+                )
+            }
 
             is ActiveProjectsPM.Description -> ActiveProjectsPM(
                 params,

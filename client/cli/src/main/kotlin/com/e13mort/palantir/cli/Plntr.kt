@@ -68,6 +68,7 @@ import com.e13mort.palantir.model.local.DriverFactory
 import com.e13mort.palantir.model.local.LocalModel
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
+import com.e13mort.palantir.utils.RangeParser
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
@@ -124,6 +125,7 @@ fun main(args: Array<String>) {
     val codeAuthorsInteractor =
         RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS))
 
+    val rangeParser = RangeParser(stringToDateConverter)
     RootCommand().subcommands(
         PrintCommand().subcommands(
             printAllProjectsInteractor.asUnitCommandWithUnitCommandParams(
@@ -219,7 +221,7 @@ fun main(args: Array<String>) {
                     renderValueMapper = { it },
                     renderParamsMapper = { Percentile.fromString(requestedPercentilesProperty) },
                     commandParamMapper = { a, b -> a to b },
-                    dateFormat = stringToDateConverter
+                    rangeParser = rangeParser
                 )
             ),
             RepositoryCommand().subcommands(
@@ -235,9 +237,9 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
                     renderParamsMapper = {},
-                    dateFormat = stringToDateConverter
+                    commandParamMapper = { _, b -> b },
+                    rangeParser = rangeParser
                 ),
                 StringWithRangesCommand(
                     name = "codeincrement",
@@ -251,7 +253,6 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
                     renderParamsMapper = { commandParams ->
                         commandParams.flags.mapNotNull {
                             when (it) {
@@ -260,7 +261,8 @@ fun main(args: Array<String>) {
                             }
                         }.toSet()
                     },
-                    dateFormat = stringToDateConverter
+                    commandParamMapper = { _, b -> b },
+                    rangeParser = rangeParser
                 ).apply {
                     registerOption(option("--full-commits").flag())
                 },
@@ -276,11 +278,11 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
                     renderParamsMapper = {
                         emptySet()
                     },
-                    dateFormat = stringToDateConverter
+                    commandParamMapper = { _, b -> b },
+                    rangeParser = rangeParser
                 )
 
 

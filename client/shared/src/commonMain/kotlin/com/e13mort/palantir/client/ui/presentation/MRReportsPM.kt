@@ -11,9 +11,8 @@ import com.e13mort.palantir.interactors.PrintAllProjectsInteractor
 import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.model.Percentile
 import com.e13mort.palantir.utils.DateStringConverter
-import com.e13mort.palantir.utils.StringDateConverter
+import com.e13mort.palantir.utils.RangeParser
 import com.e13mort.palantir.utils.asInputString
-import com.e13mort.palantir.utils.asRanges
 import com.e13mort.palantir.utils.asString
 import com.e13mort.palantir.utils.secondsToFormattedTimeDiff
 import kotlinx.coroutines.CoroutineDispatcher
@@ -30,7 +29,7 @@ class MRReportsPM(
     private val backgroundDispatcher: CoroutineDispatcher,
     private val projectsInteractor: PrintAllProjectsInteractor,
     private val dateStringConverter: DateStringConverter,
-    private val stringDateConverter: StringDateConverter,
+    private val rangeParser: RangeParser,
     private val percentiles: List<Percentile>,
     private val reportsInteractor: Interactor<Pair<Long, List<Range>>, PercentileReport>,
 ) : PresentationModel(pmParams) {
@@ -73,10 +72,9 @@ class MRReportsPM(
         }
     }
 
-
     fun updateReportsRanges(newValue: String) {
         val newRanges = try {
-            newValue.asRanges(stringDateConverter)
+            rangeParser.convert(newValue)
         } catch (e: Exception) {
             emptyList()
         }

@@ -42,19 +42,6 @@ fun interface StringDateConverter {
     fun convertStringToDate(string: String): Long
 }
 
-fun String.asRanges(converter: StringDateConverter): MutableList<Range> {
-    val ranges = mutableListOf<Range>()
-    val rangeStrings = split(":")
-    if (rangeStrings.size < 2) throw IllegalArgumentException("there should be at lease two ranges")
-    rangeStrings.windowed(2).forEach { rangePair ->
-        ranges += Range(
-            converter.convertStringToDate(rangePair[0]),
-            converter.convertStringToDate(rangePair[1])
-        )
-    }
-    return ranges
-}
-
 fun Range.asInputString(dateStringConverter: DateStringConverter): String {
     return "${start.toDateString(dateStringConverter)}:${end.toDateString(dateStringConverter)}"
 }
