@@ -6,13 +6,15 @@
       },
       {
         "localPath": "/local/path2",
-        "targetBranch": "master"
+        "targetBranch": "master",
+        "mailMap": "disabled"
       }
     ],
     "group2": [
       {
         "localPath": "/local/path1",
         "targetBranch": "master",
+        "mailMap": "auto",
         "linesSpec": {
           "languages": [
             "java",

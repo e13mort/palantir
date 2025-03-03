@@ -1,5 +1,5 @@
 /*
- * Copyright: (c)  2023-2024, Pavel Novikov <mail@pavel.dev>
+ * Copyright: (c)  2023-2025, Pavel Novikov <mail@pavel.dev>
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
@@ -15,13 +15,21 @@ data class RepositoryAnalysisSpecification(
 ) {
 
     companion object {
+        private val json = Json {
+            decodeEnumsCaseInsensitive = true
+        }
+
         fun fromString(string: String): RepositoryAnalysisSpecification? {
             return try {
-                Json.decodeFromString(string)
+                json.decodeFromString(string)
             } catch (e: Exception) {
                 null
             }
         }
+    }
+
+    enum class MailMapType {
+        Auto, Disabled
     }
 
     @Serializable
@@ -29,7 +37,8 @@ data class RepositoryAnalysisSpecification(
         val localPath: String,
         val targetBranch: String? = null,
         val linesSpec: LinesSpec? = null,
-        val percentile: Percentile = Percentile.P100
+        val percentile: Percentile = Percentile.P100,
+        val mailMap: MailMapType = MailMapType.Auto
     )
 
     @Serializable

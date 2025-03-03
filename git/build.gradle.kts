@@ -1,5 +1,5 @@
 /*
- * Copyright: (c)  2023-2024, Pavel Novikov <mail@pavel.dev>
+ * Copyright: (c)  2023-2025, Pavel Novikov <mail@pavel.dev>
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
@@ -15,6 +15,15 @@ kotlin {
     jvm()
 
     sourceSets {
+        val commonTest by getting {
+            dependencies {
+                implementation(project(":model-stubs"))
+                implementation(libs.kotlin.test)
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.kotlin.test.annotations.common)
+                implementation(libs.io.kotest.assertions)
+            }
+        }
         val commonMain by getting {
             dependencies {
                 api(libs.org.jetbrains.kotlinx.kotlinx.coroutines.core)
@@ -25,15 +34,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation(libs.org.eclipse.jgit)
-            }
-        }
-        val commonTest by getting {
-            dependencies {
-                implementation(project(":model-stubs"))
-                implementation(libs.kotlin.test)
-                implementation(libs.kotlinx.coroutines.test)
-                implementation(libs.kotlin.test.annotations.common)
-                implementation(libs.io.kotest.assertions)
             }
         }
     }
