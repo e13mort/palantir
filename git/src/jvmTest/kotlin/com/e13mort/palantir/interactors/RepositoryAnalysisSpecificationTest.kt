@@ -1,10 +1,11 @@
 /*
- * Copyright: (c)  2023-2024, Pavel Novikov <mail@pavel.dev>
+ * Copyright: (c)  2023-2025, Pavel Novikov <mail@pavel.dev>
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.interactors.RepositoryAnalysisSpecification.MailMapType
 import com.e13mort.palantir.model.Percentile
 import io.kotest.matchers.collections.shouldMatchEach
 import io.kotest.matchers.collections.shouldMatchInOrder
@@ -41,11 +42,13 @@ class RepositoryAnalysisSpecificationTest {
                         it.localPath shouldBe "/local/path1"
                         it.targetBranch shouldBe null
                         it.linesSpec shouldBe null
+                        it.mailMap shouldBe MailMapType.Auto
                     },
                     {
                         it.localPath shouldBe "/local/path2"
                         it.targetBranch shouldBe "master"
                         it.linesSpec shouldBe null
+                        it.mailMap shouldBe MailMapType.Disabled
                     }
                 )
             }
@@ -61,6 +64,7 @@ class RepositoryAnalysisSpecificationTest {
                 projects shouldMatchEach listOf {
                     it.localPath shouldBe "/local/path1"
                     it.targetBranch shouldBe "master"
+                    it.mailMap shouldBe MailMapType.Auto
                     it.linesSpec!! should {
                         it.languages shouldMatchInOrder listOf(
                             { it shouldBe "java" },

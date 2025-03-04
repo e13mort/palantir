@@ -1,10 +1,12 @@
 /*
- * Copyright: (c)  2023-2024, Pavel Novikov <mail@pavel.dev>
+ * Copyright: (c)  2023-2025, Pavel Novikov <mail@pavel.dev>
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
 package com.e13mort.palantir.interactors
 
+import com.e13mort.palantir.git.MailMap
+import com.e13mort.palantir.git.MailMapFactory
 import com.e13mort.palantir.model.Percentile
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.diff.DiffEntry
@@ -16,10 +18,12 @@ import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter
 import org.eclipse.jgit.revwalk.filter.RevFilter
 import org.eclipse.jgit.util.io.NullOutputStream
 import java.io.File
+import java.nio.file.Paths
 import kotlin.math.ceil
 
 class CodeChangesReportCalculator(
-    private val calculationType: CalculationType = CalculationType.FULL
+    private val calculationType: CalculationType = CalculationType.FULL,
+    private val mailMapFactory: MailMapFactory
 ) :
     RepositoryAnalyticsInteractor.RepositoryReportCalculator<CodeChangesReportItem> {
     enum class CalculationType {
@@ -46,7 +50,8 @@ class CodeChangesReportCalculator(
                         localPath,
                         ranges,
                         projectSpec.linesSpec,
-                        projectSpec.percentile
+                        projectSpec.percentile,
+                        projectSpec.mailMap
                     )
                 commitDiffs[report.first] = report.second
             }
@@ -112,11 +117,16 @@ class CodeChangesReportCalculator(
         repoPath: String,
         ranges: List<Range>,
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null,
-        percentile: Percentile
+        percentile: Percentile,
+        mailMapType: RepositoryAnalysisSpecification.MailMapType
     ): Pair<String, List<CodeChangesReportItem.DiffWithRanges>> {
 
         val regex = createRegexForFilesExclusions(linesSpec)
         val git: Git = Git.open(File(repoPath))
+        val mailMap = when(mailMapType) {
+            RepositoryAnalysisSpecification.MailMapType.Auto -> mailMapFactory.createMailMap(Paths.get(repoPath))
+            RepositoryAnalysisSpecification.MailMapType.Disabled -> MailMap
+        }
         val projectPath = git.firstRemoteUri()
         val commitsWithRanges = mapAllRangesToCommits(git, ranges)
         val formatter = DiffFormatter(NullOutputStream.INSTANCE)
@@ -134,10 +144,11 @@ class CodeChangesReportCalculator(
                             formatter,
                             prevCommit,
                             commit,
-                            regex
+                            regex,
+                            mailMap
                         )
 
-                        CalculationType.AUTHORS -> calculateOnlyAuthor(commit, prevCommit)
+                        CalculationType.AUTHORS -> calculateOnlyAuthor(commit, prevCommit, mailMap)
                     }
 
                 } else {
@@ -163,8 +174,14 @@ class CodeChangesReportCalculator(
 
     private fun calculateOnlyAuthor(
         commit: RevCommit,
-        prevCommit: RevCommit
+        prevCommit: RevCommit,
+        mailMap: MailMap
     ): CodeChangesReportItem.CommitDiff {
+        val (_, email) = mailMap.mapIdentity(
+            commit.authorIdent.emailAddress,
+            commit.authorIdent.name
+        )
+
         return CodeChangesReportItem.CommitDiff(
             prevCommit.name,
             commit.name,
@@ -172,7 +189,7 @@ class CodeChangesReportCalculator(
             0,
             0,
             0,
-            commit.authorIdent.emailAddress
+            email
         )
     }
 
@@ -251,7 +268,8 @@ class CodeChangesReportCalculator(
         formatter: DiffFormatter,
         prevCommit: RevCommit,
         currentCommit: RevCommit,
-        regex: Regex?
+        regex: Regex?,
+        mailMap: MailMap
     ): CodeChangesReportItem.CommitDiff {
         val diffEntries = formatter.scan(prevCommit, currentCommit)
         var localAdd = 0
@@ -276,6 +294,11 @@ class CodeChangesReportCalculator(
 
             }
         }
+
+        val (_, email) = mailMap.mapIdentity(
+            currentCommit.authorIdent.emailAddress,
+            currentCommit.authorIdent.name
+        )
         return CodeChangesReportItem.CommitDiff(
             prevCommit.name,
             currentCommit.name,
@@ -283,7 +306,7 @@ class CodeChangesReportCalculator(
             localRemove,
             ignoredAdd,
             ignoredRemove,
-            currentCommit.authorIdent.emailAddress
+            email
         )
     }
 

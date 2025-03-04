@@ -1,5 +1,5 @@
 /*
- * Copyright: (c)  2023-2024, Pavel Novikov <mail@pavel.dev>
+ * Copyright: (c)  2023-2025, Pavel Novikov <mail@pavel.dev>
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
@@ -44,6 +44,7 @@ import com.e13mort.palantir.client.properties.plus
 import com.e13mort.palantir.client.properties.safeIntProperty
 import com.e13mort.palantir.client.properties.safeStringProperty
 import com.e13mort.palantir.cloc.ClocAdapter
+import com.e13mort.palantir.git.GitMailMapFactory
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor
 import com.e13mort.palantir.interactors.ApproveStatisticsInteractor.StatisticsType
 import com.e13mort.palantir.interactors.CodeChangesReportCalculator
@@ -108,6 +109,7 @@ fun main(args: Array<String>) {
         localNotesRepository,
         remoteNotesRepository
     )
+    val mapMapFactory = GitMailMapFactory()
     val projectSummaryInteractor = PrintProjectSummaryInteractor(localProjectsRepository)
     val printBranchesInteractor = PrintProjectBranchesInteractor(localProjectsRepository)
     val printMergeRequestsInteractor = PrintProjectMergeRequestsInteractor(localProjectsRepository)
@@ -120,9 +122,9 @@ fun main(args: Array<String>) {
     val codeLinesInteractor =
         RepositoryAnalyticsInteractor(CodeLinesReportCalculator(ClocAdapter.create()))
     val codeIncrementInteractor =
-        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.FULL))
+        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.FULL, mapMapFactory))
     val codeAuthorsInteractor =
-        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS))
+        RepositoryAnalyticsInteractor(CodeChangesReportCalculator(CodeChangesReportCalculator.CalculationType.AUTHORS, mapMapFactory))
 
     RootCommand().subcommands(
         PrintCommand().subcommands(
