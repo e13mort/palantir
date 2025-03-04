@@ -6,7 +6,10 @@
 package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 
-class RemoveCommand : CliktCommand(name = "remove", help = "Remove project from local index") {
+class RemoveCommand : CliktCommand(name = "remove") {
     override fun run(): Unit = Unit
+
+    override fun help(context: Context): String = "Remove project from local index"
 }

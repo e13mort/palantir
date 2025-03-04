@@ -70,6 +70,7 @@ import com.e13mort.palantir.model.local.LocalModel
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
+import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option

@@ -6,15 +6,17 @@
 package com.e13mort.palantir.cli.commands
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toLowerCase
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.render.ReportRender
 import com.github.ajalt.clikt.core.CliktCommand
-import com.github.ajalt.clikt.parameters.options.FlagOption
+import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
@@ -50,33 +52,29 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 
     abstract fun calculateArgs(): INTERACTOR_INPUT
 
-    override fun run() {
-        runMosaicBlocking {
-            val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
+    override fun run() = runMosaicBlocking {
+        val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
+        var state by remember {
+            mutableStateOf<INTERACTOR_OUTPUT?>(null)
+        }
+        LaunchedEffect(Unit) {
             if (blocking) {
-                interactorOutputFlow.last()?.also {
-                    println(renderState(it))
-                }
+                state = interactorOutputFlow.last()
             } else {
-                var state by mutableStateOf<INTERACTOR_OUTPUT?>(null)
-                setContent {
-                    RenderContent(state)
-                }
-                interactorOutputFlow.flowOn(Dispatchers.Default).collect {
+                interactorOutputFlow.flowOn(Dispatchers.IO).collect {
                     state = it
                 }
             }
         }
+        RenderContent(state)
     }
 
     @Composable
     private fun RenderContent(state: INTERACTOR_OUTPUT?) {
-        if (state == null) {
+        if (state != null) {
+            Text(renderState(state))
+        } else if (!blocking) {
             Text("Waiting...")
-        } else {
-            val result =
-                renderState(state)
-            Text(result)
         }
     }
 
@@ -95,7 +93,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
     protected fun flags(): Set<String> {
         val allFlags = mutableSetOf<String>().apply {
             registeredOptions().map { option ->
-                if (option is FlagOption<*>) {
+                if (option is OptionWithValues<*, *, *>) {
                     if (option.value is Boolean && (option.value as Boolean)) {
                         addAll(option.names)
                     }

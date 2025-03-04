@@ -1,14 +1,14 @@
 [versions]
 sqldelight = "2.0.1"
 org-junit-jupiter = "5.9.2"
-kotlin = "1.9.20"
+kotlin = "2.1.0"
 kotlinx-coroutines = "1.7.3"
-kotlinx-serialization = "1.6.0"
-plugin-compose-desktop = "1.5.10"
+kotlinx-serialization = "1.8.0"
+compose-plugin = "1.7.3"
 premo = "1.0.0-alpha.10"
 
 [libraries]
-com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:3.5.2"
+com-github-ajalt-clikt = "com.github.ajalt.clikt:clikt:5.0.3"
 com-jakewharton-picnic = "com.jakewharton.picnic:picnic:0.6.0"
 sqldelight-driver-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 sqldelight-coroutines = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqldelight" }
@@ -35,10 +35,12 @@ io-github-chozzle-composemacostheme = "io.github.chozzle:compose-macos-theme:0.4
 io-kotest-assertions = "io.kotest:kotest-assertions-core:5.8.0"
 turbine = "app.cash.turbine:turbine:1.0.0"
 org-eclipse-jgit = "org.eclipse.jgit:org.eclipse.jgit:6.8.0.202311291450-r"
+mosaic = "com.jakewharton.mosaic:mosaic-runtime:0.16.0"
 
 [plugins]
 com-github-ben-manes-versions = "com.github.ben-manes.versions:0.46.0"
 sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-compose-desktop = { id = "org.jetbrains.compose", version.ref = "plugin-compose-desktop" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

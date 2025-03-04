@@ -6,7 +6,10 @@
 package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 
-class PrintCommand : CliktCommand(name = "print", help = "Print various data from local index") {
+class PrintCommand : CliktCommand(name = "print") {
     override fun run(): Unit = Unit
+
+    override fun help(context: Context): String = "Print various data from local index"
 }

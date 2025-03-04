@@ -3,28 +3,20 @@
  * GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-//        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.20")
-        classpath("com.jakewharton.mosaic:mosaic-gradle-plugin:0.10.0")
-    }
-}
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.compose.compiler)
     id("org.jetbrains.kotlin.jvm")
     application
 }
 
-apply(plugin = "com.jakewharton.mosaic")
-
 version = "unspecified"
 
 dependencies {
+    implementation(compose.runtime)
+    implementation(libs.mosaic)
     implementation(libs.com.github.ajalt.clikt)
     implementation(project(":model"))
     implementation(project(":local-model"))
@@ -42,8 +34,8 @@ application {
     }
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }
