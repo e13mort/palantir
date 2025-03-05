@@ -6,7 +6,10 @@
 package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 
-class ScanCommand : CliktCommand(name = "scan", help = "Scan remote projects to local index") {
+class ScanCommand : CliktCommand(name = "scan") {
     override fun run() = Unit
+
+    override fun help(context: Context): String = "Scan remote projects to local index"
 }

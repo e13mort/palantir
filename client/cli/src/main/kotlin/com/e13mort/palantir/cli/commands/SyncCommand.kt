@@ -6,7 +6,12 @@
 package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 
-class SyncCommand : CliktCommand(name = "sync", help = "Sync remote data to local index") {
+class SyncCommand : CliktCommand(name = "sync") {
     override fun run() = Unit
+
+    override fun help(context: Context): String {
+        return "Sync remote data to local index"
+    }
 }

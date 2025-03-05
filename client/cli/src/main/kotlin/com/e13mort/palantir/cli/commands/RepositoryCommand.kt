@@ -6,7 +6,10 @@
 package com.e13mort.palantir.cli.commands
 
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.core.Context
 
-class RepositoryCommand : CliktCommand(name = "repository", help = "Repository based reports") {
+class RepositoryCommand : CliktCommand(name = "repository") {
     override fun run() = Unit
+
+    override fun help(context: Context): String = "Repository based reports"
 }

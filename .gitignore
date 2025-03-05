@@ -6,3 +6,4 @@ build
 .idea
 *.sqlite
 local.properties
+.run
