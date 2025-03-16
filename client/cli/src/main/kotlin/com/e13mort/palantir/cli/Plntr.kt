@@ -33,10 +33,12 @@ import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
+import com.e13mort.palantir.cli.render.ASCIIUserImpactReportRender
 import com.e13mort.palantir.cli.render.CSVCodeAuthorsReportRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
 import com.e13mort.palantir.cli.render.CodeChangesReportParams
+import com.e13mort.palantir.cli.render.DataColumn
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
 import com.e13mort.palantir.client.properties.Properties
@@ -72,8 +74,10 @@ import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
 import java.text.SimpleDateFormat
 
 fun main(args: Array<String>) {
@@ -266,6 +270,23 @@ fun main(args: Array<String>) {
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--full-commits").flag())
+                },
+                StringWithRangesCommand(
+                    name = "impact",
+                    interactor = codeIncrementInteractor,
+                    renders = mapOf(
+                        CommandWithRender.RenderType.Table to ASCIIUserImpactReportRender(
+                            dateToStringConverter
+                        )
+                    ),
+                    renderValueMapper = { it },
+                    commandParamMapper = { _, b -> b },
+                    renderParamsMapper = {
+                        it.allOptions.findOption("--type")
+                    },
+                    dateFormat = stringToDateConverter
+                ).apply {
+                    registerOption(option("--type").enum<DataColumn>().default(DataColumn.Changed) )
                 },
                 StringWithRangesCommand(
                     name = "authors",

@@ -16,6 +16,7 @@ import androidx.compose.ui.text.toLowerCase
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.render.ReportRender
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.Option
 import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -37,7 +38,9 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 ) : CliktCommand(name = name) {
 
     open class CommandParams(
-        val flags: Set<String>
+        @Deprecated("get flags from allOptions object")
+        val flags: Set<String>,
+        val allOptions: List<Option>
     )
 
     enum class RenderType {
@@ -79,7 +82,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
     }
 
     private fun renderState(state: INTERACTOR_OUTPUT): String {
-        val commandParams = CommandParams(flags())
+        val commandParams = CommandParams(flags(), registeredOptions())
         return renders[renderType]!!.render(
             renderValueMapper(state),
             renderParamsMapper(commandParams)

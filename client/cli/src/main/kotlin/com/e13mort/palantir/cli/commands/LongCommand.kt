@@ -25,7 +25,7 @@ class LongCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     renderParamsMapper
 ) {
     private val id by argument("id").long()
-    override fun calculateArgs() = commandParamMapper(CommandParams(flags()), id)
+    override fun calculateArgs() = commandParamMapper(CommandParams(flags(), registeredOptions()), id)
 }
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asLongCommand(
