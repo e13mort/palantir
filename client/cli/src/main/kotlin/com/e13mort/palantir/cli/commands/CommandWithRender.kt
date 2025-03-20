@@ -28,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.runBlocking
 
 abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INPUT, RENDER_PARAMS>(
     name: String,
@@ -55,30 +56,36 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 
     abstract fun calculateArgs(): INTERACTOR_INPUT
 
-    override fun run() = runMosaicBlocking {
+    override fun run() {
         val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
+        if (blocking) {
+            runInBlockingMode(interactorOutputFlow)
+        } else {
+            runInContinuousMode(interactorOutputFlow)
+        }
+    }
+
+    private fun runInContinuousMode(interactorOutputFlow: Flow<INTERACTOR_OUTPUT?>) =
+        runMosaicBlocking {
         var state by remember {
             mutableStateOf<INTERACTOR_OUTPUT?>(null)
         }
         LaunchedEffect(Unit) {
-            if (blocking) {
-                state = interactorOutputFlow.last()
-            } else {
-                interactorOutputFlow.flowOn(Dispatchers.IO).collect {
-                    state = it
-                }
+            interactorOutputFlow.flowOn(Dispatchers.IO).collect {
+                state = it
             }
         }
         RenderContent(state)
     }
 
+    private fun runInBlockingMode(interactorOutputFlow: Flow<INTERACTOR_OUTPUT?>) = runBlocking {
+        val value = interactorOutputFlow.last()
+        if (value != null) println(renderState(value))
+    }
+
     @Composable
     private fun RenderContent(state: INTERACTOR_OUTPUT?) {
-        if (state != null) {
-            Text(renderState(state))
-        } else if (!blocking) {
-            Text("Waiting...")
-        }
+        Text(state?.let { renderState(it) } ?: "Waiting...")
     }
 
     private fun renderState(state: INTERACTOR_OUTPUT): String {

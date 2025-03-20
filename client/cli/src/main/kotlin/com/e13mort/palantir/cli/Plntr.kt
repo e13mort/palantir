@@ -37,6 +37,7 @@ import com.e13mort.palantir.cli.render.ASCIIUserImpactReportRender
 import com.e13mort.palantir.cli.render.CSVCodeAuthorsReportRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
+import com.e13mort.palantir.cli.render.CSVUserImpactReportRender
 import com.e13mort.palantir.cli.render.CodeChangesReportParams
 import com.e13mort.palantir.cli.render.DataColumn
 import com.e13mort.palantir.client.properties.EnvironmentProperties
@@ -277,7 +278,10 @@ fun main(args: Array<String>) {
                     renders = mapOf(
                         CommandWithRender.RenderType.Table to ASCIIUserImpactReportRender(
                             dateToStringConverter
-                        )
+                        ),
+                        CommandWithRender.RenderType.CSV to CSVUserImpactReportRender(
+                            dateToStringConverter
+                        ),
                     ),
                     renderValueMapper = { it },
                     commandParamMapper = { _, b -> b },
