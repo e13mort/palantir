@@ -22,7 +22,8 @@ class GitMailMap(
             data.forEach { line ->
                 complex.find(line)?.let { matchResult ->
                     val (properName, properEmail, commitName, commitEmail) = matchResult.destructured
-                    if (properEmail.isBlank() || commitEmail.isBlank()) throw IllegalArgumentException()
+                    if (properEmail.isBlank() || commitEmail.isBlank())
+                        return@forEach
 
                     if (commitName.isNotBlank()) {
                         val mapForEmail = fullCommitUserMapping.getOrPut(commitEmail.lowercase()) {
