@@ -15,14 +15,20 @@ import java.io.FileReader
 class RepositoryAnalyticsInteractor<T>(
     private val reportCalculator: RepositoryReportCalculator<T>
 ) :
-    Interactor<Pair<String, List<Range>>, RepositoryReport<T>> {
-    override fun run(arg: Pair<String, List<Range>>): Flow<RepositoryReport<T>> {
+    Interactor<RepositoryAnalyticsInteractor.Arguments, RepositoryReport<T>> {
+
+    data class Arguments(
+        val ranges: Pair<String, List<Range>>,
+        val singleGroupName: String?
+    )
+
+    override fun run(arg: Arguments): Flow<RepositoryReport<T>> {
         return flow {
-            val argPath = arg.first
-            val ranges = arg.second
+            val argPath: String = arg.ranges.first
+            val ranges: List<Range> = arg.ranges.second
 
             val specification = createSpec(argPath)
-            val result = reportCalculator.calculateReport(specification, ranges)
+            val result = reportCalculator.calculateReport(specification, ranges, arg.singleGroupName)
             emit(RepositoryReport(result))
         }
     }
@@ -30,7 +36,8 @@ class RepositoryAnalyticsInteractor<T>(
     interface RepositoryReportCalculator<T> {
         suspend fun calculateReport(
             specification: RepositoryAnalysisSpecification,
-            ranges: List<Range>
+            ranges: List<Range>,
+            singleGroupName: String? = null
         ): List<RepositoryReport.GroupedResults<T>>
 
     }

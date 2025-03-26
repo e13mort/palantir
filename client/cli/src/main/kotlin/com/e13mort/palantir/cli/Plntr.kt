@@ -58,6 +58,7 @@ import com.e13mort.palantir.interactors.PrintMergeRequestInteractor
 import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
+import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
 import com.e13mort.palantir.interactors.RepositoryAnalyticsInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
@@ -78,6 +79,7 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.options.optionalValue
 import com.github.ajalt.clikt.parameters.types.enum
 import java.text.SimpleDateFormat
 
@@ -243,7 +245,13 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.allOptions.findOption<String>("--group")
+                        )
+
+                    },
                     renderParamsMapper = {},
                     dateFormat = stringToDateConverter
                 ),
@@ -259,7 +267,12 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.allOptions.findOptionSafe<String>("--group")
+                        )
+                    },
                     renderParamsMapper = { commandParams ->
                         commandParams.flags.mapNotNull {
                             when (it) {
@@ -271,6 +284,7 @@ fun main(args: Array<String>) {
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--full-commits").flag())
+                    registerOption(option("--group"))
                 },
                 StringWithRangesCommand(
                     name = "impact",
@@ -284,13 +298,19 @@ fun main(args: Array<String>) {
                         ),
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.allOptions.findOptionSafe<String>("--group")
+                        )
+                    },
                     renderParamsMapper = {
                         it.allOptions.findOption("--type")
                     },
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--type").enum<DataColumn>().default(DataColumn.Changed) )
+                    registerOption(option("--group"))
                 },
                 StringWithRangesCommand(
                     name = "authors",
@@ -304,12 +324,19 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.allOptions.findOptionSafe<String>("--group")
+                        )
+                    },
                     renderParamsMapper = {
                         emptySet()
                     },
                     dateFormat = stringToDateConverter
-                )
+                ).apply {
+                    registerOption(option("--group"))
+                }
 
 
             ),

@@ -17,7 +17,8 @@ class CodeLinesReportCalculator(
 ) : RepositoryAnalyticsInteractor.RepositoryReportCalculator<CodeLinesResult> {
     override suspend fun calculateReport(
         specification: RepositoryAnalysisSpecification,
-        ranges: List<Range>
+        ranges: List<Range>,
+        singleGroupName: String?
     ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
         val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
         specification.projects.forEach { (groupName, projects) ->
