@@ -71,7 +71,7 @@ data class CodeChangesReportItem(
 
             fun ranges() = data.keys
 
-            fun activeUsers() = data.values.flatMap { it.keys }
+            fun activeUsers() = data.values.flatMap { it.keys }.toSet()
         }
 
         class UserCommits(val data: List<CommitDiff>) {
