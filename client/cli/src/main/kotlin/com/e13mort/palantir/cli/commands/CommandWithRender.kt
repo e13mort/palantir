@@ -39,9 +39,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 ) : CliktCommand(name = name) {
 
     open class CommandParams(
-        @Deprecated("get flags from allOptions object")
-        val flags: Set<String>,
-        val allOptions: List<Option>
+        val options: List<Option>
     )
 
     enum class RenderType {
@@ -89,7 +87,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
     }
 
     private fun renderState(state: INTERACTOR_OUTPUT): String {
-        val commandParams = CommandParams(flags(), registeredOptions())
+        val commandParams = CommandParams(registeredOptions())
         return renders[renderType]!!.render(
             renderValueMapper(state),
             renderParamsMapper(commandParams)

@@ -13,6 +13,17 @@ inline fun <reified T> List<Option>.findOptionSafe(name: String): T? {
     return dataColumns.firstOrNull()
 }
 
+fun <T>List<Option>.asSingleFlagSet(name: String, value: T): Set<T> {
+    return if(findOptionSafe<Boolean>(name) == true) setOf(value) else emptySet()
+}
+
+fun List<Option>.hasFlag(vararg names: String): Boolean {
+    names.forEach {
+        if(findOptionSafe<Boolean>(it) == true) return true
+    }
+    return false
+}
+
 inline fun <reified T> List<Option>.findOption(name: String): T {
     val dataColumns = findOptions<T>(name)
     return dataColumns.first()

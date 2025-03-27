@@ -22,7 +22,7 @@ class UnitCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS>(
     renderValueMapper,
     renderParamsMapper
 ) {
-    override fun calculateArgs() = commandParamMapper(CommandParams(flags(), registeredOptions()))
+    override fun calculateArgs() = commandParamMapper(CommandParams(registeredOptions()))
 }
 
 fun <INTERACTOR_INPUT, INTERACTOR_OUTPUT> Interactor<INTERACTOR_INPUT, INTERACTOR_OUTPUT>.asUnitCommandWithUnitRenderParams(

@@ -58,7 +58,6 @@ import com.e13mort.palantir.interactors.PrintMergeRequestInteractor
 import com.e13mort.palantir.interactors.PrintProjectBranchesInteractor
 import com.e13mort.palantir.interactors.PrintProjectMergeRequestsInteractor
 import com.e13mort.palantir.interactors.PrintProjectSummaryInteractor
-import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.interactors.RemoveProjectInteractor
 import com.e13mort.palantir.interactors.RepositoryAnalyticsInteractor
 import com.e13mort.palantir.interactors.SyncInteractor
@@ -79,7 +78,6 @@ import com.github.ajalt.clikt.core.subcommands
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
-import com.github.ajalt.clikt.parameters.options.optionalValue
 import com.github.ajalt.clikt.parameters.types.enum
 import java.text.SimpleDateFormat
 
@@ -140,7 +138,7 @@ fun main(args: Array<String>) {
                 name = "projects",
                 renders = ASCIITableProjectsListRender().asTableRender(),
                 renderParamsMapper = { params ->
-                    params.flags.contains("-a")
+                    params.options.hasFlag("-a")
                 },
             ) {
                 registerOption(option("-a").flag())
@@ -174,7 +172,7 @@ fun main(args: Array<String>) {
                 name = "project",
                 renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 commandParamMapper = { params, projectId ->
-                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    val forceSync = params.options.hasFlag("-f", "--force")
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId, forceSync)
                 }
             ).apply {
@@ -185,7 +183,7 @@ fun main(args: Array<String>) {
                 renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 renderParamsMapper = {},
                 commandParamsMapper = { params ->
-                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    val forceSync = params.options.hasFlag("-f", "--force")
                     SyncInteractor.SyncStrategy.FullSyncForActiveProjects(forceSync)
                 }
             ).apply {
@@ -248,7 +246,7 @@ fun main(args: Array<String>) {
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
                             ranges,
-                            params.allOptions.findOption<String>("--group")
+                            params.options.findOption<String>("--group")
                         )
 
                     },
@@ -270,16 +268,13 @@ fun main(args: Array<String>) {
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
                             ranges,
-                            params.allOptions.findOptionSafe<String>("--group")
+                            params.options.findOptionSafe<String>("--group")
                         )
                     },
                     renderParamsMapper = { commandParams ->
-                        commandParams.flags.mapNotNull {
-                            when (it) {
-                                "--full-commits" -> CodeChangesReportParams.ShowFullCommitsList
-                                else -> null
-                            }
-                        }.toSet()
+                        commandParams
+                            .options
+                            .asSingleFlagSet("--full-commits", CodeChangesReportParams.ShowFullCommitsList)
                     },
                     dateFormat = stringToDateConverter
                 ).apply {
@@ -301,11 +296,11 @@ fun main(args: Array<String>) {
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
                             ranges,
-                            params.allOptions.findOptionSafe<String>("--group")
+                            params.options.findOptionSafe<String>("--group")
                         )
                     },
                     renderParamsMapper = {
-                        it.allOptions.findOption("--type")
+                        it.options.findOption("--type")
                     },
                     dateFormat = stringToDateConverter
                 ).apply {
@@ -327,7 +322,7 @@ fun main(args: Array<String>) {
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
                             ranges,
-                            params.allOptions.findOptionSafe<String>("--group")
+                            params.options.findOptionSafe<String>("--group")
                         )
                     },
                     renderParamsMapper = {
