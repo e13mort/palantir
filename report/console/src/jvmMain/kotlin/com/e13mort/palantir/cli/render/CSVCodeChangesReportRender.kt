@@ -14,19 +14,21 @@ import com.e13mort.palantir.utils.asString
 
 class CSVCodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, CodeChangesRenderOptions> {
     override fun render(
         value: RepositoryReport<CodeChangesReportItem>,
-        params: Set<CodeChangesReportParams>
+        params: CodeChangesRenderOptions
     ): String {
         return StringBuilder().apply {
             value.result.forEach { groupedResult ->
                 appendGroupHeader(groupedResult.groupName)
                 groupedResult.result.commitDiffs.forEach { diff ->
                     appendTitle(diff)
-                    diff.value.forEach { diffWithRanges ->
-                        appendDiffChanges(diffWithRanges)
-                        appendAdditionalInfo(params, diffWithRanges)
+                    if (!params.showOnlySummary) {
+                        diff.value.forEach { diffWithRanges ->
+                            appendDiffChanges(diffWithRanges)
+                            appendAdditionalInfo(params, diffWithRanges)
+                        }
                     }
                 }
                 appendGroupHeader("Summary: ${groupedResult.groupName}")
@@ -56,10 +58,10 @@ class CSVCodeChangesReportRender(
     }
 
     private fun StringBuilder.appendAdditionalInfo(
-        params: Set<CodeChangesReportParams>,
+        params: CodeChangesRenderOptions,
         diffWithRanges: CodeChangesReportItem.DiffWithRanges
     ) {
-        if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
+        if (params.showFullCommits) {
             append("Commit")
             append(",")
             append("Added")

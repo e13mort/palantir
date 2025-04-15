@@ -10,14 +10,13 @@ import com.e13mort.palantir.interactors.RepositoryReport
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.asString
-import com.jakewharton.picnic.table
 
 class CSVUserImpactReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, DataColumn> {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, UserImpactRenderOptions> {
     override fun render(
         value: RepositoryReport<CodeChangesReportItem>,
-        params: DataColumn
+        params: UserImpactRenderOptions
     ): String {
         return StringBuilder().apply {
             value.result.forEach { groupedResult ->
@@ -29,28 +28,31 @@ class CSVUserImpactReportRender(
                     val projectName = item.key
                     val rows = item.value.activeUsers()
                     appendGroupHeader(projectName)
-                    append("author - ${params.name}")
-                    append(",")
-                    allAvailableRanges.forEachIndexed { index, it ->
-                        if (index != 0)
-                            append(",")
-                        append(it.asString(formatter))
-                    }
-                    append("\n")
-                    rows.forEach { row ->
-                        append(row)
+                    if (!params.showOnlySummary) {
+                        append("author - ${params.dataColumn.name}")
                         append(",")
-                        allAvailableRanges.forEachIndexed { columnIndex, column ->
-                            val userData = item.value.userData(row, column)
-                            val content = userData?.let {
-                                params.extract(it)
-                            } ?: "-"
-                            if (columnIndex != 0)
+                        allAvailableRanges.forEachIndexed { index, it ->
+                            if (index != 0)
                                 append(",")
-                            append(content)
+                            append(it.asString(formatter))
                         }
                         append("\n")
+                        rows.forEach { row ->
+                            append(row)
+                            append(",")
+                            allAvailableRanges.forEachIndexed { columnIndex, column ->
+                                val userData = item.value.userData(row, column)
+                                val content = userData?.let {
+                                    params.dataColumn.extract(it)
+                                } ?: "-"
+                                if (columnIndex != 0)
+                                    append(",")
+                                append(content)
+                            }
+                            append("\n")
+                        }
                     }
+                    // TODO: MAKE SUMMARY
                 }
             }
         }.toString()

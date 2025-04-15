@@ -14,22 +14,23 @@ import com.jakewharton.picnic.table
 
 class ASCIIUserImpactReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, DataColumn> {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, UserImpactRenderOptions> {
     override fun render(
         value: RepositoryReport<CodeChangesReportItem>,
-        params: DataColumn
+        params: UserImpactRenderOptions
     ): String {
         return table {
             cellStyle {
                 border = true
             }
             value.result.forEach { groupedResult ->
-                val reportItem = groupedResult.result
+                val reportItem: CodeChangesReportItem = groupedResult.result
+                val groupName = groupedResult.groupName
                 val rangesResults = reportItem.calculateUserChanges()
                 val allAvailableRanges = rangesResults.values.map { it.ranges() }.flatten().toSet()
                 val columnsCount = allAvailableRanges.size + 1
                 row {
-                    cell(groupedResult.groupName) {
+                    cell(groupName) {
                         columnSpan = columnsCount
                     }
                 }
@@ -41,22 +42,53 @@ class ASCIIUserImpactReportRender(
                             columnSpan = columnsCount
                         }
                     }
-                    row {
-                        cell("author - ${params.name}")
-                        allAvailableRanges.forEach {
-                            cell(it.asString(formatter))
+                    if (!params.showOnlySummary) {
+                        row {
+                            cell("author - ${params.dataColumn.name}")
+                            allAvailableRanges.forEach {
+                                cell(it.asString(formatter))
+                            }
+                        }
+                        rows.forEach { row ->
+                            row {
+                                cell(row)
+                                allAvailableRanges.forEach { column ->
+                                    val userData = item.value.userData(row, column)
+                                    val content = userData?.let {
+                                        params.dataColumn.extract(it)
+                                    } ?: "-"
+                                    cell(content)
+                                }
+                            }
                         }
                     }
-                    rows.forEach { row ->
-                        row {
-                            cell(row)
-                            allAvailableRanges.forEach { column ->
-                                val userData = item.value.userData(row, column)
-                                val content = userData?.let {
-                                    params.extract(it)
-                                } ?: "-"
-                                cell(content)
-                            }
+                }
+                row {
+                    cell("Summary: ${groupedResult.groupName}") {
+                        columnSpan = columnsCount
+                    }
+                }
+                val groupChanges = groupedResult.result.calculateUserChanges()
+                val activeGroupUsers: Set<String> = groupChanges.values.map { it.activeUsers() }
+                    .reduce { acc, strings ->
+                        acc + strings
+                    }
+                row {
+                    cell("author - ${params.dataColumn.name}")
+                    allAvailableRanges.forEach {
+                        cell(it.asString(formatter))
+                    }
+                }
+                activeGroupUsers.forEach { row ->
+                    row {
+                        cell(row)
+                        allAvailableRanges.forEach { column ->
+                            val userData: Int = groupChanges.map {
+                                it.value.userData(row, column)?.let {
+                                    params.dataColumn.extract(it)
+                                } ?: 0
+                            }.reduce { acc, i -> acc + i }
+                            cell(userData)
                         }
                     }
                 }
