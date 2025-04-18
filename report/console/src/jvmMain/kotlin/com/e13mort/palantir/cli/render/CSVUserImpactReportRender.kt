@@ -48,7 +48,7 @@ class CSVUserImpactReportRender(
                                 val userData = item.value.userData(row, column)
                                 val content = userData?.let {
                                     params.dataColumn.extract(it)
-                                } ?: "-"
+                                } ?: 0
                                 if (columnIndex != 0)
                                     append(",")
                                 append(content)
@@ -56,7 +56,37 @@ class CSVUserImpactReportRender(
                             append("\n")
                         }
                     }
-                    // TODO: MAKE SUMMARY
+                    append("Summary")
+                    append("\n")
+                    val groupChanges = groupedResult.result.calculateUserChanges()
+                    val activeGroupUsers: Set<String> = groupChanges.values.map { it.activeUsers() }
+                        .reduce { acc, strings -> acc + strings }
+                    append("author - ${params.dataColumn.name}")
+                    append(",")
+                    append("groups")
+                    append(",")
+                    allAvailableRanges.forEach {
+                        append(it.asString(formatter))
+                        append(",")
+                    }
+                    append("\n")
+                    activeGroupUsers.forEach { row ->
+                        append(row)
+                        append(",")
+                        append(reportItem.authorGroups[row]?.joinToString(":") ?: "")
+                        append(",")
+                        allAvailableRanges.forEachIndexed { index, column ->
+                            val userData: Int = groupChanges.map {
+                                it.value.userData(row, column)?.let {
+                                    params.dataColumn.extract(it)
+                                } ?: 0
+                            }.reduce { acc, i -> acc + i }
+                            if (index != 0)
+                                append(",")
+                            append(userData)
+                        }
+                        append("\n")
+                    }
                 }
             }
         }.toString()
