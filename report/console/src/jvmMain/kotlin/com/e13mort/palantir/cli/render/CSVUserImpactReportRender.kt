@@ -56,37 +56,33 @@ class CSVUserImpactReportRender(
                             append("\n")
                         }
                     }
-                    append("Summary")
-                    append("\n")
-                    val groupChanges = groupedResult.result.calculateUserChanges()
-                    val activeGroupUsers: Set<String> = groupChanges.values.map { it.activeUsers() }
-                        .reduce { acc, strings -> acc + strings }
-                    append("author - ${params.dataColumn.name}")
+                }
+                append("Summary")
+                append("\n")
+                val groupChanges = groupedResult.result.calculateUserChanges()
+                val activeGroupUsers: Set<String> = groupChanges.values.map { it.activeUsers() }
+                    .reduce { acc, strings -> acc + strings }
+                append("author - ${params.dataColumn.name}")
+                append(",")
+                append("groups")
+                append(",")
+                append("\n")
+                activeGroupUsers.forEach { row ->
+                    append(row)
                     append(",")
-                    append("groups")
+                    append(reportItem.authorGroups[row]?.joinToString(":") ?: "")
                     append(",")
-                    allAvailableRanges.forEach {
-                        append(it.asString(formatter))
-                        append(",")
+                    allAvailableRanges.forEachIndexed { index, column ->
+                        val userData: Int = groupChanges.map {
+                            it.value.userData(row, column)?.let {
+                                params.dataColumn.extract(it)
+                            } ?: 0
+                        }.reduce { acc, i -> acc + i }
+                        if (index != 0)
+                            append(",")
+                        append(userData)
                     }
                     append("\n")
-                    activeGroupUsers.forEach { row ->
-                        append(row)
-                        append(",")
-                        append(reportItem.authorGroups[row]?.joinToString(":") ?: "")
-                        append(",")
-                        allAvailableRanges.forEachIndexed { index, column ->
-                            val userData: Int = groupChanges.map {
-                                it.value.userData(row, column)?.let {
-                                    params.dataColumn.extract(it)
-                                } ?: 0
-                            }.reduce { acc, i -> acc + i }
-                            if (index != 0)
-                                append(",")
-                            append(userData)
-                        }
-                        append("\n")
-                    }
                 }
             }
         }.toString()
@@ -96,7 +92,6 @@ class CSVUserImpactReportRender(
         title: String
     ) {
         append(title)
-        append(",")
         append("\n")
     }
 
