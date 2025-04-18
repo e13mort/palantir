@@ -10,7 +10,8 @@ import com.e13mort.palantir.model.Percentile
 
 data class CodeChangesReportItem(
     val commitDiffs: Map<String, List<DiffWithRanges>>,
-    val summary: Summary
+    val summary: Summary,
+    val authorGroups: Map<String, List<String>>
 ) {
 
     fun calculateUserChanges(): Map<String, DiffWithRanges.UserChanges> {

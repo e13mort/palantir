@@ -63,7 +63,7 @@ class CodeChangesReportCalculator(
                 val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
                 fullResults += RepositoryReport.GroupedResults(
                     groupName, CodeChangesReportItem(
-                        commitDiffs, calculateSummary(commitDiffs, percentileForSummary)
+                        commitDiffs, calculateSummary(commitDiffs, percentileForSummary), specification.authorGroups
                     )
                 )
             }

@@ -28,5 +28,12 @@
         "percentile": "P95"
       }
     ]
+  },
+  "authorGroups": {
+    "user1": [
+      "group1",
+      "group2"
+    ],
+    "user2": []
   }
 }

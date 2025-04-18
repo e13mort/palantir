@@ -31,6 +31,8 @@ class CSVUserImpactReportRender(
                     if (!params.showOnlySummary) {
                         append("author - ${params.dataColumn.name}")
                         append(",")
+                        append("groups")
+                        append(",")
                         allAvailableRanges.forEachIndexed { index, it ->
                             if (index != 0)
                                 append(",")
@@ -39,6 +41,8 @@ class CSVUserImpactReportRender(
                         append("\n")
                         rows.forEach { row ->
                             append(row)
+                            append(",")
+                            append(reportItem.authorGroups[row]?.joinToString(":") ?: "")
                             append(",")
                             allAvailableRanges.forEachIndexed { columnIndex, column ->
                                 val userData = item.value.userData(row, column)

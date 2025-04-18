@@ -6,6 +6,7 @@
 package com.e13mort.palantir.cli.render
 
 import com.e13mort.palantir.interactors.CodeChangesReportItem
+import com.e13mort.palantir.interactors.Range
 import com.e13mort.palantir.interactors.RepositoryReport
 import com.e13mort.palantir.render.ReportRender
 import com.e13mort.palantir.utils.DateStringConverter
@@ -28,7 +29,7 @@ class ASCIIUserImpactReportRender(
                 val groupName = groupedResult.groupName
                 val rangesResults = reportItem.calculateUserChanges()
                 val allAvailableRanges = rangesResults.values.map { it.ranges() }.flatten().toSet()
-                val columnsCount = allAvailableRanges.size + 1
+                val columnsCount = allAvailableRanges.size + 2
                 row {
                     cell(groupName) {
                         columnSpan = columnsCount
@@ -45,6 +46,7 @@ class ASCIIUserImpactReportRender(
                     if (!params.showOnlySummary) {
                         row {
                             cell("author - ${params.dataColumn.name}")
+                            cell("groups")
                             allAvailableRanges.forEach {
                                 cell(it.asString(formatter))
                             }
@@ -52,7 +54,8 @@ class ASCIIUserImpactReportRender(
                         rows.forEach { row ->
                             row {
                                 cell(row)
-                                allAvailableRanges.forEach { column ->
+                                cell(reportItem.authorGroups[row]?.joinToString())
+                                allAvailableRanges.forEach { column: Range ->
                                     val userData = item.value.userData(row, column)
                                     val content = userData?.let {
                                         params.dataColumn.extract(it)
@@ -70,11 +73,10 @@ class ASCIIUserImpactReportRender(
                 }
                 val groupChanges = groupedResult.result.calculateUserChanges()
                 val activeGroupUsers: Set<String> = groupChanges.values.map { it.activeUsers() }
-                    .reduce { acc, strings ->
-                        acc + strings
-                    }
+                    .reduce { acc, strings -> acc + strings }
                 row {
                     cell("author - ${params.dataColumn.name}")
+                    cell("groups")
                     allAvailableRanges.forEach {
                         cell(it.asString(formatter))
                     }
@@ -82,6 +84,7 @@ class ASCIIUserImpactReportRender(
                 activeGroupUsers.forEach { row ->
                     row {
                         cell(row)
+                        cell(reportItem.authorGroups[row]?.joinToString())
                         allAvailableRanges.forEach { column ->
                             val userData: Int = groupChanges.map {
                                 it.value.userData(row, column)?.let {
