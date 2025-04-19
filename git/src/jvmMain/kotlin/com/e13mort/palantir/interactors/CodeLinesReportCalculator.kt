@@ -18,18 +18,27 @@ class CodeLinesReportCalculator(
     override suspend fun calculateReport(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
-        singleGroupName: String?
+        singleGroupName: String?,
+        itemIndexInGroup: Int?
     ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
         val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
-        specification.projects.forEach { (groupName, projects) ->
-            val result = mutableMapOf<String, List<LinesCountReportItem>>()
-            projects.forEach { projectSpec ->
-                val localPath = projectSpec.localPath
-                val report = calculateReport(localPath, ranges, projectSpec.linesSpec)
-                result[report.first] = report.second
+        specification.projects.filter {
+                if (singleGroupName != null) {
+                    singleGroupName == it.key
+                } else true
+            }.forEach { (groupName, projects) ->
+                val result = mutableMapOf<String, List<LinesCountReportItem>>()
+                projects.forEachIndexed { index, projectSpec ->
+                    if (itemIndexInGroup == null || index == itemIndexInGroup) {
+                        val localPath = projectSpec.localPath
+                        val report = calculateReport(localPath, ranges, projectSpec.linesSpec)
+                        result[report.first] = report.second
+                    }
+                }
+                if (result.isNotEmpty()) {
+                    fullResults += RepositoryReport.GroupedResults(groupName, result)
+                }
             }
-            fullResults += RepositoryReport.GroupedResults(groupName, result)
-        }
         return fullResults
     }
 
@@ -47,23 +56,6 @@ class CodeLinesReportCalculator(
             git.repository.workTree.path,
             linesSpec?.excludedPaths ?: emptyList()
         )
-    }
-
-    fun createReportsForSpecification(
-        specification: RepositoryAnalysisSpecification,
-        ranges: List<Range>
-    ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
-        val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
-        specification.projects.forEach { (groupName, projects) ->
-            val result = mutableMapOf<String, List<LinesCountReportItem>>()
-            projects.forEach { projectSpec ->
-                val localPath = projectSpec.localPath
-                val report = calculateReport(localPath, ranges, projectSpec.linesSpec)
-                result[report.first] = report.second
-            }
-            fullResults += RepositoryReport.GroupedResults(groupName, result)
-        }
-        return fullResults
     }
 
     private fun calculateReport(

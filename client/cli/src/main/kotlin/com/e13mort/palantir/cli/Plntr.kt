@@ -80,6 +80,7 @@ import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
 import com.github.ajalt.clikt.parameters.types.enum
+import com.github.ajalt.clikt.parameters.types.int
 import java.text.SimpleDateFormat
 
 fun main(args: Array<String>) {
@@ -246,14 +247,18 @@ fun main(args: Array<String>) {
                     renderValueMapper = { it },
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
-                            ranges,
-                            params.options.findOption<String>("--group")
+                            ranges = ranges,
+                            singleGroupName = params.options.findOptionSafe("--group"),
+                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex")
                         )
 
                     },
                     renderParamsMapper = {},
                     dateFormat = stringToDateConverter
-                ),
+                ).apply {
+                    registerOption(option("--group"))
+                    registerOption(option("--projectIndex").int())
+                },
                 StringWithRangesCommand(
                     name = "codeincrement",
                     interactor = codeIncrementInteractor,
@@ -268,8 +273,9 @@ fun main(args: Array<String>) {
                     renderValueMapper = { it },
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
-                            ranges,
-                            params.options.findOptionSafe<String>("--group")
+                            ranges = ranges,
+                            singleGroupName = params.options.findOptionSafe("--group"),
+                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex")
                         )
                     },
                     renderParamsMapper = { commandParams ->
@@ -282,6 +288,7 @@ fun main(args: Array<String>) {
                 ).apply {
                     registerOption(option("--full-commits").flag())
                     registerOption(option("--group"))
+                    registerOption(option("--projectIndex").int())
                     registerOption(option("--summary").flag())
                 },
                 StringWithRangesCommand(
@@ -298,8 +305,9 @@ fun main(args: Array<String>) {
                     renderValueMapper = { it },
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
-                            ranges,
-                            params.options.findOptionSafe<String>("--group")
+                            ranges = ranges,
+                            singleGroupName = params.options.findOptionSafe("--group"),
+                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex")
                         )
                     },
                     renderParamsMapper = {
@@ -312,6 +320,7 @@ fun main(args: Array<String>) {
                 ).apply {
                     registerOption(option("--type").enum<DataColumn>().default(DataColumn.Changed) )
                     registerOption(option("--group"))
+                    registerOption(option("--projectIndex").int())
                     registerOption(option("--summary").flag())
                 },
                 StringWithRangesCommand(
@@ -328,8 +337,9 @@ fun main(args: Array<String>) {
                     renderValueMapper = { it },
                     commandParamMapper = { params, ranges ->
                         RepositoryAnalyticsInteractor.Arguments(
-                            ranges,
-                            params.options.findOptionSafe<String>("--group")
+                            ranges = ranges,
+                            singleGroupName = params.options.findOptionSafe("--group"),
+                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex")
                         )
                     },
                     renderParamsMapper = {
@@ -338,6 +348,7 @@ fun main(args: Array<String>) {
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--group"))
+                    registerOption(option("--projectIndex").int())
                 }
             ),
         )

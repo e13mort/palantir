@@ -38,17 +38,19 @@ class CodeChangesReportCalculator(
     override suspend fun calculateReport(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
-        singleGroupName: String?
+        singleGroupName: String?,
+        itemIndexInGroup: Int?
     ): List<RepositoryReport.GroupedResults<CodeChangesReportItem>> {
         val fullResults =
             mutableListOf<RepositoryReport.GroupedResults<CodeChangesReportItem>>()
         specification.projects.filter {
-                if (singleGroupName != null) {
-                    singleGroupName == it.key
-                } else true
-            }.forEach { (groupName, projects) ->
-                val commitDiffs = mutableMapOf<String, List<CodeChangesReportItem.DiffWithRanges>>()
-                projects.forEach { projectSpec ->
+            if (singleGroupName != null) {
+                singleGroupName == it.key
+            } else true
+        }.forEach { (groupName, projects) ->
+            val commitDiffs = mutableMapOf<String, List<CodeChangesReportItem.DiffWithRanges>>()
+            projects.forEachIndexed { index, projectSpec ->
+                if (itemIndexInGroup == null || index == itemIndexInGroup) {
                     val localPath = projectSpec.localPath
                     val report: Pair<String, List<CodeChangesReportItem.DiffWithRanges>> =
                         calculateReport(
@@ -60,13 +62,18 @@ class CodeChangesReportCalculator(
                         )
                     commitDiffs[report.first] = report.second
                 }
+            }
+            if (commitDiffs.isNotEmpty()) {
                 val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
                 fullResults += RepositoryReport.GroupedResults(
                     groupName, CodeChangesReportItem(
-                        commitDiffs, calculateSummary(commitDiffs, percentileForSummary), specification.authorGroups
+                        commitDiffs,
+                        calculateSummary(commitDiffs, percentileForSummary),
+                        specification.authorGroups
                     )
                 )
             }
+        }
         return fullResults
     }
 
