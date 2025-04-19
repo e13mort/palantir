@@ -7,14 +7,15 @@ package com.e13mort.palantir.interactors
 
 import com.e13mort.palantir.interactors.RepositoryAnalysisSpecification.MailMapType
 import com.e13mort.palantir.model.Percentile
+import com.e13mort.palantir.readTestFile
 import io.kotest.matchers.collections.shouldMatchEach
 import io.kotest.matchers.collections.shouldMatchInOrder
 import io.kotest.matchers.maps.shouldContainKey
+import io.kotest.matchers.maps.shouldMatchAll
 import io.kotest.matchers.should
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.Test
-import java.io.FileReader
 
 class RepositoryAnalysisSpecificationTest {
 
@@ -52,6 +53,18 @@ class RepositoryAnalysisSpecificationTest {
                     }
                 )
             }
+            spec.authorGroups shouldMatchAll mapOf(
+                "user1" to {
+                    it shouldMatchEach listOf({
+                        it shouldBe "group1"
+                    }, {
+                        it shouldBe "group2"
+                    })
+                },
+                "user2" to {
+                    it shouldBe emptyList()
+                }
+            )
         }
     }
 
@@ -79,10 +92,5 @@ class RepositoryAnalysisSpecificationTest {
                 }
             }
         }
-    }
-
-    private fun readTestFile(testFileName: String): String {
-        val file = javaClass.classLoader.getResource(testFileName)!!.file
-        return FileReader(file).readText()
     }
 }

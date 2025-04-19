@@ -16,10 +16,10 @@ import com.jakewharton.picnic.table
 
 class ASCIICodeChangesReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, CodeChangesRenderOptions> {
     override fun render(
         value: RepositoryReport<CodeChangesReportItem>,
-        params: Set<CodeChangesReportParams>
+        params: CodeChangesRenderOptions
     ): String {
         return table {
             cellStyle {
@@ -37,48 +37,50 @@ class ASCIICodeChangesReportRender(
                             columnSpan = 9
                         }
                     }
-                    val percentileTitle = diff.value.firstItemPercentile()?.name ?: "invalid"
-                    row {
-                        cell("Range")
-                        cell("Commits Count")
-                        cell("Added")
-                        cell("Removed")
-                        cell("Code increment")
-                        cell("Total")
-                        cell("Added ($percentileTitle)")
-                        cell("Added (avg)")
-                        cell("Authors count")
-                    }
-                    diff.value.forEach {
+                    if (!params.showOnlySummary) {
+                        val percentileTitle = diff.value.firstItemPercentile()?.name ?: "invalid"
                         row {
-                            appendDiffCells(it)
+                            cell("Range")
+                            cell("Commits Count")
+                            cell("Added")
+                            cell("Removed")
+                            cell("Code increment")
+                            cell("Total")
+                            cell("Added ($percentileTitle)")
+                            cell("Added (avg)")
+                            cell("Authors count")
                         }
-                        if (params.contains(CodeChangesReportParams.ShowFullCommitsList)) {
+                        diff.value.forEach {
                             row {
-                                cell("Details") {
-                                    columnSpan = 9
-                                }
+                                appendDiffCells(it)
                             }
-                            row {
-                                cell("Commit")
-                                cell("Added")
-                                cell("Removed")
-                                cell("Added(Ignored)")
-                                cell("Removed(Ignored)")
-                                cell("Effective code increment")
-                                cell("Effective total changes")
-                                cell("Author email")
-                            }
-                            it.diffs.forEach { commitDiff ->
+                            if (params.showFullCommits) {
                                 row {
-                                    cell(commitDiff.targetCommitSHA1)
-                                    cell(commitDiff.linesAdded)
-                                    cell(commitDiff.linesRemoved)
-                                    cell(commitDiff.ignoredLinesAdd)
-                                    cell(commitDiff.ignoredLinesRemove)
-                                    cell(commitDiff.codeIncrement())
-                                    cell(commitDiff.totalChanges())
-                                    cell(commitDiff.authorEmailAddress)
+                                    cell("Details") {
+                                        columnSpan = 9
+                                    }
+                                }
+                                row {
+                                    cell("Commit")
+                                    cell("Added")
+                                    cell("Removed")
+                                    cell("Added(Ignored)")
+                                    cell("Removed(Ignored)")
+                                    cell("Effective code increment")
+                                    cell("Effective total changes")
+                                    cell("Author email")
+                                }
+                                it.diffs.forEach { commitDiff ->
+                                    row {
+                                        cell(commitDiff.targetCommitSHA1)
+                                        cell(commitDiff.linesAdded)
+                                        cell(commitDiff.linesRemoved)
+                                        cell(commitDiff.ignoredLinesAdd)
+                                        cell(commitDiff.ignoredLinesRemove)
+                                        cell(commitDiff.codeIncrement())
+                                        cell(commitDiff.totalChanges())
+                                        cell(commitDiff.authorEmailAddress)
+                                    }
                                 }
                             }
                         }
@@ -89,6 +91,18 @@ class ASCIICodeChangesReportRender(
                         columnSpan = 9
                     }
                 }
+                row {
+                    cell("Range")
+                    cell("Commits Count")
+                    cell("Added")
+                    cell("Removed")
+                    cell("Code increment")
+                    cell("Total")
+                    cell("Added (p)") // refactor percentile header
+                    cell("Added (avg)")
+                    cell("Authors count")
+                }
+
                 val summary = groupedResult.result.summary.rangedData.values
                 summary.forEach {
                     row {

@@ -15,10 +15,10 @@ import com.jakewharton.picnic.table
 
 class ASCIICodeAuthorsReportRender(
     private val formatter: DateStringConverter
-) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Set<CodeChangesReportParams>> {
+) : ReportRender<RepositoryReport<CodeChangesReportItem>, String, Unit> {
     override fun render(
         value: RepositoryReport<CodeChangesReportItem>,
-        params: Set<CodeChangesReportParams>
+        params: Unit
     ): String {
         return table {
             cellStyle {

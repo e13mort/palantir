@@ -33,10 +33,14 @@ import com.e13mort.palantir.cli.render.ASCIIPercentileReportRenderer
 import com.e13mort.palantir.cli.render.ASCIISyncProjectsRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectRender
 import com.e13mort.palantir.cli.render.ASCIITableProjectsListRender
+import com.e13mort.palantir.cli.render.ASCIIUserImpactReportRender
 import com.e13mort.palantir.cli.render.CSVCodeAuthorsReportRender
 import com.e13mort.palantir.cli.render.CSVCodeChangesReportRender
 import com.e13mort.palantir.cli.render.CSVCodeLinesCountReportRender
-import com.e13mort.palantir.cli.render.CodeChangesReportParams
+import com.e13mort.palantir.cli.render.CSVUserImpactReportRender
+import com.e13mort.palantir.cli.render.CodeChangesRenderOptions
+import com.e13mort.palantir.cli.render.DataColumn
+import com.e13mort.palantir.cli.render.UserImpactRenderOptions
 import com.e13mort.palantir.client.properties.EnvironmentProperties
 import com.e13mort.palantir.client.properties.FileBasedProperties
 import com.e13mort.palantir.client.properties.Properties
@@ -72,8 +76,10 @@ import com.e13mort.palantir.utils.DateStringConverter
 import com.e13mort.palantir.utils.StringDateConverter
 import com.github.ajalt.clikt.core.main
 import com.github.ajalt.clikt.core.subcommands
+import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
 import com.github.ajalt.clikt.parameters.options.option
+import com.github.ajalt.clikt.parameters.types.enum
 import java.text.SimpleDateFormat
 
 fun main(args: Array<String>) {
@@ -133,7 +139,7 @@ fun main(args: Array<String>) {
                 name = "projects",
                 renders = ASCIITableProjectsListRender().asTableRender(),
                 renderParamsMapper = { params ->
-                    params.flags.contains("-a")
+                    params.options.hasFlag("-a")
                 },
             ) {
                 registerOption(option("-a").flag())
@@ -167,7 +173,7 @@ fun main(args: Array<String>) {
                 name = "project",
                 renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 commandParamMapper = { params, projectId ->
-                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    val forceSync = params.options.hasFlag("-f", "--force")
                     SyncInteractor.SyncStrategy.FullSyncForProject(projectId, forceSync)
                 }
             ).apply {
@@ -178,7 +184,7 @@ fun main(args: Array<String>) {
                 renders = ASCIIFullSyncProjectsRender().asTableRender(),
                 renderParamsMapper = {},
                 commandParamsMapper = { params ->
-                    val forceSync = params.flags.contains("-f") || params.flags.contains("--force")
+                    val forceSync = params.options.hasFlag("-f", "--force")
                     SyncInteractor.SyncStrategy.FullSyncForActiveProjects(forceSync)
                 }
             ).apply {
@@ -238,7 +244,13 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.options.findOption<String>("--group")
+                        )
+
+                    },
                     renderParamsMapper = {},
                     dateFormat = stringToDateConverter
                 ),
@@ -254,18 +266,53 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.options.findOptionSafe<String>("--group")
+                        )
+                    },
                     renderParamsMapper = { commandParams ->
-                        commandParams.flags.mapNotNull {
-                            when (it) {
-                                "--full-commits" -> CodeChangesReportParams.ShowFullCommitsList
-                                else -> null
-                            }
-                        }.toSet()
+                        CodeChangesRenderOptions(
+                            showFullCommits = commandParams.options.hasFlag("--full-commits"),
+                            showOnlySummary = commandParams.options.hasFlag("--summary"),
+                        )
                     },
                     dateFormat = stringToDateConverter
                 ).apply {
                     registerOption(option("--full-commits").flag())
+                    registerOption(option("--group"))
+                    registerOption(option("--summary").flag())
+                },
+                StringWithRangesCommand(
+                    name = "impact",
+                    interactor = codeIncrementInteractor,
+                    renders = mapOf(
+                        CommandWithRender.RenderType.Table to ASCIIUserImpactReportRender(
+                            dateToStringConverter
+                        ),
+                        CommandWithRender.RenderType.CSV to CSVUserImpactReportRender(
+                            dateToStringConverter
+                        ),
+                    ),
+                    renderValueMapper = { it },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.options.findOptionSafe<String>("--group")
+                        )
+                    },
+                    renderParamsMapper = {
+                        UserImpactRenderOptions(
+                            dataColumn = it.options.findOption("--type"),
+                            showOnlySummary = it.options.hasFlag("--summary")
+                        )
+                    },
+                    dateFormat = stringToDateConverter
+                ).apply {
+                    registerOption(option("--type").enum<DataColumn>().default(DataColumn.Changed) )
+                    registerOption(option("--group"))
+                    registerOption(option("--summary").flag())
                 },
                 StringWithRangesCommand(
                     name = "authors",
@@ -279,14 +326,19 @@ fun main(args: Array<String>) {
                         )
                     ),
                     renderValueMapper = { it },
-                    commandParamMapper = { _, b -> b },
+                    commandParamMapper = { params, ranges ->
+                        RepositoryAnalyticsInteractor.Arguments(
+                            ranges,
+                            params.options.findOptionSafe<String>("--group")
+                        )
+                    },
                     renderParamsMapper = {
-                        emptySet()
+
                     },
                     dateFormat = stringToDateConverter
-                )
-
-
+                ).apply {
+                    registerOption(option("--group"))
+                }
             ),
         )
     ).main(args)

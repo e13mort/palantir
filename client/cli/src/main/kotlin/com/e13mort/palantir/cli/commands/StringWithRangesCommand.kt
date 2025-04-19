@@ -35,5 +35,5 @@ class StringWithRangesCommand<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_PARAMS
         it.asRanges(dateFormat)
     }.default(mutableListOf(Range(0, System.currentTimeMillis())))
 
-    override fun calculateArgs() = commandParamMapper(CommandParams(flags()), path to ranges)
+    override fun calculateArgs() = commandParamMapper(CommandParams(registeredOptions()), path to ranges)
 }

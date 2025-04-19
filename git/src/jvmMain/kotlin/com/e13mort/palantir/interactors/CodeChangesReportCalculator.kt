@@ -37,33 +37,36 @@ class CodeChangesReportCalculator(
 
     override suspend fun calculateReport(
         specification: RepositoryAnalysisSpecification,
-        ranges: List<Range>
+        ranges: List<Range>,
+        singleGroupName: String?
     ): List<RepositoryReport.GroupedResults<CodeChangesReportItem>> {
         val fullResults =
             mutableListOf<RepositoryReport.GroupedResults<CodeChangesReportItem>>()
-        specification.projects.forEach { (groupName, projects) ->
-            val commitDiffs = mutableMapOf<String, List<CodeChangesReportItem.DiffWithRanges>>()
-            projects.forEach { projectSpec ->
-                val localPath = projectSpec.localPath
-                val report: Pair<String, List<CodeChangesReportItem.DiffWithRanges>> =
-                    calculateReport(
-                        localPath,
-                        ranges,
-                        projectSpec.linesSpec,
-                        projectSpec.percentile,
-                        projectSpec.mailMap
+        specification.projects.filter {
+                if (singleGroupName != null) {
+                    singleGroupName == it.key
+                } else true
+            }.forEach { (groupName, projects) ->
+                val commitDiffs = mutableMapOf<String, List<CodeChangesReportItem.DiffWithRanges>>()
+                projects.forEach { projectSpec ->
+                    val localPath = projectSpec.localPath
+                    val report: Pair<String, List<CodeChangesReportItem.DiffWithRanges>> =
+                        calculateReport(
+                            localPath,
+                            ranges,
+                            projectSpec.linesSpec,
+                            projectSpec.percentile,
+                            projectSpec.mailMap
+                        )
+                    commitDiffs[report.first] = report.second
+                }
+                val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
+                fullResults += RepositoryReport.GroupedResults(
+                    groupName, CodeChangesReportItem(
+                        commitDiffs, calculateSummary(commitDiffs, percentileForSummary), specification.authorGroups
                     )
-                commitDiffs[report.first] = report.second
-            }
-            val percentileForSummary = projects.firstOrNull()?.percentile ?: Percentile.P100
-            fullResults += RepositoryReport.GroupedResults(
-                groupName,
-                CodeChangesReportItem(
-                    commitDiffs,
-                    calculateSummary(commitDiffs, percentileForSummary)
                 )
-            )
-        }
+            }
         return fullResults
     }
 

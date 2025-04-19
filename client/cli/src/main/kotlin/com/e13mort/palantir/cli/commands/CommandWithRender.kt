@@ -16,6 +16,7 @@ import androidx.compose.ui.text.toLowerCase
 import com.e13mort.palantir.interactors.Interactor
 import com.e13mort.palantir.render.ReportRender
 import com.github.ajalt.clikt.core.CliktCommand
+import com.github.ajalt.clikt.parameters.options.Option
 import com.github.ajalt.clikt.parameters.options.OptionWithValues
 import com.github.ajalt.clikt.parameters.options.default
 import com.github.ajalt.clikt.parameters.options.flag
@@ -27,6 +28,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.runBlocking
 
 abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INPUT, RENDER_PARAMS>(
     name: String,
@@ -37,7 +39,7 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 ) : CliktCommand(name = name) {
 
     open class CommandParams(
-        val flags: Set<String>
+        val options: List<Option>
     )
 
     enum class RenderType {
@@ -52,34 +54,40 @@ abstract class CommandWithRender<INTERACTOR_INPUT, INTERACTOR_OUTPUT, RENDER_INP
 
     abstract fun calculateArgs(): INTERACTOR_INPUT
 
-    override fun run() = runMosaicBlocking {
+    override fun run() {
         val interactorOutputFlow: Flow<INTERACTOR_OUTPUT?> = interactor.run(calculateArgs())
+        if (blocking) {
+            runInBlockingMode(interactorOutputFlow)
+        } else {
+            runInContinuousMode(interactorOutputFlow)
+        }
+    }
+
+    private fun runInContinuousMode(interactorOutputFlow: Flow<INTERACTOR_OUTPUT?>) =
+        runMosaicBlocking {
         var state by remember {
             mutableStateOf<INTERACTOR_OUTPUT?>(null)
         }
         LaunchedEffect(Unit) {
-            if (blocking) {
-                state = interactorOutputFlow.last()
-            } else {
-                interactorOutputFlow.flowOn(Dispatchers.IO).collect {
-                    state = it
-                }
+            interactorOutputFlow.flowOn(Dispatchers.IO).collect {
+                state = it
             }
         }
         RenderContent(state)
     }
 
+    private fun runInBlockingMode(interactorOutputFlow: Flow<INTERACTOR_OUTPUT?>) = runBlocking {
+        val value = interactorOutputFlow.last()
+        if (value != null) println(renderState(value))
+    }
+
     @Composable
     private fun RenderContent(state: INTERACTOR_OUTPUT?) {
-        if (state != null) {
-            Text(renderState(state))
-        } else if (!blocking) {
-            Text("Waiting...")
-        }
+        Text(state?.let { renderState(it) } ?: "Waiting...")
     }
 
     private fun renderState(state: INTERACTOR_OUTPUT): String {
-        val commandParams = CommandParams(flags())
+        val commandParams = CommandParams(registeredOptions())
         return renders[renderType]!!.render(
             renderValueMapper(state),
             renderParamsMapper(commandParams)
