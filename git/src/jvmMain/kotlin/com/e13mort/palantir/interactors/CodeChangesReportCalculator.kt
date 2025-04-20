@@ -60,7 +60,8 @@ class CodeChangesReportCalculator(
                             projectSpec.linesSpec,
                             projectSpec.percentile,
                             projectSpec.mailMap,
-                            explicitAuthors
+                            explicitAuthors,
+                            projectSpec.excludeRevisions
                         )
                     commitDiffs[report.first] = report.second
                 }
@@ -131,7 +132,8 @@ class CodeChangesReportCalculator(
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null,
         percentile: Percentile,
         mailMapType: RepositoryAnalysisSpecification.MailMapType,
-        explicitAuthors: Set<String>
+        explicitAuthors: Set<String>,
+        excludeRevisions: List<String>
     ): Pair<String, List<CodeChangesReportItem.DiffWithRanges>> {
 
         val regex = createRegexForFilesExclusions(linesSpec)
@@ -173,6 +175,7 @@ class CodeChangesReportCalculator(
             }
             resultMap[range] = resultCommits
                 .filter { explicitAuthors.isEmpty() || explicitAuthors.contains(it.authorEmailAddress) }
+                .filter { !excludeRevisions.contains(it.targetCommitSHA1) }
         }
         return projectPath to resultMap.flatMap {
             listOf(

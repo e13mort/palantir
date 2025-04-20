@@ -41,7 +41,8 @@ data class RepositoryAnalysisSpecification(
         val targetBranch: String? = null,
         val linesSpec: LinesSpec? = null,
         val percentile: Percentile = Percentile.P100,
-        val mailMap: MailMapType = MailMapType.Auto
+        val mailMap: MailMapType = MailMapType.Auto,
+        val excludeRevisions: List<String> = emptyList()
     )
 
     @Serializable

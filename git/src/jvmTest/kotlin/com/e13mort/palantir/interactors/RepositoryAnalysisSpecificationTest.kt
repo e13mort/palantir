@@ -44,12 +44,21 @@ class RepositoryAnalysisSpecificationTest {
                         it.targetBranch shouldBe null
                         it.linesSpec shouldBe null
                         it.mailMap shouldBe MailMapType.Auto
+                        it.excludeRevisions shouldBe emptyList()
                     },
                     {
                         it.localPath shouldBe "/local/path2"
                         it.targetBranch shouldBe "master"
                         it.linesSpec shouldBe null
                         it.mailMap shouldBe MailMapType.Disabled
+                        it.excludeRevisions shouldMatchEach listOf(
+                            {
+                                it shouldBe "hash1"
+                            },
+                            {
+                                it shouldBe "hash2"
+                            },
+                        )
                     }
                 )
             }

@@ -7,7 +7,11 @@
       {
         "localPath": "/local/path2",
         "targetBranch": "master",
-        "mailMap": "disabled"
+        "mailMap": "disabled",
+        "excludeRevisions": [
+          "hash1",
+          "hash2"
+        ]
       }
     ],
     "group2": [
