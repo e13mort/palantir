@@ -39,7 +39,8 @@ class CodeChangesReportCalculator(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
         singleGroupName: String?,
-        itemIndexInGroup: Int?
+        itemIndexInGroup: Int?,
+        explicitAuthors: Set<String>
     ): List<RepositoryReport.GroupedResults<CodeChangesReportItem>> {
         val fullResults =
             mutableListOf<RepositoryReport.GroupedResults<CodeChangesReportItem>>()
@@ -58,7 +59,8 @@ class CodeChangesReportCalculator(
                             ranges,
                             projectSpec.linesSpec,
                             projectSpec.percentile,
-                            projectSpec.mailMap
+                            projectSpec.mailMap,
+                            explicitAuthors
                         )
                     commitDiffs[report.first] = report.second
                 }
@@ -128,7 +130,8 @@ class CodeChangesReportCalculator(
         ranges: List<Range>,
         linesSpec: RepositoryAnalysisSpecification.LinesSpec? = null,
         percentile: Percentile,
-        mailMapType: RepositoryAnalysisSpecification.MailMapType
+        mailMapType: RepositoryAnalysisSpecification.MailMapType,
+        explicitAuthors: Set<String>
     ): Pair<String, List<CodeChangesReportItem.DiffWithRanges>> {
 
         val regex = createRegexForFilesExclusions(linesSpec)
@@ -169,6 +172,7 @@ class CodeChangesReportCalculator(
                 }
             }
             resultMap[range] = resultCommits
+                .filter { explicitAuthors.isEmpty() || explicitAuthors.contains(it.authorEmailAddress) }
         }
         return projectPath to resultMap.flatMap {
             listOf(

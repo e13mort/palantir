@@ -272,10 +272,14 @@ fun main(args: Array<String>) {
                     ),
                     renderValueMapper = { it },
                     commandParamMapper = { params, ranges ->
+                        val explicitAuthors = params.options.findOptionSafe<String>("--author")?.let {
+                            setOf(it)
+                        } ?: emptySet()
                         RepositoryAnalyticsInteractor.Arguments(
                             ranges = ranges,
                             singleGroupName = params.options.findOptionSafe("--group"),
-                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex")
+                            itemIndexInGroup = params.options.findOptionSafe("--projectIndex"),
+                            explicitAuthors = explicitAuthors
                         )
                     },
                     renderParamsMapper = { commandParams ->
@@ -290,6 +294,7 @@ fun main(args: Array<String>) {
                     registerOption(option("--group"))
                     registerOption(option("--projectIndex").int())
                     registerOption(option("--summary").flag())
+                    registerOption(option("--author"))
                 },
                 StringWithRangesCommand(
                     name = "impact",

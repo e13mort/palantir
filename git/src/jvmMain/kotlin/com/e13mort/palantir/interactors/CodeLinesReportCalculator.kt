@@ -19,7 +19,8 @@ class CodeLinesReportCalculator(
         specification: RepositoryAnalysisSpecification,
         ranges: List<Range>,
         singleGroupName: String?,
-        itemIndexInGroup: Int?
+        itemIndexInGroup: Int?,
+        explicitAuthors: Set<String>
     ): List<RepositoryReport.GroupedResults<CodeLinesResult>> {
         val fullResults = mutableListOf<RepositoryReport.GroupedResults<CodeLinesResult>>()
         specification.projects.filter {

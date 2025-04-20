@@ -20,7 +20,8 @@ class RepositoryAnalyticsInteractor<T>(
     data class Arguments(
         val ranges: Pair<String, List<Range>>,
         val singleGroupName: String?,
-        val itemIndexInGroup: Int?
+        val itemIndexInGroup: Int?,
+        val explicitAuthors: Set<String> = emptySet()
     )
 
     override fun run(arg: Arguments): Flow<RepositoryReport<T>> {
@@ -29,7 +30,7 @@ class RepositoryAnalyticsInteractor<T>(
             val ranges: List<Range> = arg.ranges.second
 
             val specification = createSpec(argPath)
-            val result = reportCalculator.calculateReport(specification, ranges, arg.singleGroupName, arg.itemIndexInGroup)
+            val result = reportCalculator.calculateReport(specification, ranges, arg.singleGroupName, arg.itemIndexInGroup, arg.explicitAuthors)
             emit(RepositoryReport(result))
         }
     }
@@ -39,7 +40,8 @@ class RepositoryAnalyticsInteractor<T>(
             specification: RepositoryAnalysisSpecification,
             ranges: List<Range>,
             singleGroupName: String? = null,
-            itemIndexInGroup: Int? = null
+            itemIndexInGroup: Int? = null,
+            explicitAuthors: Set<String> = emptySet()
         ): List<RepositoryReport.GroupedResults<T>>
 
     }
